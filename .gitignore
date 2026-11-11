@@ -1,0 +1,265 @@
+# =====================================================================
+#  이음(IEUM) .gitignore
+#  스택: Java 17 / Spring Boot 3 (Gradle 또는 Maven) / MySQL 8
+#        HTML·CSS·JavaScript / Python 데이터 스크립트
+#
+#  원칙
+#   1) 비밀 값(API 키, DB 비밀번호, JWT 서명 키)은 절대 올리지 않는다.
+#      → 대신 값이 비어 있는 예시 파일(*.example)을 올려서 팀원이 복사해 쓴다.
+#   2) 빌드 결과물, IDE·OS가 만드는 파일, 로그, 업로드 파일은 올리지 않는다.
+#   3) 이미 올라간 파일은 여기에 적어도 계속 추적된다.
+#      → git rm --cached <파일> 로 추적을 끊은 뒤 커밋해야 한다.
+# =====================================================================
+
+
+# ---------------------------------------------------------------------
+# 1. 비밀 정보 (가장 중요)
+# ---------------------------------------------------------------------
+
+# 환경변수 파일: 카카오 REST/JS 키, TourAPI 키, 공공데이터 키, DB 비밀번호 등
+.env
+.env.*
+*.env
+!.env.example
+
+# Spring 설정 중 실제 값이 들어가는 프로필
+#   - application.yml        → 올림 (값은 ${KAKAO_REST_API_KEY} 처럼 환경변수 참조만)
+#   - application-local.yml  → 올리지 않음 (내 PC 전용 값)
+#   - application-secret.yml → 올리지 않음
+#   - application-prod.yml   → 운영 서버 값이 들어가면 올리지 않음
+**/src/main/resources/application-local.yml
+**/src/main/resources/application-local.yaml
+**/src/main/resources/application-local.properties
+**/src/main/resources/application-secret.yml
+**/src/main/resources/application-secret.yaml
+**/src/main/resources/application-secret.properties
+**/src/main/resources/application-prod.yml
+**/src/main/resources/application-prod.yaml
+**/src/main/resources/application-prod.properties
+!**/src/main/resources/application-*.example.yml
+
+# 프론트엔드 키 설정 파일 (카카오맵 JavaScript 키 등)
+#   예: js/config.local.js 에 키를 넣고, js/config.example.js 만 올린다.
+#   ※ JS 키는 브라우저에 노출되므로, 카카오 개발자 콘솔에서 허용 도메인을 꼭 등록할 것
+**/config.local.js
+**/js/config.js
+!**/config.example.js
+
+# 인증서·키 파일 (HTTPS 인증서, JWT 서명 키, 키스토어)
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+id_rsa*
+*.ppk
+
+# 클라우드·외부 서비스 자격 증명
+credentials.json
+**/secrets/
+**/secret/
+.aws/
+*-credentials.json
+service-account*.json
+
+# 사업자등록증 등 상인 인증 제출 서류 (개인정보)
+**/merchant-documents/
+
+
+# ---------------------------------------------------------------------
+# 2. Java / Spring Boot 빌드 결과물
+# ---------------------------------------------------------------------
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties.bak
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+dependency-reduced-pom.xml
+
+# 컴파일 결과물
+*.class
+hs_err_pid*
+replay_pid*
+
+# Spring Boot DevTools 재시작 트리거
+.reloadtrigger
+
+
+# ---------------------------------------------------------------------
+# 3. IDE · 에디터
+# ---------------------------------------------------------------------
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Eclipse / Spring Tool Suite
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code (팀 공통 추천 확장 목록만 올림)
+.vscode/*
+!.vscode/extensions.json
+*.code-workspace
+
+# 기타 에디터 임시 파일
+*.swp
+*.swo
+*~
+.history/
+
+
+# ---------------------------------------------------------------------
+# 4. 운영체제가 만드는 파일
+# ---------------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+
+
+# ---------------------------------------------------------------------
+# 5. 로그 · 실행 중 생성되는 파일
+# ---------------------------------------------------------------------
+
+logs/
+*.log
+*.log.*
+*.pid
+*.tmp
+*.temp
+
+# 사용자가 올린 게시글·리뷰 이미지 (개발 중 로컬 저장소)
+uploads/
+**/static/uploads/
+
+# 테스트·커버리지 리포트
+coverage/
+jacoco/
+*.exec
+
+
+# ---------------------------------------------------------------------
+# 6. 데이터베이스
+# ---------------------------------------------------------------------
+
+# 로컬 DB 덤프·백업 (회원 정보 등 개인정보가 들어 있을 수 있음)
+#   ※ 테이블 생성 스크립트(schema.sql), 초기 데이터(data.sql)는 올린다.
+*.dump
+*.bak
+db/backup/
+db/dumps/
+*_backup.sql
+
+# Docker로 띄운 MySQL 데이터 폴더
+docker/mysql/data/
+mysql-data/
+
+# 임베디드·테스트 DB
+*.db
+*.sqlite
+*.sqlite3
+*.h2.db
+*.mv.db
+*.trace.db
+
+
+# ---------------------------------------------------------------------
+# 7. 데이터 정제 스크립트 (Python)
+# ---------------------------------------------------------------------
+
+# ieum_store_pipeline.py 실행 결과
+#   - api_cache.json: 카카오 API 응답 캐시 (용량이 크고 다시 만들 수 있음)
+#   - 결과 CSV는 팀원과 공유가 필요하면 data/processed/ 로 옮겨서 올린다.
+scripts/out/
+out_*/
+api_cache.json
+review_needed.csv
+
+# 원본 공공데이터 (용량이 크고 공공데이터포털에서 다시 받을 수 있음)
+data/raw/
+
+# Python 환경
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+.pytest_cache/
+
+
+# ---------------------------------------------------------------------
+# 8. 프론트엔드 도구 (나중에 npm·빌드 도구를 쓸 경우 대비)
+# ---------------------------------------------------------------------
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.eslintcache
+.parcel-cache/
+.cache/
+
+
+# ---------------------------------------------------------------------
+# 9. 기타 개인 파일
+# ---------------------------------------------------------------------
+
+# 개인 메모, 회의 녹음 등 (공유할 문서는 Notion에)
+*.local.md
+private/
+*.http.env.json
+http-client.private.env.json
