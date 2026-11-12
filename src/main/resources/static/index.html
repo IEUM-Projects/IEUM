@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>이음 - 주변 백년가게 (API 확인용)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; color: #222; }
+    h1 { font-size: 22px; }
+    .bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+    select, button { padding: 8px 12px; font-size: 14px; }
+    li { padding: 10px 0; border-bottom: 1px solid #eee; list-style: none; }
+    ul { padding: 0; }
+    .meta { color: #666; font-size: 13px; }
+    .badge { font-size: 12px; padding: 2px 6px; border-radius: 4px; background: #fff3cd; color: #7a5b00; margin-left: 6px; }
+  </style>
+</head>
+<body>
+  <h1>주변 백년가게 (API 확인용 화면)</h1>
+  <div class="bar">
+    <select id="place">
+      <option value="37.5665,126.9780">서울시청</option>
+      <option value="35.8714,128.6014">대구 중구 동성로</option>
+      <option value="35.0979,129.0346">부산 남포동</option>
+      <option value="35.8150,127.1530">전주 한옥마을</option>
+    </select>
+    <select id="radius">
+      <option value="500">500m</option>
+      <option value="1000" selected>1km</option>
+      <option value="3000">3km</option>
+    </select>
+    <button id="search">검색</button>
+  </div>
+  <p id="status" class="meta"></p>
+  <ul id="list"></ul>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const listEl = document.getElementById('list');
+
+    async function search() {
+      const [lat, lng] = document.getElementById('place').value.split(',');
+      const radius = document.getElementById('radius').value;
+      statusEl.textContent = '불러오는 중...';
+      listEl.innerHTML = '';
+      try {
+        const res = await fetch(`/api/stores?lat=${lat}&lng=${lng}&radius=${radius}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const stores = await res.json();
+        statusEl.textContent = `${stores.length}곳`;
+        for (const s of stores) {
+          const li = document.createElement('li');
+          const name = document.createElement('strong');
+          name.textContent = s.name;
+          li.appendChild(name);
+          if (s.infoStatus === 'UNVERIFIED') {
+            const badge = document.createElement('span');
+            badge.className = 'badge';
+            badge.textContent = '영업 정보 미확인';
+            li.appendChild(badge);
+          }
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          meta.textContent = `${s.distanceM}m · ${s.category ?? '분류 없음'} · ${s.roadAddress ?? ''}`;
+          li.appendChild(meta);
+          listEl.appendChild(li);
+        }
+      } catch (e) {
+        statusEl.textContent = '불러오지 못했어요: ' + e.message;
+      }
+    }
+
+    document.getElementById('search').addEventListener('click', search);
+    search();
+  </script>
+</body>
+</html>
