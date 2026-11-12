@@ -30,6 +30,13 @@ export const api = {
   mapConfig() {
     return request('/api/config/map');
   },
+  /** 반경 안의 전통시장 (가까운 순) */
+  nearbyMarkets({ lat, lng, radius }) {
+    return request(`/api/markets?${new URLSearchParams({ lat, lng, radius })}`);
+  },
+  market(id) {
+    return request(`/api/markets/${encodeURIComponent(id)}`);
+  },
   /** 기간(from~to, 'YYYY-MM-DD')과 겹치는 축제. sido: '11' 같은 시·도 코드, 비우면 전국 */
   festivals({ from, to, sido = '' }) {
     const params = new URLSearchParams({ from, to });

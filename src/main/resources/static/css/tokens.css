@@ -89,6 +89,7 @@
   --pin-store: var(--color-primary-60);
   --pin-creator: var(--color-accent-50);
   --pin-unverified: var(--color-gray-50);
+  --pin-market: var(--color-primary-80);     /* 전통시장: 네모 모양 핀 */
 
   /* ---------- 글자 ---------- */
   /* 확장형 스타일 권장: 가독성 높은 고딕 계열. Pretendard (SIL OFL, 무료) */

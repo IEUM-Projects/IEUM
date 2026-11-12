@@ -126,3 +126,21 @@
 .report-error { margin: 0; color: var(--color-danger-70); font-size: var(--font-body-small); }
 .report-error:empty { display: none; }
 .report-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+
+/* ---------- 가까운 전통시장 (MKT-01) ---------- */
+.near-markets h2 { font-size: var(--font-heading-small); margin: 0 0 var(--space-2); }
+.near-markets ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.near-market {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-large);
+  color: var(--text-body);
+  text-decoration: none;
+}
+.near-market:hover { border-color: var(--action-primary); color: var(--text-body); }
+.near-market:hover strong { color: var(--text-link); text-decoration: underline; }
+.near-market-name { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.near-market-meta { font-size: var(--font-body-small); color: var(--text-subtle); }
