@@ -2,7 +2,10 @@ package com.ieum.ieum.global.error;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.NestedExceptionUtils;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +14,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -60,6 +64,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException e) {
         return ResponseEntity.status(ErrorCode.NOT_FOUND.status()).body(ErrorResponse.of(ErrorCode.NOT_FOUND));
+    }
+
+    /**
+     * 응답을 보내는 중에 브라우저가 연결을 끊은 경우 (응답이 오기 전에 다른 화면으로 이동하는 등).
+     * 서버 문제가 아니고 받을 사람도 없으므로, 오류로 기록하지 않고 아무것도 보내지 않는다.
+     */
+    @ExceptionHandler({HttpMessageNotWritableException.class, AsyncRequestNotUsableException.class})
+    public ResponseEntity<ErrorResponse> handleClientGone(Exception e) {
+        if (e instanceof AsyncRequestNotUsableException || NestedExceptionUtils.getRootCause(e) instanceof IOException) {
+            log.debug("브라우저가 연결을 끊어서 응답을 보내지 못함: {}", e.getMessage());
+            return null;
+        }
+        log.error("응답을 만들지 못한 오류", e);
+        return ResponseEntity.internalServerError().body(ErrorResponse.of(ErrorCode.INTERNAL_ERROR));
     }
 
     /** 예상하지 못한 오류: 사용자에게는 일반 문구만, 자세한 내용은 서버 로그에 */

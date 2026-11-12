@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>로그인 - 이음</title>
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body class="auth-page">
+  <header class="auth-header">
+    <a class="logo" href="/">이음</a>
+    <a class="back" href="/">지도로</a>
+  </header>
+  <main class="auth-main">
+    <section class="auth-card">
+      <h1>로그인</h1>
+      <p class="lead">우리 동네 백년가게 이야기를 나눠 보세요.</p>
+
+      <p id="formAlert" class="form-alert" role="alert" hidden></p>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="email">이메일</label>
+          <input id="email" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="password">비밀번호</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" id="submitButton" class="button-primary wide">로그인</button>
+      </form>
+
+      <div class="divider">또는</div>
+      <button type="button" id="kakaoButton" class="kakao-button">카카오로 시작하기</button>
+
+      <p class="switch-link">아직 회원이 아니신가요? <a id="signupLink" href="/signup.html">회원가입</a></p>
+    </section>
+  </main>
+  <script type="module" src="/js/login.js"></script>
+</body>
+</html>

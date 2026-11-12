@@ -44,4 +44,15 @@ public class RefreshToken {
     public boolean isExpired(LocalDateTime now) {
         return !expiresAt.isAfter(now);
     }
+
+    /**
+     * 회전(재발급)에 쓰인 토큰은 바로 지우지 않고 남은 시간을 grace만큼으로 줄인다.
+     * 재발급 응답이 브라우저에 도착하기 전에 화면을 옮기면 새 쿠키가 저장되지 않는데,
+     * 이때 브라우저에 남아 있는 옛 토큰으로 잠깐 동안은 다시 재발급받을 수 있게 하려는 것.
+     */
+    public void shortenTo(LocalDateTime graceUntil) {
+        if (expiresAt.isAfter(graceUntil)) {
+            this.expiresAt = graceUntil;
+        }
+    }
 }

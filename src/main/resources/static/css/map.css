@@ -22,7 +22,58 @@ body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; 
   padding: 6px 12px;
   font-size: 14px;
 }
-.region-button { max-width: 50vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.region-button { max-width: 38vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 상단 계정 영역 */
+.account { position: relative; flex: none; }
+.account-link, .account-button {
+  display: inline-block;
+  border: 1px solid var(--green);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+  background: var(--bg);
+  text-decoration: none;
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.account-button { background: var(--green-soft); }
+.account-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 140px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 6px;
+  z-index: 30;
+}
+.account-menu a, .account-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.account-menu a:hover, .account-menu button:hover { background: var(--bg-soft); }
+.account-menu .menu-name { padding: 8px 12px 6px; font-size: 13px; color: var(--ink-soft); border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+
+@media (max-width: 380px) {
+  .radius-select { padding: 6px 8px; }
+  .account-link, .account-button { max-width: 72px; padding: 6px 10px; }
+}
 
 .chips {
   display: flex;

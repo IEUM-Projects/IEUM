@@ -1,0 +1,83 @@
+/* 로그인·회원가입·내 정보 화면 */
+body.auth-page { background: var(--bg-soft); min-height: 100dvh; }
+
+.auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.auth-header .logo { font-size: 20px; font-weight: 800; color: var(--green); text-decoration: none; }
+.auth-header a.back { text-decoration: none; font-weight: 600; font-size: 14px; }
+
+.auth-main { max-width: 420px; margin: 0 auto; padding: 24px 16px 48px; }
+.auth-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px 20px;
+}
+.auth-card h1 { font-size: 22px; margin: 0 0 4px; }
+.auth-card .lead { color: var(--ink-soft); font-size: 14px; margin: 0 0 20px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field label { font-size: 14px; font-weight: 600; }
+.field input {
+  font: inherit;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+}
+.field input:focus { outline: 2px solid var(--green); outline-offset: -1px; border-color: var(--green); }
+.field input[aria-invalid="true"] { border-color: #c4472f; }
+.field .error { color: #b3361f; font-size: 13px; margin: 0; }
+.field .error:empty { display: none; }
+.field .help { color: var(--ink-soft); font-size: 13px; margin: 0; }
+
+.form-alert {
+  background: #fdecea;
+  color: #8c2a17;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+.form-alert.success { background: var(--green-soft); color: var(--green); }
+
+.wide { width: 100%; }
+.auth-card .button-primary, .auth-card .button-secondary { padding: 12px 16px; }
+
+.divider { display: flex; align-items: center; gap: 12px; color: var(--ink-soft); font-size: 13px; margin: 20px 0; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+.kakao-button {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: #fee500;
+  color: rgba(0, 0, 0, 0.85);
+  font-weight: 600;
+}
+
+.switch-link { text-align: center; font-size: 14px; color: var(--ink-soft); margin: 20px 0 0; }
+
+/* 비밀번호 규칙 체크 목록 */
+.rules { list-style: none; margin: 4px 0 0; padding: 0; font-size: 13px; }
+.rules li { padding: 2px 0 2px 22px; position: relative; color: var(--ink-soft); }
+.rules li::before { content: "○"; position: absolute; left: 2px; }
+.rules li.ok { color: var(--green); }
+.rules li.ok::before { content: "✓"; font-weight: 700; }
+.rules li.bad { color: #b3361f; }
+.rules li.bad::before { content: "✕"; }
+
+/* 내 정보 */
+.info-list { margin: 0 0 20px; border-top: 1px solid var(--line); }
+.info-list div { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.info-list dt { width: 80px; flex: none; color: var(--ink-soft); font-size: 14px; }
+.info-list dd { margin: 0; }
+.inline-form { display: flex; gap: 8px; }
+.inline-form input { flex: 1; min-width: 0; }

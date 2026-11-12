@@ -57,8 +57,9 @@ public class SecurityConfig {
                         .accessDeniedHandler(JsonSecurityHandlers.accessDeniedHandler()))
                 .authorizeHttpRequests(auth -> auth
                         // 화면 파일
+                        // (mypage.html도 화면 파일은 누구나 받을 수 있고, 내용은 로그인해야 받는 API로 채운다)
                         .requestMatchers("/", "/index.html", "/store.html", "/login.html", "/signup.html",
-                                "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error").permitAll()
+                                "/mypage.html", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error").permitAll()
                         // 카카오 로그인 시작(/oauth2/authorization/kakao)과 돌아오는 주소(/login/oauth2/code/kakao)
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         // 누구나 볼 수 있는 조회 API

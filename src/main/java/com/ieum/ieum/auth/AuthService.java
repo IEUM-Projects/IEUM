@@ -37,6 +37,8 @@ import java.util.Locale;
 public class AuthService {
 
     public static final Duration REFRESH_TOKEN_TTL = Duration.ofDays(14);
+    /** 재발급에 쓰인 옛 Refresh Token을 잠깐 더 받아 주는 시간 */
+    static final Duration ROTATION_GRACE = Duration.ofSeconds(30);
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -119,7 +121,7 @@ public class AuthService {
     }
 
     /** 쿠키의 Refresh Token으로 새 Access Token + 새 Refresh Token 발급 */
-    @Transactional
+    @Transactional(noRollbackFor = BusinessException.class)
     public AuthDtos.LoginResult refresh(String refreshToken) {
         LocalDateTime now = LocalDateTime.now();
         if (refreshToken == null || refreshToken.isBlank()) {
@@ -127,10 +129,12 @@ public class AuthService {
         }
         RefreshToken saved = refreshTokenRepository.findByTokenHash(sha256(refreshToken))
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_INVALID));
-        refreshTokenRepository.delete(saved); // 한 번 쓴 토큰은 바로 폐기 (회전)
         if (saved.isExpired(now)) {
+            refreshTokenRepository.delete(saved);
             throw new BusinessException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
+        // 한 번 쓴 토큰은 30초 뒤 만료 (회전). 응답을 못 받은 브라우저가 30초 안에 다시 오면 한 번 더 발급
+        saved.shortenTo(now.plus(ROTATION_GRACE));
         User user = userRepository.findById(saved.getUserId())
                 .filter(u -> u.getStatus() != UserStatus.WITHDRAWN)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_INVALID));
