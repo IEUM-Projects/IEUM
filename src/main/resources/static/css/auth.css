@@ -131,3 +131,22 @@ body.auth-page { background: var(--surface-subtle); min-height: 100dvh; }
 .inline-form { display: flex; gap: var(--space-2); }
 .inline-form input { flex: 1; min-width: 0; }
 .inline-form .button-primary { flex: none; }
+
+/* ---------- 내 제보 (STO-01) ---------- */
+.reports-card { margin-top: var(--space-5); }
+.reports-card h2 { font-size: var(--font-heading-medium); margin: 0 0 var(--space-1); }
+.reports-status { margin: 0; color: var(--text-subtle); font-size: var(--font-body-small); }
+.reports-status:empty { display: none; }
+.report-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.report-item { display: flex; flex-direction: column; gap: 2px; padding: var(--space-4) 0; border-top: 1px solid var(--border-divider); }
+.report-item:first-child { border-top: none; padding-top: 0; }
+.report-top { display: flex; align-items: center; gap: var(--space-2); }
+.report-status { font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); padding: 2px var(--space-2); border-radius: var(--radius-xsmall); }
+.report-received { background: var(--surface-subtle); color: var(--text-subtle); }
+.report-applied { background: var(--color-success-5); color: var(--color-success-60); }
+.report-rejected { background: var(--color-danger-5); color: var(--color-danger-70); }
+.report-date { font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+.report-store-link { align-self: flex-start; display: inline-flex; align-items: center; min-height: var(--touch-min); font-weight: var(--font-weight-bold); }
+.report-type, .report-content, .report-note { margin: 0; font-size: var(--font-body-small); }
+.report-content { color: var(--text-subtle); white-space: pre-line; overflow-wrap: anywhere; }
+.report-note { color: var(--text-body); background: var(--surface-subtle); padding: var(--space-2) var(--space-3); border-radius: var(--radius-small); margin-top: var(--space-1); }

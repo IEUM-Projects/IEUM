@@ -36,8 +36,9 @@ function render(store) {
   const isCreator = store.type === 'CREATOR';
   const unverified = store.infoStatus === 'UNVERIFIED';
 
-  // 제보 기능은 로그인이 필요해서 회원 기능(Phase 2) 이후에 연결한다
-  const reportButton = el('button', { type: 'button', class: 'button-secondary wide', disabled: '', text: '영업 정보 제보 (준비 중)' });
+  // 영업 정보 제보 (로그인 필요. 로그인 전이면 로그인 화면에 갔다가 이 화면으로 돌아와 창을 연다)
+  const reportButton = el('button', { type: 'button', id: 'reportButton', class: 'button-secondary wide', 'aria-haspopup': 'dialog', text: '영업 정보 제보' });
+  reportButton.addEventListener('click', () => openReport(store));
 
   // 조건에 따라 null이 되는 항목은 빼고 넣는다 (그대로 넣으면 화면에 "null" 글자가 찍힘)
   root.replaceChildren(...[
@@ -73,8 +74,86 @@ function render(store) {
         : null,
       reportButton,
     ),
+    el('p', { id: 'reportNotice', class: 'report-notice', role: 'status', hidden: '' }),
   ].filter(Boolean));
 }
+
+// ---------------------------------------------------------------- 영업 정보 제보
+
+const dialog = document.getElementById('reportDialog');
+const form = document.getElementById('reportForm');
+const $ = (id) => document.getElementById(id);
+
+function reportReturnUrl(store) {
+  return `/store.html?id=${store.id}#report`;
+}
+
+function setReportError({ alert = '', type = '', content = '' } = {}) {
+  $('reportAlert').textContent = alert;
+  $('reportAlert').hidden = !alert;
+  $('typeError').textContent = type;
+  $('contentError').textContent = content;
+  $('reportContent').setAttribute('aria-invalid', content ? 'true' : 'false');
+}
+
+async function openReport(store) {
+  const user = auth.getUser() ?? await auth.init();
+  if (!user) {
+    location.href = auth.loginUrl(reportReturnUrl(store));
+    return;
+  }
+  form.reset();
+  $('contentCount').textContent = '0';
+  setReportError();
+  $('reportStore').textContent = store.name;
+  dialog.dataset.storeId = store.id;
+  dialog.showModal();
+  form.querySelector('input[name="type"]').focus();
+}
+
+function showReportNotice(message) {
+  const notice = $('reportNotice');
+  notice.replaceChildren(message, ' ', Object.assign(document.createElement('a'), { href: '/mypage.html#reports', textContent: '내 제보 보기' }));
+  notice.hidden = false;
+}
+
+$('reportContent').addEventListener('input', () => {
+  $('contentCount').textContent = String($('reportContent').value.length);
+});
+$('reportCancel').addEventListener('click', () => dialog.close());
+// 종류를 고르면 '골라 주세요' 안내를 지운다
+form.addEventListener('change', (event) => {
+  if (event.target.name === 'type') $('typeError').textContent = '';
+});
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const type = form.type.value;
+  const content = $('reportContent').value.trim();
+  if (!type) {
+    setReportError({ type: '어떤 정보가 다른지 골라 주세요.' });
+    form.querySelector('input[name="type"]').focus();
+    return;
+  }
+  setReportError();
+  $('reportSubmit').disabled = true;
+  try {
+    await auth.sendStoreReport(dialog.dataset.storeId, { type, content });
+    dialog.close();
+    showReportNotice('제보를 보냈어요. 확인한 뒤 반영할게요.');
+    $('reportButton').focus();
+  } catch (e) {
+    if (e.code === 'UNAUTHORIZED' || e.code === 'TOKEN_EXPIRED' || e.code === 'TOKEN_INVALID') {
+      location.href = auth.loginUrl(`/store.html?id=${dialog.dataset.storeId}#report`);
+    } else if (e.code === 'INVALID_INPUT' && e.details?.some((d) => d.includes('500자'))) {
+      setReportError({ content: e.details.find((d) => d.includes('500자')) });
+    } else {
+      setReportError({ alert: e.message });
+    }
+  } finally {
+    $('reportSubmit').disabled = false;
+  }
+});
 
 async function init() {
   const id = new URLSearchParams(location.search).get('id');
@@ -82,10 +161,18 @@ async function init() {
     root.replaceChildren(el('p', { class: 'error', text: '가게 주소가 올바르지 않아요.' }));
     return;
   }
+  let store;
   try {
-    render(await api.storeDetail(id));
+    store = await api.storeDetail(id);
+    render(store);
   } catch (e) {
     root.replaceChildren(el('p', { class: 'error', text: '가게 정보를 불러오지 못했어요. 지도로 돌아가 다시 선택해 주세요.' }));
+    return;
+  }
+  // 로그인하고 돌아온 경우(#report): 제보 창을 바로 연다
+  if (location.hash === '#report') {
+    history.replaceState(null, '', location.pathname + location.search);
+    if (await auth.init()) openReport(store);
   }
 }
 

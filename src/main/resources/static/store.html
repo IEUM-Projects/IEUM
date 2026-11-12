@@ -22,6 +22,42 @@
   <main id="detail" class="detail" tabindex="-1">
     <p class="loading">불러오는 중...</p>
   </main>
+
+  <!-- 영업 정보 제보 창 (store.js가 엶) -->
+  <dialog id="reportDialog" class="report-dialog" aria-labelledby="reportTitle">
+    <form id="reportForm" class="report-form" novalidate>
+      <div class="report-head">
+        <h2 id="reportTitle">영업 정보 제보</h2>
+        <p id="reportStore" class="report-store"></p>
+      </div>
+      <p class="report-help">가게 정보가 실제와 다르면 알려 주세요. 확인한 뒤 반영할게요.</p>
+
+      <p id="reportAlert" class="report-alert" role="alert" hidden></p>
+
+      <fieldset class="report-types" aria-describedby="typeError">
+        <legend>어떤 정보가 다른가요?</legend>
+        <label class="report-option"><input type="radio" name="type" value="CLOSED"> 폐업했어요</label>
+        <label class="report-option"><input type="radio" name="type" value="HOURS"> 영업시간이 달라요</label>
+        <label class="report-option"><input type="radio" name="type" value="PHONE"> 전화번호가 달라요</label>
+        <label class="report-option"><input type="radio" name="type" value="LOCATION"> 주소·위치가 달라요</label>
+        <label class="report-option"><input type="radio" name="type" value="OTHER"> 기타</label>
+        <p id="typeError" class="report-error"></p>
+      </fieldset>
+
+      <div class="report-field">
+        <label for="reportContent">자세한 내용 <span class="optional">(선택)</span></label>
+        <textarea id="reportContent" name="content" rows="4" maxlength="500" aria-describedby="contentHelp contentError"
+                  placeholder="예: 지난달부터 문이 닫혀 있어요."></textarea>
+        <p id="contentHelp" class="report-hint"><span id="contentCount">0</span>/500자</p>
+        <p id="contentError" class="report-error"></p>
+      </div>
+
+      <div class="report-actions">
+        <button type="button" id="reportCancel" class="button-secondary">취소</button>
+        <button type="submit" id="reportSubmit" class="button-primary">제보 보내기</button>
+      </div>
+    </form>
+  </dialog>
   <script type="module" src="/js/store.js"></script>
 </body>
 </html>

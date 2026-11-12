@@ -26,7 +26,12 @@ public enum ErrorCode {
     // 회원
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 가입된 이메일이에요."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임이에요."),
-    WEAK_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호 규칙을 확인해 주세요.");
+    WEAK_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호 규칙을 확인해 주세요."),
+
+    // 가게·제보
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "가게를 찾을 수 없어요."),
+    DUPLICATE_REPORT(HttpStatus.CONFLICT, "오늘 이미 같은 내용으로 제보했어요. 내일 다시 보낼 수 있어요."),
+    TOO_MANY_REPORTS(HttpStatus.TOO_MANY_REQUESTS, "오늘은 제보를 더 보낼 수 없어요. 내일 다시 시도해 주세요.");
 
     private final HttpStatus status;
     private final String message;
