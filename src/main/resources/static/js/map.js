@@ -1,6 +1,7 @@
 // 지도 화면 (MAP-01): 현재 위치/지역 기준 반경 검색, 핀 표시, 카테고리 필터, 목록 보기, 가게 요약 카드
 import { api, loadKakaoMapSdk, formatDistance, directionsUrl, LOGIN_FAILURE_MESSAGES } from './api.js';
 import * as auth from './auth.js';
+import { mountAccount } from './header.js';
 
 const CATEGORIES = ['음식점', '카페·간식', '도소매', '생활서비스', '공방·공예', '기타'];
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.9780, label: '서울 중구' }; // 위치를 모를 때 시작점 (서울시청)
@@ -87,9 +88,13 @@ async function search() {
 
 // ---------------------------------------------------------------- 지도
 
+// 색은 tokens.css의 값을 읽어서 쓴다 (색을 바꿀 때 tokens.css만 고치면 됨)
+const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
 function pinImage(store) {
-  // 백년가게 초록, 로컬크리에이터 주황, 영업 정보 미확인은 회색
-  const color = store.infoStatus === 'UNVERIFIED' ? '#9aa39f' : (store.type === 'CREATOR' ? '#f4a53c' : '#1d6b57');
+  // 백년가게 청록, 로컬크리에이터 주황, 영업 정보 미확인은 회색 (모두 지도 바탕과 3:1 이상)
+  const color = store.infoStatus === 'UNVERIFIED' ? token('--pin-unverified')
+    : (store.type === 'CREATOR' ? token('--pin-creator') : token('--pin-store'));
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">`
     + `<path d="M14 0C6.3 0 0 6.1 0 13.7 0 24 14 36 14 36s14-12 14-22.3C28 6.1 21.7 0 14 0z" fill="${color}"/>`
     + `<circle cx="14" cy="13.5" r="5.5" fill="#fff"/></svg>`;
@@ -119,11 +124,11 @@ function drawMarkers() {
     map,
     center,
     radius: state.radius,
-    strokeWeight: 1,
-    strokeColor: '#1d6b57',
-    strokeOpacity: 0.6,
-    fillColor: '#1d6b57',
-    fillOpacity: 0.05,
+    strokeWeight: 2,
+    strokeColor: token('--color-primary-50'),
+    strokeOpacity: 0.9,
+    fillColor: token('--color-primary-50'),
+    fillOpacity: 0.08,
   });
 }
 
@@ -167,22 +172,28 @@ function setView(view) {
 
 function showCard(store) {
   const card = $('storeCard');
-  const close = el('button', { type: 'button', class: 'card-close', 'aria-label': '닫기', text: '×' });
+  const close = el('button', { type: 'button', class: 'card-close', 'aria-label': '가게 카드 닫기' });
+  close.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
   close.addEventListener('click', hideCard);
   // 조건에 따라 null이 되는 항목은 빼고 넣는다 (그대로 넣으면 화면에 "null" 글자가 찍힘)
   card.replaceChildren(...[
     close,
-    el('span', { class: store.type === 'CREATOR' ? 'badge-type creator' : 'badge-type', text: store.type === 'CREATOR' ? '로컬크리에이터' : '백년가게' }),
-    el('h2', { text: store.name }),
-    el('p', { class: 'meta', text: `${formatDistance(store.distanceM)} · ${store.category ?? '분류 없음'}` }),
-    el('p', { class: 'meta', text: store.roadAddress ?? '' }),
+    el('div', { class: 'badges' },
+      el('span', { class: store.type === 'CREATOR' ? 'badge-type creator' : 'badge-type', text: store.type === 'CREATOR' ? '로컬크리에이터' : '백년가게' }),
+      el('span', { class: 'badge-category', text: store.category ?? '분류 없음' }),
+    ),
+    el('div', { class: 'card-title' },
+      el('h2', { text: store.name }),
+      el('span', { class: 'distance', text: formatDistance(store.distanceM) }),
+    ),
+    store.roadAddress ? el('p', { class: 'meta', text: store.roadAddress }) : null,
     store.phone ? el('p', { class: 'meta', text: store.phone }) : null,
     store.infoStatus === 'UNVERIFIED'
       ? el('p', { class: 'notice' }, el('span', { class: 'badge-unverified', text: '영업 정보 미확인' }), ' 방문 전 영업 여부를 확인하세요.')
       : null,
     el('div', { class: 'card-actions' },
-      el('a', { class: 'button-secondary', href: directionsUrl(store), target: '_blank', rel: 'noopener', text: '길찾기' }),
-      el('a', { class: 'button-primary', href: `/store.html?id=${store.id}`, text: '상세 보기' }),
+      el('a', { class: 'button-primary', href: directionsUrl(store), target: '_blank', rel: 'noopener', text: '길찾기' }),
+      el('a', { class: 'button-secondary', href: `/store.html?id=${store.id}`, text: '상세 보기' }),
     ),
   ].filter(Boolean));
   card.hidden = false;
@@ -281,48 +292,9 @@ async function handleLoginRedirect() {
   return false;
 }
 
-// ---------------------------------------------------------------- 상단 계정 메뉴
-
-function renderAccount(user) {
-  const box = $('account');
-  if (!user) {
-    box.replaceChildren(el('a', { class: 'account-link', href: auth.loginUrl('/'), text: '로그인' }));
-    return;
-  }
-  const button = el('button', {
-    type: 'button', class: 'account-button', 'aria-haspopup': 'true', 'aria-expanded': 'false', text: user.nickname,
-  });
-  const logout = el('button', { type: 'button', text: '로그아웃' });
-  const menu = el('div', { class: 'account-menu', role: 'menu', hidden: '' },
-    el('div', { class: 'menu-name', text: `${user.nickname}님` }),
-    el('a', { href: '/mypage.html', role: 'menuitem', text: '내 정보' }),
-    logout,
-  );
-  logout.setAttribute('role', 'menuitem');
-  button.addEventListener('click', (event) => {
-    event.stopPropagation();
-    menu.hidden = !menu.hidden;
-    button.setAttribute('aria-expanded', String(!menu.hidden));
-  });
-  logout.addEventListener('click', async () => {
-    await auth.logout();
-    toast('로그아웃했어요.');
-  });
-  box.replaceChildren(button, menu);
-}
-
-document.addEventListener('click', () => {
-  const menu = document.querySelector('.account-menu');
-  if (menu && !menu.hidden) {
-    menu.hidden = true;
-    document.querySelector('.account-button')?.setAttribute('aria-expanded', 'false');
-  }
-});
-
 async function init() {
   renderChips();
-  auth.onAuthChange(renderAccount);
-  renderAccount(null);
+  mountAccount($('account'), { next: '/', onLogout: () => toast('로그아웃했어요.') });
   const loginNotice = handleLoginRedirect();
   if (await loginNotice) return;
   try {
