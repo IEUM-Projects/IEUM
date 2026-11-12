@@ -1,5 +1,6 @@
 // 지도 화면 (MAP-01): 현재 위치/지역 기준 반경 검색, 핀 표시, 카테고리 필터, 목록 보기, 가게 요약 카드
 import { api, loadKakaoMapSdk, formatDistance, directionsUrl, LOGIN_FAILURE_MESSAGES } from './api.js';
+import * as auth from './auth.js';
 
 const CATEGORIES = ['음식점', '카페·간식', '도소매', '생활서비스', '공방·공예', '기타'];
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.9780, label: '서울 중구' }; // 위치를 모를 때 시작점 (서울시청)
@@ -256,26 +257,74 @@ function onRegionChosen() {
 
 // 카카오 로그인에서 돌아왔을 때 (/?login=success 또는 /?login=failed&reason=...)
 // 결과를 안내하고 주소창의 ?login=... 은 지운다. 로그인 상태 표시는 3단계(로그인 화면)에서 연결한다.
+// 반환값 true: 카카오 로그인 전에 보던 다른 화면으로 이동했으니 지도는 더 그리지 않아도 됨
 async function handleLoginRedirect() {
   const params = new URLSearchParams(location.search);
   const result = params.get('login');
-  if (!result) return;
+  if (!result) {
+    await auth.init();
+    return false;
+  }
   history.replaceState(null, '', location.pathname);
   if (result === 'success') {
-    try {
-      const { user } = await api.refreshToken();
-      toast(`${user.nickname}님, 카카오로 로그인했어요.`, 5000);
-    } catch (e) {
-      toast(e.message, 5000);
+    const user = await auth.init({ force: true });
+    const next = auth.consumeNext();
+    if (user && next !== '/') {
+      location.replace(next);
+      return true;
     }
+    toast(user ? `${user.nickname}님, 카카오로 로그인했어요.` : '다시 로그인해 주세요.', 5000);
   } else {
+    auth.consumeNext();
     toast(LOGIN_FAILURE_MESSAGES[params.get('reason')] ?? LOGIN_FAILURE_MESSAGES.ERROR, 5000);
   }
+  return false;
 }
+
+// ---------------------------------------------------------------- 상단 계정 메뉴
+
+function renderAccount(user) {
+  const box = $('account');
+  if (!user) {
+    box.replaceChildren(el('a', { class: 'account-link', href: auth.loginUrl('/'), text: '로그인' }));
+    return;
+  }
+  const button = el('button', {
+    type: 'button', class: 'account-button', 'aria-haspopup': 'true', 'aria-expanded': 'false', text: user.nickname,
+  });
+  const logout = el('button', { type: 'button', text: '로그아웃' });
+  const menu = el('div', { class: 'account-menu', role: 'menu', hidden: '' },
+    el('div', { class: 'menu-name', text: `${user.nickname}님` }),
+    el('a', { href: '/mypage.html', role: 'menuitem', text: '내 정보' }),
+    logout,
+  );
+  logout.setAttribute('role', 'menuitem');
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    menu.hidden = !menu.hidden;
+    button.setAttribute('aria-expanded', String(!menu.hidden));
+  });
+  logout.addEventListener('click', async () => {
+    await auth.logout();
+    toast('로그아웃했어요.');
+  });
+  box.replaceChildren(button, menu);
+}
+
+document.addEventListener('click', () => {
+  const menu = document.querySelector('.account-menu');
+  if (menu && !menu.hidden) {
+    menu.hidden = true;
+    document.querySelector('.account-button')?.setAttribute('aria-expanded', 'false');
+  }
+});
 
 async function init() {
   renderChips();
+  auth.onAuthChange(renderAccount);
+  renderAccount(null);
   const loginNotice = handleLoginRedirect();
+  if (await loginNotice) return;
   try {
     kakao = await loadKakaoMapSdk();
   } catch (e) {
