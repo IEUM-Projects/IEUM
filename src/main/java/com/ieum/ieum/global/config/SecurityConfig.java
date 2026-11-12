@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * 보안 설정.
  *
- * 지금 단계: 로그인 없이 볼 수 있는 것(화면, 가게 조회 API)만 열고 나머지는 막아 둔다.
+ * 지금 단계: 로그인 없이 볼 수 있는 것(화면, 조회 API)만 열고 나머지는 막아 둔다.
  * Phase 2(회원·인증)에서 JWT 필터와 카카오 로그인을 여기에 추가한다.
  *
  * - csrf 끔:     세션·쿠키 대신 JWT를 쓰는 API 서버 방식이라 필요 없음
@@ -30,10 +30,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // 화면 파일
-                        .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/images/**",
+                        .requestMatchers("/", "/index.html", "/store.html", "/css/**", "/js/**", "/images/**",
                                 "/favicon.ico", "/error").permitAll()
                         // 누구나 볼 수 있는 조회 API
-                        .requestMatchers(HttpMethod.GET, "/api/stores", "/api/stores/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/stores", "/api/stores/**",
+                                "/api/regions", "/api/config/map").permitAll()
                         // 나머지는 로그인 필요 (Phase 2에서 구현)
                         .anyRequest().authenticated()
                 );
