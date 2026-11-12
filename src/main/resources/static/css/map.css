@@ -133,7 +133,8 @@ body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; 
   color: var(--text-body);
   box-shadow: var(--shadow-2);
 }
-.fab:hover { background: var(--surface-subtle); }
+.fab:hover { background: var(--surface-subtle); color: var(--text-body); }
+a.fab { text-decoration: none; }
 .fab-wide { padding: 0 var(--space-4); font-size: var(--font-body-small); font-weight: var(--font-weight-bold); }
 
 .toast {

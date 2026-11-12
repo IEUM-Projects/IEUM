@@ -30,6 +30,15 @@ export const api = {
   mapConfig() {
     return request('/api/config/map');
   },
+  /** 기간(from~to, 'YYYY-MM-DD')과 겹치는 축제. sido: '11' 같은 시·도 코드, 비우면 전국 */
+  festivals({ from, to, sido = '' }) {
+    const params = new URLSearchParams({ from, to });
+    if (sido) params.set('sido', sido);
+    return request(`/api/festivals?${params}`);
+  },
+  festival(id) {
+    return request(`/api/festivals/${encodeURIComponent(id)}`);
+  },
 };
 
 /** 카카오 로그인에서 돌아왔을 때 주소에 붙는 실패 이유별 안내 문구 */

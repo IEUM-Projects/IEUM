@@ -1,0 +1,211 @@
+/* 축제 달력·상세 화면 (FES-01) (값은 tokens.css) */
+body.festival-page { background: var(--surface-subtle); }
+
+.site-header .back-link { flex: 1 1 0; }
+.center-logo { margin: 0; }
+.site-header .account { flex: 1 1 0; display: flex; justify-content: flex-end; }
+
+.festival-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--screen-margin) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.festival-main:focus { outline: none; }
+.page-title { font-size: var(--font-heading-xlarge); margin: 0; }
+
+/* ---------- 지역 선택 ---------- */
+.toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.region-filter { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-body-small); font-weight: var(--font-weight-bold); }
+.region-filter select {
+  min-height: var(--touch-min);
+  min-width: 140px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-medium);
+  background: var(--surface);
+  font-size: var(--font-body-medium);
+  font-weight: var(--font-weight-regular);
+}
+
+/* ---------- 달력 ---------- */
+.calendar-card {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-large);
+  padding: var(--space-4);
+}
+.month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); }
+.month-title { margin: 0; font-size: var(--font-heading-medium); }
+.icon-button {
+  width: var(--control-height);
+  height: var(--control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-medium);
+  background: var(--surface);
+  color: var(--text-body);
+}
+.icon-button:hover { background: var(--surface-subtle); }
+
+.weekdays, .calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-1); }
+.weekdays span { text-align: center; font-size: var(--font-body-xsmall); color: var(--text-subtle); padding: var(--space-1) 0; }
+.weekdays .sun { color: var(--color-danger-70); }
+.weekdays .sat { color: var(--color-info-50); }
+
+.day {
+  position: relative;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+  padding: var(--space-1) 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-medium);
+  background: none;
+  color: var(--text-body);
+  font-size: var(--font-body-medium);
+}
+button.day:hover { background: var(--surface-subtle); }
+.day.empty { visibility: hidden; }
+.day.sun .num { color: var(--color-danger-70); }
+.day.sat .num { color: #1f5fbf; }
+.day[aria-current="date"] { border-color: var(--action-primary); }
+.day[aria-current="date"] .num { font-weight: var(--font-weight-bold); }
+.day .count {
+  min-width: 22px;
+  padding: 0 6px;
+  border-radius: var(--radius-max);
+  background: var(--color-accent-5);
+  color: var(--color-accent-70);
+  border: 1px solid var(--color-accent-50);
+  font-size: var(--font-body-xsmall);
+  font-weight: var(--font-weight-bold);
+  line-height: 18px;
+}
+/* 고른 날짜: 진한 청록 바탕 */
+.day[aria-pressed="true"] { background: var(--action-primary); border-color: var(--action-primary); }
+.day[aria-pressed="true"] .num { color: var(--text-on-primary); font-weight: var(--font-weight-bold); }
+.day[aria-pressed="true"] .count { background: var(--surface); color: var(--color-primary-80); border-color: var(--surface); }
+
+.calendar-legend { margin: var(--space-3) 0 0; font-size: var(--font-body-small); color: var(--text-subtle); display: flex; align-items: center; gap: var(--space-2); }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--color-accent-5); border: 1px solid var(--color-accent-50); flex: none; }
+
+/* ---------- 축제 목록 ---------- */
+.list-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.list-head h2 { margin: 0; font-size: var(--font-heading-small); }
+.text-button {
+  min-height: var(--touch-min);
+  padding: 0 var(--space-2);
+  border: none;
+  background: none;
+  color: var(--text-link);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-body-small);
+  text-decoration: underline;
+}
+.list-status { margin: var(--space-2) 0 0; color: var(--text-subtle); font-size: var(--font-body-small); }
+.list-status:empty { display: none; }
+.festival-list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.festival-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-large);
+  color: var(--text-body);
+  text-decoration: none;
+}
+.festival-item:hover { border-color: var(--action-primary); color: var(--text-body); }
+.festival-item:hover .name { color: var(--text-link); text-decoration: underline; }
+.item-top { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.festival-item .period { font-size: var(--font-body-small); color: var(--text-subtle); }
+.festival-item .name { font-size: var(--font-body-medium); }
+.festival-item .where { font-size: var(--font-body-small); color: var(--text-subtle); }
+
+.status {
+  display: inline-block;
+  font-size: var(--font-body-xsmall);
+  font-weight: var(--font-weight-bold);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-xsmall);
+}
+.status-now { background: var(--color-primary-5); color: var(--color-primary-70); }
+.status-soon { background: var(--color-accent-5); color: var(--color-accent-70); }
+.status-ended { background: var(--surface-subtle); color: var(--text-subtle); }
+
+.long-term { margin-top: var(--space-5); }
+.long-term summary {
+  min-height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-link);
+}
+
+/* ---------- 안내 ---------- */
+.notice {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-medium);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  color: var(--text-subtle);
+  font-size: var(--font-body-small);
+}
+.notice svg { margin-top: 1px; color: var(--color-info-50); }
+.source { margin: 0; font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+
+/* ---------- 상세 ---------- */
+.festival-detail .title-block { display: flex; flex-direction: column; gap: var(--space-2); }
+.festival-detail .badges { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+.festival-detail h1 { font-size: var(--font-heading-xlarge); margin: 0; }
+.period-large { margin: 0; font-size: var(--font-body-large); font-weight: var(--font-weight-medium); }
+
+.festival-photo { margin: 0; }
+.festival-photo img {
+  display: block;
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;         /* 이용 조건(변경금지) 때문에 자르지 않고 비율 그대로 */
+  background: var(--surface-sunken);
+  border-radius: var(--radius-large);
+}
+.festival-photo figcaption { margin-top: var(--space-1); font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+
+.festival-detail .info {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-large);
+  padding: 0 var(--space-4);
+}
+.festival-detail .info div {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-divider);
+}
+.festival-detail .info div:last-child { border-bottom: none; }
+.festival-detail .info dt { color: var(--text-subtle); font-size: var(--font-body-small); }
+.festival-detail .info dd { margin: 0; }
+
+.description h2 { font-size: var(--font-heading-small); margin: 0 0 var(--space-2); }
+.description p { margin: 0; white-space: pre-line; }
+
+.festival-detail .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.festival-detail .actions .wide { grid-column: 1 / -1; min-height: 52px; }
+.festival-detail .loading, .festival-detail .error { color: var(--text-subtle); margin: 0; }

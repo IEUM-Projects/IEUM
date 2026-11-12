@@ -30,3 +30,16 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
+# 공공데이터포털 API (인증키 public-data.service-key는 application-local.yml에)
+public-data:
+  standard-festival-url: https://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api   # 전국문화축제표준데이터
+  tour-url: https://apis.data.go.kr/B551011/KorService2                                   # 한국관광공사 국문 관광정보
+
+# 축제 데이터 동기화
+festival:
+  sync:
+    enabled: true
+    cron: "0 30 4 * * *"      # 매일 새벽 4시 30분 (서울 시간)
+    on-startup: empty          # 서버를 켤 때 표가 비어 있으면 바로 받기 (always: 매번, never: 안 함)
+    tour-detail-limit: 200     # 한 번에 받아 올 관광공사 소개글 수 (하루 호출 한도 1000회 안에서)
