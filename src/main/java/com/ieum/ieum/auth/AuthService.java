@@ -3,6 +3,8 @@ package com.ieum.ieum.auth;
 import com.ieum.ieum.global.error.BusinessException;
 import com.ieum.ieum.global.error.ErrorCode;
 import com.ieum.ieum.global.security.JwtProvider;
+import com.ieum.ieum.user.AuthProvider;
+import com.ieum.ieum.user.NicknameGenerator;
 import com.ieum.ieum.user.User;
 import com.ieum.ieum.user.UserRepository;
 import com.ieum.ieum.user.UserStatus;
@@ -43,6 +45,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final PasswordPolicy passwordPolicy;
     private final JwtProvider jwtProvider;
+    private final NicknameGenerator nicknameGenerator;
 
     @Transactional
     public AuthDtos.UserSummary signup(AuthDtos.SignupRequest request) {
@@ -91,6 +94,25 @@ public class AuthService {
             throw new BusinessException(user.isLocked(now) ? ErrorCode.ACCOUNT_LOCKED : ErrorCode.LOGIN_FAILED);
         }
 
+        user.loginSucceeded(now);
+        refreshTokenRepository.deleteExpiredByUserId(user.getId(), now);
+        return issueTokens(user, now);
+    }
+
+    /**
+     * 카카오 등 소셜 로그인.
+     * 그 서비스의 회원 번호(providerId)로 우리 회원을 찾고, 처음이면 자동으로 가입시킨다.
+     * 이메일 로그인과 똑같이 토큰을 발급하므로 이후 과정(재발급, 로그아웃, 내 정보)은 모두 같다.
+     */
+    @Transactional
+    public AuthDtos.LoginResult loginWithSocial(AuthProvider provider, String providerId, String rawNickname) {
+        LocalDateTime now = LocalDateTime.now();
+        User user = userRepository.findByProviderAndProviderId(provider, providerId)
+                .orElseGet(() -> userRepository.save(
+                        User.createSocial(provider, providerId, nicknameGenerator.generate(rawNickname))));
+        if (user.getStatus() == UserStatus.WITHDRAWN) {
+            throw new BusinessException(ErrorCode.ACCOUNT_WITHDRAWN);
+        }
         user.loginSucceeded(now);
         refreshTokenRepository.deleteExpiredByUserId(user.getId(), now);
         return issueTokens(user, now);

@@ -1,5 +1,6 @@
 package com.ieum.ieum.global.config;
 
+import com.ieum.ieum.auth.oauth.OAuth2LoginHandlers;
 import com.ieum.ieum.global.security.JsonSecurityHandlers;
 import com.ieum.ieum.global.security.JwtAuthenticationFilter;
 import com.ieum.ieum.global.security.JwtProvider;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 
 /**
  * 보안 설정.
@@ -23,23 +25,33 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * - 그 밖의 API는 Access Token(JWT)이 있어야 함
  * - 로그인이 필요하면 401, 권한이 없으면 403을 ErrorResponse JSON으로 응답
  *
- * - csrf 끔:     쿠키 로그인 대신 Authorization 헤더(JWT)를 쓰는 방식이라 필요 없음.
- *               Refresh Token 쿠키는 SameSite=Strict + /api/auth 경로 한정으로 따로 보호한다.
- * - STATELESS:   서버가 로그인 상태(세션)를 저장하지 않음
- *                (2단계 카카오 로그인에서 로그인 과정에만 세션을 쓰도록 조정 예정)
+ * 카카오 로그인과 세션
+ * - 카카오로 갔다가 돌아오는 동안 "이 요청이 우리가 보낸 것인지(state)"를 기억하려면 세션이 잠깐 필요하다.
+ *   그래서 STATELESS 대신 IF_REQUIRED(필요할 때만 생성)로 둔다.
+ * - 로그인 결과(로그인 상태)는 세션에 저장하지 않는다 (RequestAttributeSecurityContextRepository).
+ *   로그인이 끝나면 OAuth2LoginHandlers가 세션을 지우고, 이후 요청은 JWT로만 확인한다.
+ *
+ * - csrf 끔: 로그인 상태를 쿠키가 아닌 Authorization 헤더(JWT)로 주고받는 방식이라 필요 없음.
+ *            Refresh Token 쿠키는 SameSite=Strict + /api/auth 경로 한정으로 따로 보호한다.
  */
 @Configuration
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtProvider jwtProvider) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtProvider jwtProvider,
+                                                   OAuth2LoginHandlers oauth2LoginHandlers) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable) // 로그아웃은 우리 API(/api/auth/logout)로 처리
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .securityContext(context -> context.securityContextRepository(new RequestAttributeSecurityContextRepository()))
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth -> oauth
+                        .loginPage("/login.html") // Spring 기본 로그인 화면 대신 우리 화면 (3단계에서 만듦)
+                        .successHandler(oauth2LoginHandlers.successHandler())
+                        .failureHandler(oauth2LoginHandlers.failureHandler()))
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(JsonSecurityHandlers.authenticationEntryPoint())
                         .accessDeniedHandler(JsonSecurityHandlers.accessDeniedHandler()))
@@ -47,6 +59,8 @@ public class SecurityConfig {
                         // 화면 파일
                         .requestMatchers("/", "/index.html", "/store.html", "/login.html", "/signup.html",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error").permitAll()
+                        // 카카오 로그인 시작(/oauth2/authorization/kakao)과 돌아오는 주소(/login/oauth2/code/kakao)
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         // 누구나 볼 수 있는 조회 API
                         .requestMatchers(HttpMethod.GET, "/api/stores", "/api/stores/**",
                                 "/api/regions", "/api/config/map").permitAll()
