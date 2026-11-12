@@ -23,6 +23,23 @@ public interface FestivalRepository extends JpaRepository<Festival, Long> {
             """)
     List<Festival> findOverlapping(@Param("from") LocalDate from, @Param("to") LocalDate to, @Param("sido") String sido);
 
+    /**
+     * 내 주변 축제: 기간(from~to)과 겹치고, 좌표가 반경(m) 안에 있는 축제 (시작일 → 가까운 순)
+     * 가게 반경 검색과 같은 방식 (네모 범위로 좁힌 뒤 실제 거리로 거름)
+     */
+    @Query(value = """
+            SELECT f.* FROM festivals f
+            WHERE f.start_date <= :to AND f.end_date >= :from
+              AND f.latitude  BETWEEN :lat - :radius / 111320.0 AND :lat + :radius / 111320.0
+              AND f.longitude BETWEEN :lng - :radius / (111320.0 * COS(RADIANS(:lat)))
+                                  AND :lng + :radius / (111320.0 * COS(RADIANS(:lat)))
+              AND ST_Distance_Sphere(POINT(f.longitude, f.latitude), POINT(:lng, :lat)) <= :radius
+            ORDER BY f.start_date, ST_Distance_Sphere(POINT(f.longitude, f.latitude), POINT(:lng, :lat))
+            LIMIT :limit
+            """, nativeQuery = true)
+    List<Festival> findNearbyOverlapping(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") int radius,
+                                         @Param("from") LocalDate from, @Param("to") LocalDate to, @Param("limit") int limit);
+
     /** 지역 이름 표시용 */
     @Query("select r from Region r where r.code in :codes")
     List<Region> findRegions(@Param("codes") Collection<String> codes);

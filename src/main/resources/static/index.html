@@ -3,73 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>이음 - 우리 동네 백년가게</title>
+  <title>이음 - 우리 동네 백년가게·시장·축제</title>
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/common.css">
-  <link rel="stylesheet" href="/css/map.css">
+  <link rel="stylesheet" href="/css/home.css">
 </head>
-<body>
+<body class="home-page">
   <a class="skip-link" href="#main">본문 바로가기</a>
-  <!-- 상단: 로고, 지역 선택, 카테고리 -->
-  <header class="topbar">
-    <div class="topbar-row">
-      <a class="logo" href="/">이음</a>
-      <button type="button" id="regionButton" class="region-button">지역 선택</button>
-      <select id="radiusSelect" class="radius-select" aria-label="검색 반경">
-        <option value="500">500m</option>
-        <option value="1000" selected>1km</option>
-        <option value="3000">3km</option>
-      </select>
-      <!-- 로그인 전: 로그인 링크 / 로그인 후: 닉네임 버튼 + 메뉴 (map.js가 채움) -->
-      <div id="account" class="account"></div>
-    </div>
-    <nav class="chips" id="categoryChips" aria-label="카테고리"></nav>
+  <header class="site-header home-header">
+    <a class="logo" href="/" aria-current="page">이음</a>
+    <!-- 넓은 화면에서만 보이는 메뉴 (휴대폰은 아래 고정 메뉴) -->
+    <nav class="top-nav" aria-label="주 메뉴">
+      <a href="/map.html">지도</a>
+      <a href="/festivals.html">축제 달력</a>
+    </nav>
+    <div id="account" class="account"></div>
   </header>
 
-  <!-- 지도와 목록 -->
-  <main id="main" class="map-area" tabindex="-1">
-    <div id="map" class="map" aria-label="가게 지도"></div>
-    <section id="listView" class="list-view" hidden aria-label="가게 목록">
-      <p id="listSummary" class="list-summary"></p>
-      <h2 id="marketListTitle" class="list-group-title" hidden>전통시장</h2>
-      <ul id="marketList" class="store-list" aria-labelledby="marketListTitle"></ul>
-      <h2 id="storeListTitle" class="list-group-title" hidden>가게</h2>
-      <ul id="storeList" class="store-list"></ul>
+  <main id="main" class="home-main" tabindex="-1">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="place-row">
+        <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        <span id="placeLabel" class="place-label" aria-live="polite">위치 확인 중...</span>
+        <button type="button" id="placeButton" class="place-button" aria-haspopup="dialog">위치 바꾸기</button>
+      </div>
+      <h1 id="heroTitle">오늘은 어느 골목을<br>걸어 볼까요?</h1>
+      <nav class="quick" aria-label="바로가기">
+        <a href="/map.html" data-map="all">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>지도
+        </a>
+        <a href="/festivals.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>축제 달력
+        </a>
+        <a href="/map.html?show=market" data-map="market">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l2-6h14l2 6"/><path d="M3 10c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3"/><path d="M5 13v7h14v-7"/></svg>전통시장
+        </a>
+      </nav>
     </section>
 
-    <button type="button" id="researchButton" class="research-button" hidden>이 지역에서 다시 검색</button>
-    <div class="floating">
-      <button type="button" id="locateButton" class="fab" aria-label="내 위치로 이동">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-      </button>
-      <a href="/festivals.html" class="fab fab-wide">축제 달력</a>
-      <button type="button" id="viewToggle" class="fab fab-wide">목록 보기</button>
+    <div class="home-grid">
+      <section id="stores" class="home-card" aria-labelledby="storesTitle">
+        <div class="card-head">
+          <h2 id="storesTitle">내 주변 백년가게</h2>
+          <a href="/map.html?show=store" class="more" data-map="store">지도에서 보기</a>
+        </div>
+        <p id="storesStatus" class="status" role="status">불러오는 중...</p>
+        <ul id="storeList" class="item-list"></ul>
+      </section>
+
+      <section id="festivals" class="home-card" aria-labelledby="festivalsTitle">
+        <div class="card-head">
+          <h2 id="festivalsTitle">이번 주 근처 축제</h2>
+          <a href="/festivals.html" class="more">달력 보기</a>
+        </div>
+        <ol id="weekStrip" class="week-strip" aria-label="이번 주"></ol>
+        <p id="festivalsStatus" class="status" role="status">불러오는 중...</p>
+        <ul id="festivalList" class="item-list"></ul>
+      </section>
+
+      <section id="markets" class="home-card" aria-labelledby="marketsTitle">
+        <div class="card-head">
+          <h2 id="marketsTitle">가까운 전통시장</h2>
+          <a href="/map.html?show=market" class="more" data-map="market">지도에서 보기</a>
+        </div>
+        <p id="marketsStatus" class="status" role="status">불러오는 중...</p>
+        <ul id="marketList" class="item-list"></ul>
+      </section>
     </div>
-    <p id="toast" class="toast" role="status" hidden></p>
+
+    <p class="source">가게 정보: 소상공인시장진흥공단 백년가게 · 축제 정보: 전국문화축제표준데이터, 한국관광공사 · 시장 정보: 전국전통시장표준데이터</p>
   </main>
 
-  <!-- 핀을 눌렀을 때 아래에서 올라오는 가게 요약 카드 -->
-  <article id="storeCard" class="store-card" hidden aria-live="polite"></article>
+  <p id="toast" class="toast" role="status" hidden></p>
 
-  <!-- 지역 선택 창 -->
-  <dialog id="regionDialog" class="region-dialog">
-    <form method="dialog" class="region-form">
-      <h2>어느 지역을 볼까요?</h2>
-      <p class="hint">위치 권한이 없으면 지역을 골라서 볼 수 있어요.</p>
+  <!-- 휴대폰 아래 고정 메뉴 -->
+  <nav class="tabbar" aria-label="화면 이동">
+    <a href="/" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>홈
+    </a>
+    <a href="/map.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>지도
+    </a>
+    <a href="/festivals.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>축제
+    </a>
+    <a href="/mypage.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>내 정보
+    </a>
+  </nav>
+
+  <!-- 위치 바꾸기 -->
+  <dialog id="placeDialog" class="place-dialog" aria-labelledby="placeDialogTitle">
+    <form method="dialog" class="place-form">
+      <h2 id="placeDialogTitle">어느 동네를 볼까요?</h2>
+      <button type="button" id="useMyLocation" class="button-secondary wide">
+        <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        내 위치 쓰기
+      </button>
+      <p class="or">또는 지역 고르기</p>
       <label>시·도
         <select id="sidoSelect"></select>
       </label>
       <label>시·군·구
         <select id="sigunguSelect"></select>
       </label>
+      <p id="placeError" class="place-error" role="alert"></p>
       <div class="dialog-actions">
         <button value="cancel" class="button-secondary">닫기</button>
-        <button value="ok" id="regionConfirm" class="button-primary">이 지역 보기</button>
+        <button value="ok" id="placeConfirm" class="button-primary">이 지역 보기</button>
       </div>
     </form>
   </dialog>
 
-  <script type="module" src="/js/map.js"></script>
+  <script type="module" src="/js/home.js"></script>
 </body>
 </html>

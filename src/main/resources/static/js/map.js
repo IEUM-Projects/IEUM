@@ -1,5 +1,5 @@
 // 지도 화면 (MAP-01): 현재 위치/지역 기준 반경 검색, 핀 표시, 카테고리 필터, 목록 보기, 가게 요약 카드
-import { api, loadKakaoMapSdk, formatDistance, directionsUrl, LOGIN_FAILURE_MESSAGES } from './api.js';
+import { api, loadKakaoMapSdk, formatDistance, directionsUrl } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { marketDaySummary } from './market-days.js';
@@ -15,6 +15,8 @@ const state = {
   stores: [],
   markets: [],
   showMarkets: true,   // 전통시장 핀 표시 (칩으로 켜고 끔)
+  showStores: true,    // 가게 핀 표시. 홈의 '전통시장' 바로가기(/map.html?show=market)로 오면 꺼진 채 시작
+                       // 홈의 백년가게 '지도에서 보기'(/map.html?show=store)로 오면 전통시장이 꺼진 채 시작
   view: 'map',
 };
 
@@ -49,23 +51,42 @@ function toast(message, ms = 3000) {
 
 // ---------------------------------------------------------------- 카테고리
 
+// 주소의 ?show=market|store 를 지금 상태에 맞춘다 (새로고침·공유해도 같은 화면)
+function syncAddress() {
+  const params = new URLSearchParams(location.search);
+  if (!state.showStores) params.set('show', 'market');
+  else if (!state.showMarkets) params.set('show', 'store');
+  else params.delete('show');
+  const query = params.toString();
+  history.replaceState(null, '', location.pathname + (query ? `?${query}` : ''));
+}
+
 function renderChips() {
   const nav = $('categoryChips');
   nav.replaceChildren();
   // 전통시장 켜고 끄기 (가게 분류와 따로 동작)
   const market = el('button', { type: 'button', class: 'chip chip-market', 'aria-pressed': String(state.showMarkets) },
     marketIcon(), '전통시장');
-  market.addEventListener('click', () => { state.showMarkets = !state.showMarkets; renderChips(); search(); });
+  market.addEventListener('click', () => {
+    state.showMarkets = !state.showMarkets;
+    if (!state.showMarkets) state.showStores = true;   // 둘 다 꺼지면 빈 지도가 되므로 가게를 다시 켠다
+    renderChips(); syncAddress(); search();
+  });
   nav.append(market, el('span', { class: 'chip-divider', 'aria-hidden': 'true' }));
-  const all = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.categories.size === 0), text: '전체' });
-  all.addEventListener('click', () => { state.categories.clear(); renderChips(); search(); });
+  // 가게 분류: 시장만 보는 중이면 아무것도 눌려 있지 않고, 하나를 누르면 가게가 다시 보인다
+  const all = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.showStores && state.categories.size === 0), text: '전체' });
+  all.addEventListener('click', () => { state.showStores = true; state.categories.clear(); renderChips(); syncAddress(); search(); });
   nav.append(all);
   CATEGORIES.forEach((category) => {
-    const chip = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.categories.has(category)), text: category });
+    const chip = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.showStores && state.categories.has(category)), text: category });
     chip.addEventListener('click', () => {
-      if (state.categories.has(category)) state.categories.delete(category);
+      if (!state.showStores) {
+        state.showStores = true;
+        state.categories = new Set([category]);
+      } else if (state.categories.has(category)) state.categories.delete(category);
       else state.categories.add(category);
       renderChips();
+      syncAddress();
       search();
     });
     nav.append(chip);
@@ -80,7 +101,7 @@ async function search() {
   const where = { lat: state.center.lat.toFixed(6), lng: state.center.lng.toFixed(6), radius: state.radius };
   // 가게와 전통시장을 함께 불러온다 (한쪽이 실패해도 다른 쪽은 보여 줌)
   const [stores, markets] = await Promise.allSettled([
-    api.nearbyStores({ ...where, categories: [...state.categories] }),
+    state.showStores ? api.nearbyStores({ ...where, categories: [...state.categories] }) : Promise.resolve([]),
     state.showMarkets ? api.nearbyMarkets(where) : Promise.resolve([]),
   ]);
   state.stores = stores.status === 'fulfilled' ? stores.value : [];
@@ -90,7 +111,8 @@ async function search() {
   drawMarkers();
   renderList();
   if (!failed && state.stores.length === 0 && state.markets.length === 0) {
-    toast(`반경 ${formatDistance(state.radius)} 안에 가게가 없어요. 반경을 넓히거나 다른 지역을 골라 보세요.`);
+    const what = state.showStores ? '가게' : '전통시장';
+    toast(`반경 ${formatDistance(state.radius)} 안에 ${what}${state.showStores ? '가' : '이'} 없어요. 반경을 넓히거나 다른 지역을 골라 보세요.`);
   }
 }
 
@@ -183,8 +205,11 @@ function onMapMoved() {
 // ---------------------------------------------------------------- 목록
 
 function renderList() {
-  const marketText = state.showMarkets ? ` · 전통시장 ${state.markets.length}곳` : '';
-  $('listSummary').textContent = `반경 ${formatDistance(state.radius)} 안 가게 ${state.stores.length}곳${marketText} · 가까운 순`;
+  const parts = [
+    state.showStores ? `가게 ${state.stores.length}곳` : null,
+    state.showMarkets ? `전통시장 ${state.markets.length}곳` : null,
+  ].filter(Boolean).join(' · ');
+  $('listSummary').textContent = `반경 ${formatDistance(state.radius)} 안 ${parts} · 가까운 순`;
   $('marketListTitle').hidden = state.markets.length === 0;
   $('marketList').replaceChildren(...state.markets.map((market) => el('li', {},
     el('a', { href: `/market.html?id=${market.id}` },
@@ -193,7 +218,7 @@ function renderList() {
       el('div', { class: 'meta', text: `${formatDistance(market.distanceM)} · ${marketDaySummary(market)}` }),
     ),
   )));
-  $('storeListTitle').hidden = state.markets.length === 0;
+  $('storeListTitle').hidden = state.markets.length === 0 || state.stores.length === 0;
   const list = $('storeList');
   list.replaceChildren(...state.stores.map((store) => el('li', {},
     el('a', { href: `/store.html?id=${store.id}` },
@@ -354,37 +379,32 @@ function onRegionChosen() {
 
 // ---------------------------------------------------------------- 시작
 
-// 카카오 로그인에서 돌아왔을 때 (/?login=success 또는 /?login=failed&reason=...)
-// 결과를 안내하고 주소창의 ?login=... 은 지운다. 로그인 상태 표시는 3단계(로그인 화면)에서 연결한다.
-// 반환값 true: 카카오 로그인 전에 보던 다른 화면으로 이동했으니 지도는 더 그리지 않아도 됨
-async function handleLoginRedirect() {
-  const params = new URLSearchParams(location.search);
-  const result = params.get('login');
-  if (!result) {
-    await auth.init();
-    return false;
-  }
-  history.replaceState(null, '', location.pathname);
-  if (result === 'success') {
-    const user = await auth.init({ force: true });
-    const next = auth.consumeNext();
-    if (user && next !== '/') {
-      location.replace(next);
-      return true;
-    }
-    toast(user ? `${user.nickname}님, 카카오로 로그인했어요.` : '다시 로그인해 주세요.', 5000);
-  } else {
-    auth.consumeNext();
-    toast(LOGIN_FAILURE_MESSAGES[params.get('reason')] ?? LOGIN_FAILURE_MESSAGES.ERROR, 5000);
-  }
-  return false;
+// 홈에서 넘겨준 시작 위치 (?lat=..&lng=..&label=..). 대한민국 범위 밖이거나 숫자가 아니면 무시
+function placeFromAddress(params) {
+  const lat = Number(params.get('lat'));
+  const lng = Number(params.get('lng'));
+  if (!params.has('lat') || !params.has('lng') || !(lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132)) return null;
+  return { lat, lng, label: (params.get('label') || '지도 중심').slice(0, 30) };
 }
 
+// 카카오 로그인에서 돌아오는 처리는 홈(login-return.js)이 맡는다. 지도에서 로그인하면 next로 이 화면에 돌아온다.
 async function init() {
+  const params = new URLSearchParams(location.search);
+  if (params.get('show') === 'market') {
+    // 홈의 '전통시장' 바로가기: 시장만, 시장은 띄엄띄엄 있으므로 반경 3km로 시작
+    state.showStores = false;
+    state.radius = 3000;
+  } else if (params.get('show') === 'store') {
+    // 홈의 '내 주변 백년가게 → 지도에서 보기': 가게만 (전통시장 칩을 누르면 시장도 보임)
+    state.showMarkets = false;
+  }
+  // 홈에서 1km 안에 가게가 없어 3km로 넓혀 보여 줬다면 같은 반경으로 (정해진 값만 받음)
+  if (LEVEL_BY_RADIUS[params.get('radius')]) state.radius = Number(params.get('radius'));
+  $('radiusSelect').value = String(state.radius);
+  const start = placeFromAddress(params);
   renderChips();
-  mountAccount($('account'), { next: '/', onLogout: () => toast('로그아웃했어요.') });
-  const loginNotice = handleLoginRedirect();
-  if (await loginNotice) return;
+  mountAccount($('account'), { onLogout: () => toast('로그아웃했어요.') });
+  const ready = auth.init();
   try {
     kakao = await loadKakaoMapSdk();
   } catch (e) {
@@ -416,9 +436,17 @@ async function init() {
   $('viewToggle').addEventListener('click', () => setView(state.view === 'map' ? 'list' : 'map'));
 
   // 처음에는 기본 위치로 바로 보여 주고, 내 위치를 받으면 그쪽으로 옮긴다
+  if (start) {
+    // 홈에서 고른 위치로 바로 시작 (내 위치를 다시 묻지 않음)
+    $('regionButton').textContent = start.label;
+    moveTo(start.lat, start.lng);
+    await search();
+    await ready;
+    return;
+  }
   $('regionButton').textContent = DEFAULT_CENTER.label;
   await search();
-  await loginNotice; // 로그인 결과 안내가 먼저 뜬 뒤에 위치를 확인한다
+  await ready;
   await useMyLocation({ openRegionOnFail: true });
 }
 
