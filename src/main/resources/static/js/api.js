@@ -43,6 +43,10 @@ export const api = {
     if (sido) params.set('sido', sido);
     return request(`/api/festivals?${params}`);
   },
+  /** 내 주변 축제 (홈 화면): 기간과 겹치고 반경(m) 안에 있는 축제 */
+  festivalsNearby({ lat, lng, from, to, radius = 30000 }) {
+    return request(`/api/festivals/nearby?${new URLSearchParams({ lat, lng, from, to, radius })}`);
+  },
   festival(id) {
     return request(`/api/festivals/${encodeURIComponent(id)}`);
   },

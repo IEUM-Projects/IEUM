@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
  *
  * GET /api/festivals?from=2026-11-01&to=2026-11-30&sido=11
  *     → 그 기간과 하루라도 겹치는 축제 (시작일 순). sido를 빼면 전국. 기간은 최대 93일
+ * GET /api/festivals/nearby?lat=37.56&lng=126.97&from=2026-11-09&to=2026-11-15&radius=30000
+ *     → 내 주변 축제 (홈 화면). 반경 기본 30km·최대 50km, 기간 최대 31일, 최대 30건
  * GET /api/festivals/{id}
  *     → 축제 상세
  */
@@ -34,12 +36,53 @@ import java.util.stream.Collectors;
 public class FestivalController {
 
     private static final int MAX_DAYS = 93;
+    private static final int NEARBY_DEFAULT_RADIUS = 30_000;
+    private static final int NEARBY_MAX_RADIUS = 50_000;
+    private static final int NEARBY_MAX_DAYS = 31;
+    private static final int NEARBY_LIMIT = 30;
 
     private final FestivalRepository repository;
 
     public record Summary(Long id, String name, String place, LocalDate startDate, LocalDate endDate,
                           boolean longTerm, String sidoCode, String regionName,
                           BigDecimal latitude, BigDecimal longitude, String imageUrl) {
+    }
+
+    public record Nearby(Long id, String name, String place, LocalDate startDate, LocalDate endDate,
+                         boolean longTerm, String regionName, long distanceM, String imageUrl) {
+    }
+
+    @GetMapping("/nearby")
+    @Transactional(readOnly = true)
+    public List<Nearby> nearby(@RequestParam double lat, @RequestParam double lng,
+                               @RequestParam LocalDate from, @RequestParam LocalDate to,
+                               @RequestParam(required = false) Integer radius) {
+        if (lat < 33 || lat > 39 || lng < 124 || lng > 132) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "lat, lng가 대한민국 범위를 벗어났어요.");
+        }
+        if (to.isBefore(from)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "끝 날짜가 시작 날짜보다 빨라요.");
+        }
+        if (ChronoUnit.DAYS.between(from, to) > NEARBY_MAX_DAYS) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "한 번에 " + NEARBY_MAX_DAYS + "일까지 조회할 수 있어요.");
+        }
+        int r = radius == null ? NEARBY_DEFAULT_RADIUS : Math.clamp(radius, 1_000, NEARBY_MAX_RADIUS);
+        List<Festival> festivals = repository.findNearbyOverlapping(lat, lng, r, from, to, NEARBY_LIMIT);
+        Map<String, Region> regions = regionsOf(festivals);
+        return festivals.stream().map(f -> new Nearby(f.getId(), f.getName(), f.getPlace(), f.getStartDate(),
+                f.getEndDate(), f.isLongTerm(), regionName(f, regions),
+                Math.round(distance(lat, lng, f.getLatitude().doubleValue(), f.getLongitude().doubleValue())),
+                f.getImageUrl())).toList();
+    }
+
+    /** 두 좌표 사이 거리(m). DB의 ST_Distance_Sphere와 같은 지구 반지름 사용 */
+    private static double distance(double lat1, double lng1, double lat2, double lng2) {
+        double r = 6_370_986;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return 2 * r * Math.asin(Math.sqrt(a));
     }
 
     public record Detail(Long id, String name, String place, LocalDate startDate, LocalDate endDate,
