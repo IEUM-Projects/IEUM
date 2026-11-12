@@ -1,0 +1,56 @@
+/* 이음 공통 스타일: 색은 앱 아이콘의 초록·주황에서 가져옴 */
+:root {
+  --green: #1d6b57;
+  --green-soft: #e6f1ed;
+  --orange: #f4a53c;
+  --orange-soft: #fdf1df;
+  --ink: #1f2623;
+  --ink-soft: #5d6762;
+  --line: #e3e7e5;
+  --bg: #ffffff;
+  --bg-soft: #f6f8f7;
+  --warn-bg: #fff4d6;
+  --warn-ink: #7a5600;
+  --radius: 12px;
+  --shadow: 0 4px 16px rgba(20, 40, 32, 0.14);
+  font-family: "Pretendard", system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color: var(--ink);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); }
+button, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--green); }
+
+.badge-unverified {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  vertical-align: middle;
+}
+
+.badge-type {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green);
+}
+.badge-type.creator { background: var(--orange-soft); color: #8a5300; }
+
+.button-primary, .button-secondary {
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+  border: 1px solid var(--green);
+}
+.button-primary { background: var(--green); color: #fff; }
+.button-secondary { background: #fff; color: var(--green); }
+.button-primary:disabled, .button-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
