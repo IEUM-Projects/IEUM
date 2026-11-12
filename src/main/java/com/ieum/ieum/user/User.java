@@ -88,6 +88,17 @@ public class User {
         return user;
     }
 
+    /** 카카오 등 소셜 로그인 회원 만들기. 이메일·비밀번호 없이 가입 방법과 그 서비스의 회원 번호로 구분한다 */
+    public static User createSocial(AuthProvider provider, String providerId, String nickname) {
+        User user = new User();
+        user.nickname = nickname;
+        user.role = UserRole.USER;
+        user.provider = provider;
+        user.providerId = providerId;
+        user.status = UserStatus.ACTIVE;
+        return user;
+    }
+
     public boolean isLocked(LocalDateTime now) {
         return lockedUntil != null && lockedUntil.isAfter(now);
     }

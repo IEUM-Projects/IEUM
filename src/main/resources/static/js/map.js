@@ -1,5 +1,5 @@
 // 지도 화면 (MAP-01): 현재 위치/지역 기준 반경 검색, 핀 표시, 카테고리 필터, 목록 보기, 가게 요약 카드
-import { api, loadKakaoMapSdk, formatDistance, directionsUrl } from './api.js';
+import { api, loadKakaoMapSdk, formatDistance, directionsUrl, LOGIN_FAILURE_MESSAGES } from './api.js';
 
 const CATEGORIES = ['음식점', '카페·간식', '도소매', '생활서비스', '공방·공예', '기타'];
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.9780, label: '서울 중구' }; // 위치를 모를 때 시작점 (서울시청)
@@ -214,8 +214,9 @@ async function useMyLocation({ openRegionOnFail }) {
     moveTo(lat, lng);
     await search();
   } catch (e) {
-    toast(e.message);
+    // 지역 선택 창에 같은 설명이 있으므로, 창을 열 때는 안내를 띄우지 않는다 (다른 안내를 덮어쓰지 않게)
     if (openRegionOnFail) openRegionDialog();
+    else toast(e.message);
   }
 }
 
@@ -253,8 +254,28 @@ function onRegionChosen() {
 
 // ---------------------------------------------------------------- 시작
 
+// 카카오 로그인에서 돌아왔을 때 (/?login=success 또는 /?login=failed&reason=...)
+// 결과를 안내하고 주소창의 ?login=... 은 지운다. 로그인 상태 표시는 3단계(로그인 화면)에서 연결한다.
+async function handleLoginRedirect() {
+  const params = new URLSearchParams(location.search);
+  const result = params.get('login');
+  if (!result) return;
+  history.replaceState(null, '', location.pathname);
+  if (result === 'success') {
+    try {
+      const { user } = await api.refreshToken();
+      toast(`${user.nickname}님, 카카오로 로그인했어요.`, 5000);
+    } catch (e) {
+      toast(e.message, 5000);
+    }
+  } else {
+    toast(LOGIN_FAILURE_MESSAGES[params.get('reason')] ?? LOGIN_FAILURE_MESSAGES.ERROR, 5000);
+  }
+}
+
 async function init() {
   renderChips();
+  const loginNotice = handleLoginRedirect();
   try {
     kakao = await loadKakaoMapSdk();
   } catch (e) {
@@ -288,6 +309,7 @@ async function init() {
   // 처음에는 기본 위치로 바로 보여 주고, 내 위치를 받으면 그쪽으로 옮긴다
   $('regionButton').textContent = DEFAULT_CENTER.label;
   await search();
+  await loginNotice; // 로그인 결과 안내가 먼저 뜬 뒤에 위치를 확인한다
   await useMyLocation({ openRegionOnFail: true });
 }
 

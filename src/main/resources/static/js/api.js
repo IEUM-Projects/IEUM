@@ -30,6 +30,19 @@ export const api = {
   mapConfig() {
     return request('/api/config/map');
   },
+  /** 쿠키의 Refresh Token으로 Access Token 받기 (로그인 화면은 3단계에서 연결) */
+  async refreshToken() {
+    const res = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' });
+    if (!res.ok) throw new Error('다시 로그인해 주세요.');
+    return res.json();
+  },
+};
+
+/** 카카오 로그인에서 돌아왔을 때 주소에 붙는 실패 이유별 안내 문구 */
+export const LOGIN_FAILURE_MESSAGES = {
+  CANCELLED: '카카오 로그인을 취소했어요.',
+  ACCOUNT_WITHDRAWN: '탈퇴한 계정이에요.',
+  ERROR: '카카오 로그인 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
 };
 
 /** 카카오맵 SDK를 키를 받아 와서 한 번만 불러온다 */
