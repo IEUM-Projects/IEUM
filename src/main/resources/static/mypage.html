@@ -44,6 +44,14 @@
 
       <button type="button" id="logoutButton" class="button-secondary wide">로그아웃</button>
     </section>
+
+    <!-- 내 영업 정보 제보 (STO-01) -->
+    <section class="auth-card reports-card" id="reports" aria-labelledby="reportsTitle" hidden>
+      <h2 id="reportsTitle">내 제보</h2>
+      <p class="lead">보낸 영업 정보 제보와 처리 상태예요.</p>
+      <p id="reportsStatus" class="reports-status" role="status"></p>
+      <ul id="reportList" class="report-list"></ul>
+    </section>
   </main>
   <script type="module" src="/js/mypage.js"></script>
 </body>

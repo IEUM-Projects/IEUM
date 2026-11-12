@@ -50,6 +50,58 @@ $('logoutButton').addEventListener('click', async () => {
   location.replace('/');
 });
 
+// ---------------------------------------------------------------- 내 제보
+
+const STATUS_CLASS = { RECEIVED: 'report-received', APPLIED: 'report-applied', REJECTED: 'report-rejected' };
+
+function reportItem(r) {
+  const li = document.createElement('li');
+  li.className = 'report-item';
+  const top = document.createElement('div');
+  top.className = 'report-top';
+  const status = document.createElement('span');
+  status.className = `report-status ${STATUS_CLASS[r.status] ?? ''}`;
+  status.textContent = r.statusLabel;
+  const date = document.createElement('span');
+  date.className = 'report-date';
+  date.textContent = r.createdAt ? r.createdAt.slice(0, 10).replaceAll('-', '.') : '';
+  top.append(status, date);
+  const store = document.createElement('a');
+  store.href = `/store.html?id=${r.storeId}`;
+  store.className = 'report-store-link';
+  store.textContent = r.storeName;
+  const type = document.createElement('p');
+  type.className = 'report-type';
+  type.textContent = r.typeLabel;
+  li.append(top, store, type);
+  if (r.content) {
+    const content = document.createElement('p');
+    content.className = 'report-content';
+    content.textContent = r.content;
+    li.append(content);
+  }
+  if (r.adminNote) {
+    const note = document.createElement('p');
+    note.className = 'report-note';
+    note.textContent = `처리 메모: ${r.adminNote}`;
+    li.append(note);
+  }
+  return li;
+}
+
+async function loadReports() {
+  $('reports').hidden = false;
+  $('reportsStatus').textContent = '불러오는 중...';
+  try {
+    const reports = await auth.fetchMyReports();
+    $('reportList').replaceChildren(...reports.map(reportItem));
+    $('reportsStatus').textContent = reports.length ? '' : '아직 보낸 제보가 없어요. 가게 화면의 \'영업 정보 제보\'로 보낼 수 있어요.';
+  } catch (_) {
+    $('reportsStatus').textContent = '제보 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
+  if (location.hash === '#reports') $('reports').scrollIntoView();
+}
+
 async function init() {
   const user = await auth.init();
   if (!user) {
@@ -59,6 +111,7 @@ async function init() {
   try {
     render(await auth.fetchMe());
     $('card').hidden = false;
+    loadReports();
   } catch (_) {
     location.replace(auth.loginUrl('/mypage.html'));
   }

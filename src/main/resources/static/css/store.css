@@ -49,3 +49,80 @@
 .actions .button-primary.wide { min-height: 52px; }
 
 .loading, .error { color: var(--text-subtle); padding: var(--space-6) 0; margin: 0; }
+
+/* ---------- 영업 정보 제보 (STO-01) ---------- */
+.report-notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-medium);
+  background: var(--color-success-5);
+  border: 1px solid var(--color-success-10);
+  color: var(--color-success-60);
+  font-size: var(--font-body-small);
+}
+.report-notice[hidden] { display: none; }
+.report-notice a { color: var(--color-success-60); font-weight: var(--font-weight-bold); }
+
+.report-dialog {
+  width: min(480px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-4);
+  color: var(--text-body);
+}
+.report-dialog::backdrop { background: var(--dim); }
+.report-form { padding: var(--space-6) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
+.report-head h2 { margin: 0; font-size: var(--font-heading-medium); }
+.report-store { margin: var(--space-1) 0 0; color: var(--text-subtle); font-size: var(--font-body-small); }
+.report-help { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+
+.report-alert {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-medium);
+  background: var(--color-danger-5);
+  border: 1px solid var(--color-danger-10);
+  color: var(--color-danger-70);
+  font-size: var(--font-body-small);
+}
+.report-alert[hidden] { display: none; }
+
+.report-types { margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: var(--space-2); }
+.report-types legend { padding: 0; margin-bottom: var(--space-2); font-size: var(--font-body-small); font-weight: var(--font-weight-bold); }
+.report-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-medium);
+  cursor: pointer;
+}
+.report-option:hover { background: var(--surface-subtle); }
+.report-option input { width: 20px; height: 20px; margin: 0; accent-color: var(--action-primary); flex: none; }
+/* 고른 항목은 테두리를 두껍게 + 바탕색 (색만으로 구분하지 않게 굵기도 바꿈) */
+.report-option:has(input:checked) { border: 2px solid var(--action-primary); padding: 0 calc(var(--space-4) - 1px); background: var(--color-primary-5); font-weight: var(--font-weight-bold); }
+
+.report-field { display: flex; flex-direction: column; gap: var(--space-2); }
+.report-field label { font-size: var(--font-body-small); font-weight: var(--font-weight-bold); }
+.report-field .optional { font-weight: var(--font-weight-regular); color: var(--text-subtle); }
+.report-field textarea {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-medium);
+  font-size: var(--font-body-medium);
+  line-height: var(--line-height);
+  resize: vertical;
+}
+.report-field textarea::placeholder { color: var(--color-gray-60); }
+.report-field textarea[aria-invalid="true"] { border: 2px solid var(--color-danger-50); }
+.report-hint { margin: 0; text-align: right; font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+.report-error { margin: 0; color: var(--color-danger-70); font-size: var(--font-body-small); }
+.report-error:empty { display: none; }
+.report-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }

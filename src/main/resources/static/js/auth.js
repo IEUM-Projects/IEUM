@@ -167,6 +167,24 @@ export async function fetchMe() {
   return res.json();
 }
 
+/** 영업 정보 제보 보내기. type: CLOSED / HOURS / PHONE / LOCATION / OTHER */
+export async function sendStoreReport(storeId, { type, content }) {
+  const res = await authFetch(`/api/stores/${encodeURIComponent(storeId)}/reports`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, content }),
+  });
+  if (!res.ok) throw await readError(res);
+  return res.json();
+}
+
+/** 내 제보 목록 (최근 50건) */
+export async function fetchMyReports() {
+  const res = await authFetch('/api/users/me/reports');
+  if (!res.ok) throw await readError(res);
+  return res.json();
+}
+
 export async function updateNickname(nickname) {
   const res = await authFetch('/api/users/me', {
     method: 'PATCH',
