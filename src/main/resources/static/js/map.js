@@ -2,6 +2,7 @@
 import { api, loadKakaoMapSdk, formatDistance, directionsUrl, LOGIN_FAILURE_MESSAGES } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
+import { marketDaySummary } from './market-days.js';
 
 const CATEGORIES = ['음식점', '카페·간식', '도소매', '생활서비스', '공방·공예', '기타'];
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.9780, label: '서울 중구' }; // 위치를 모를 때 시작점 (서울시청)
@@ -12,12 +13,15 @@ const state = {
   radius: 1000,
   categories: new Set(),   // 비어 있으면 전체
   stores: [],
+  markets: [],
+  showMarkets: true,   // 전통시장 핀 표시 (칩으로 켜고 끔)
   view: 'map',
 };
 
 let kakao = null;
 let map = null;
 let markers = [];
+let marketMarkers = [];
 let radiusCircle = null;
 let regionsCache = null;
 
@@ -48,6 +52,11 @@ function toast(message, ms = 3000) {
 function renderChips() {
   const nav = $('categoryChips');
   nav.replaceChildren();
+  // 전통시장 켜고 끄기 (가게 분류와 따로 동작)
+  const market = el('button', { type: 'button', class: 'chip chip-market', 'aria-pressed': String(state.showMarkets) },
+    marketIcon(), '전통시장');
+  market.addEventListener('click', () => { state.showMarkets = !state.showMarkets; renderChips(); search(); });
+  nav.append(market, el('span', { class: 'chip-divider', 'aria-hidden': 'true' }));
   const all = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.categories.size === 0), text: '전체' });
   all.addEventListener('click', () => { state.categories.clear(); renderChips(); search(); });
   nav.append(all);
@@ -68,20 +77,19 @@ function renderChips() {
 async function search() {
   hideCard();
   $('researchButton').hidden = true;
-  try {
-    state.stores = await api.nearbyStores({
-      lat: state.center.lat.toFixed(6),
-      lng: state.center.lng.toFixed(6),
-      radius: state.radius,
-      categories: [...state.categories],
-    });
-  } catch (e) {
-    toast(e.message);
-    state.stores = [];
-  }
+  const where = { lat: state.center.lat.toFixed(6), lng: state.center.lng.toFixed(6), radius: state.radius };
+  // 가게와 전통시장을 함께 불러온다 (한쪽이 실패해도 다른 쪽은 보여 줌)
+  const [stores, markets] = await Promise.allSettled([
+    api.nearbyStores({ ...where, categories: [...state.categories] }),
+    state.showMarkets ? api.nearbyMarkets(where) : Promise.resolve([]),
+  ]);
+  state.stores = stores.status === 'fulfilled' ? stores.value : [];
+  state.markets = markets.status === 'fulfilled' ? markets.value : [];
+  const failed = [stores, markets].find((r) => r.status === 'rejected');
+  if (failed) toast(failed.reason.message);
   drawMarkers();
   renderList();
-  if (state.stores.length === 0) {
+  if (!failed && state.stores.length === 0 && state.markets.length === 0) {
     toast(`반경 ${formatDistance(state.radius)} 안에 가게가 없어요. 반경을 넓히거나 다른 지역을 골라 보세요.`);
   }
 }
@@ -105,7 +113,33 @@ function pinImage(store) {
   );
 }
 
+// 전통시장 핀: 가게 핀(물방울)과 모양이 다른 네모 + 차양 그림 (색을 몰라도 모양으로 구분)
+function marketPinImage() {
+  const color = token('--pin-market');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="38" viewBox="0 0 32 38">`
+    + `<path d="M5 0h22a5 5 0 015 5v21a5 5 0 01-5 5h-6l-5 7-5-7H5a5 5 0 01-5-5V5a5 5 0 015-5z" fill="${color}"/>`
+    + `<path d="M7 10l2-4h14l2 4M7 10c0 1.5 1 2.5 2.25 2.5S11.5 11.5 11.5 10c0 1.5 1 2.5 2.25 2.5S16 11.5 16 10c0 1.5 1 2.5 2.25 2.5S20.5 11.5 20.5 10c0 1.5 1 2.5 2.25 2.5S25 11.5 25 10M9 13v10h14V13" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>`
+    + `</svg>`;
+  return new kakao.maps.MarkerImage(
+    `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+    new kakao.maps.Size(32, 38),
+    { offset: new kakao.maps.Point(16, 38) },
+  );
+}
+
 function drawMarkers() {
+  marketMarkers.forEach((marker) => marker.setMap(null));
+  marketMarkers = state.markets.map((market) => {
+    const marker = new kakao.maps.Marker({
+      map,
+      position: new kakao.maps.LatLng(market.latitude, market.longitude),
+      image: marketPinImage(),
+      title: `${market.name} (전통시장)`,
+      zIndex: 1,
+    });
+    kakao.maps.event.addListener(marker, 'click', () => showMarketCard(market));
+    return marker;
+  });
   markers.forEach((marker) => marker.setMap(null));
   markers = state.stores.map((store) => {
     const marker = new kakao.maps.Marker({
@@ -149,7 +183,17 @@ function onMapMoved() {
 // ---------------------------------------------------------------- 목록
 
 function renderList() {
-  $('listSummary').textContent = `반경 ${formatDistance(state.radius)} 안 ${state.stores.length}곳 · 가까운 순`;
+  const marketText = state.showMarkets ? ` · 전통시장 ${state.markets.length}곳` : '';
+  $('listSummary').textContent = `반경 ${formatDistance(state.radius)} 안 가게 ${state.stores.length}곳${marketText} · 가까운 순`;
+  $('marketListTitle').hidden = state.markets.length === 0;
+  $('marketList').replaceChildren(...state.markets.map((market) => el('li', {},
+    el('a', { href: `/market.html?id=${market.id}` },
+      el('span', { class: 'name', text: market.name }),
+      el('span', { class: 'badge-market', text: '전통시장' }),
+      el('div', { class: 'meta', text: `${formatDistance(market.distanceM)} · ${marketDaySummary(market)}` }),
+    ),
+  )));
+  $('storeListTitle').hidden = state.markets.length === 0;
   const list = $('storeList');
   list.replaceChildren(...state.stores.map((store) => el('li', {},
     el('a', { href: `/store.html?id=${store.id}` },
@@ -194,6 +238,50 @@ function showCard(store) {
     el('div', { class: 'card-actions' },
       el('a', { class: 'button-primary', href: directionsUrl(store), target: '_blank', rel: 'noopener', text: '길찾기' }),
       el('a', { class: 'button-secondary', href: `/store.html?id=${store.id}`, text: '상세 보기' }),
+    ),
+  ].filter(Boolean));
+  card.hidden = false;
+}
+
+// ---------------------------------------------------------------- 전통시장 카드
+
+function marketIcon(size = 18) {
+  const span = document.createElement('span');
+  span.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l2-6h14l2 6"/><path d="M3 10c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3"/><path d="M5 13v7h14v-7"/></svg>`;
+  return span.firstChild;
+}
+
+function showMarketCard(market) {
+  const card = $('storeCard');
+  const close = el('button', { type: 'button', class: 'card-close', 'aria-label': '시장 카드 닫기' });
+  close.innerHTML = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  close.addEventListener('click', hideCard);
+  // 같은 건물(같은 좌표)에 있는 다른 시장: 핀이 겹쳐 보이므로 카드에서 알려 준다
+  const same = state.markets.filter((m) => m.id !== market.id
+    && Number(m.latitude) === Number(market.latitude) && Number(m.longitude) === Number(market.longitude));
+  const facts = [
+    market.storeCount ? `점포 ${market.storeCount.toLocaleString()}개` : null,
+    `주차장 ${market.hasParking ? '있음' : '없음'}`,
+    `화장실 ${market.hasToilet ? '있음' : '없음'}`,
+  ].filter(Boolean).join(' · ');
+  card.replaceChildren(...[
+    close,
+    el('div', { class: 'badges' },
+      el('span', { class: 'badge-market' }, marketIcon(14), '전통시장'),
+      el('span', { class: 'badge-category', text: market.marketType }),
+    ),
+    el('div', { class: 'card-title' },
+      el('h2', { text: market.name }),
+      el('span', { class: 'distance', text: formatDistance(market.distanceM) }),
+    ),
+    market.address ? el('p', { class: 'meta', text: market.address }) : null,
+    el('p', { class: 'market-days', text: `장날: ${marketDaySummary(market)}` }),
+    el('p', { class: 'meta', text: facts }),
+    same.length ? el('p', { class: 'meta' }, '같은 건물: ',
+      ...same.flatMap((m, i) => [i ? ', ' : null, el('a', { href: `/market.html?id=${m.id}`, text: m.name })]).filter(Boolean)) : null,
+    el('div', { class: 'card-actions' },
+      el('a', { class: 'button-primary', href: directionsUrl({ name: market.name, latitude: market.latitude, longitude: market.longitude }), target: '_blank', rel: 'noopener', text: '길찾기' }),
+      el('a', { class: 'button-secondary', href: `/market.html?id=${market.id}`, text: '상세 보기' }),
     ),
   ].filter(Boolean));
   card.hidden = false;

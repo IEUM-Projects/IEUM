@@ -64,6 +64,8 @@ body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; 
   font-size: var(--font-body-small);
 }
 .chip:hover { border-color: var(--action-primary); }
+.chip-market { display: inline-flex; align-items: center; gap: var(--space-1); }
+.chip-divider { flex: none; width: 1px; align-self: stretch; margin: var(--space-1) 0; background: var(--border-light); }
 .chip[aria-pressed="true"] {
   background: var(--action-primary);
   border-color: var(--action-primary);
@@ -222,3 +224,8 @@ a.fab { text-decoration: none; }
 @media (min-width: 900px) {
   .store-card { left: var(--space-4); right: auto; bottom: var(--space-4); width: 400px; border-radius: var(--radius-xlarge); }
 }
+
+/* 전통시장 (MKT-01) */
+.store-list .badge-market { margin-right: var(--space-1); }
+.store-card .market-days { margin: 0; font-size: var(--font-body-small); font-weight: var(--font-weight-bold); color: var(--color-primary-70); }
+.list-group-title { margin: var(--space-4) 0 0; font-size: var(--font-heading-small); }

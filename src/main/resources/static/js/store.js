@@ -1,7 +1,8 @@
 // 가게 상세 화면 (MAP-02): /store.html?id=381
-import { api, directionsUrl } from './api.js';
+import { api, directionsUrl, formatDistance } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
+import { marketDaySummary } from './market-days.js';
 
 const root = document.getElementById('detail');
 
@@ -75,7 +76,34 @@ function render(store) {
       reportButton,
     ),
     el('p', { id: 'reportNotice', class: 'report-notice', role: 'status', hidden: '' }),
+    el('section', { id: 'nearMarkets', class: 'near-markets', 'aria-labelledby': 'nearMarketsTitle', hidden: '' }),
   ].filter(Boolean));
+}
+
+// ---------------------------------------------------------------- 가까운 전통시장 (MKT-01)
+
+const NEAR_MARKET_RADIUS = 300;
+
+async function loadNearMarkets(store) {
+  if (store.latitude == null || store.longitude == null) return;
+  let markets;
+  try {
+    markets = await api.nearbyMarkets({ lat: store.latitude, lng: store.longitude, radius: NEAR_MARKET_RADIUS });
+  } catch (_) {
+    return;   // 시장 정보는 덤이라, 실패하면 조용히 넘어간다
+  }
+  if (!markets.length) return;
+  const box = document.getElementById('nearMarkets');
+  box.replaceChildren(
+    el('h2', { id: 'nearMarketsTitle', text: `가까운 전통시장 (${NEAR_MARKET_RADIUS}m 안)` }),
+    el('ul', {}, ...markets.slice(0, 5).map((m) => el('li', {},
+      el('a', { href: `/market.html?id=${m.id}`, class: 'near-market' },
+        el('span', { class: 'near-market-name' }, el('span', { class: 'badge-market', text: '전통시장' }), el('strong', { text: m.name })),
+        el('span', { class: 'near-market-meta', text: `${formatDistance(m.distanceM)} · ${marketDaySummary(m)}` }),
+      ))),
+    ),
+  );
+  box.hidden = false;
 }
 
 // ---------------------------------------------------------------- 영업 정보 제보
@@ -165,6 +193,7 @@ async function init() {
   try {
     store = await api.storeDetail(id);
     render(store);
+    loadNearMarkets(store);
   } catch (e) {
     root.replaceChildren(el('p', { class: 'error', text: '가게 정보를 불러오지 못했어요. 지도로 돌아가 다시 선택해 주세요.' }));
     return;
