@@ -4,10 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>이음 - 우리 동네 백년가게</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/common.css">
   <link rel="stylesheet" href="/css/map.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">본문 바로가기</a>
   <!-- 상단: 로고, 지역 선택, 카테고리 -->
   <header class="topbar">
     <div class="topbar-row">
@@ -25,7 +28,7 @@
   </header>
 
   <!-- 지도와 목록 -->
-  <main class="map-area">
+  <main id="main" class="map-area" tabindex="-1">
     <div id="map" class="map" aria-label="가게 지도"></div>
     <section id="listView" class="list-view" hidden aria-label="가게 목록">
       <p id="listSummary" class="list-summary"></p>
@@ -34,7 +37,9 @@
 
     <button type="button" id="researchButton" class="research-button" hidden>이 지역에서 다시 검색</button>
     <div class="floating">
-      <button type="button" id="locateButton" class="fab" aria-label="내 위치로 이동">◎</button>
+      <button type="button" id="locateButton" class="fab" aria-label="내 위치로 이동">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      </button>
       <button type="button" id="viewToggle" class="fab fab-wide">목록 보기</button>
     </div>
     <p id="toast" class="toast" role="status" hidden></p>

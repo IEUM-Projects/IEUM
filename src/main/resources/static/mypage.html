@@ -4,15 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>내 정보 - 이음</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/common.css">
   <link rel="stylesheet" href="/css/auth.css">
 </head>
 <body class="auth-page">
-  <header class="auth-header">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a class="back-link" href="/">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>지도
+    </a>
     <a class="logo" href="/">이음</a>
-    <a class="back" href="/">지도로</a>
+    <span class="header-spacer"></span>
   </header>
-  <main class="auth-main">
+  <main id="main" class="auth-main" tabindex="-1">
     <section class="auth-card" id="card" hidden>
       <h1>내 정보</h1>
       <p class="lead" id="welcome"></p>
