@@ -8,6 +8,7 @@ import com.ieum.ieum.admin.AdminDtos.StoreChanges;
 import com.ieum.ieum.admin.AdminDtos.StoreDetail;
 import com.ieum.ieum.global.security.AuthUser;
 import com.ieum.ieum.report.ReportStatus;
+import com.ieum.ieum.theme.ThemeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,6 +40,8 @@ public class AdminController {
 
     private final AdminGuard guard;
     private final AdminReportService service;
+    /** 가게를 숨기거나 옮기면 테마로 걷기 계산을 다시 하게 한다 (트랜잭션이 끝난 뒤) */
+    private final ThemeService themeService;
 
     @GetMapping("/reports/counts")
     public Counts counts(@AuthenticationPrincipal AuthUser authUser) {
@@ -70,12 +73,16 @@ public class AdminController {
     @PostMapping("/stores/{storeId}/review")
     public ReviewResult review(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long storeId,
                                @Valid @RequestBody ReviewRequest request) {
-        return service.review(guard.requireAdmin(authUser), storeId, request);
+        ReviewResult result = service.review(guard.requireAdmin(authUser), storeId, request);
+        themeService.refresh();
+        return result;
     }
 
     @PostMapping("/stores/{storeId}/edit")
     public ReviewResult edit(@AuthenticationPrincipal AuthUser authUser, @PathVariable Long storeId,
                              @Valid @RequestBody StoreChanges changes) {
-        return service.edit(guard.requireAdmin(authUser), storeId, changes);
+        ReviewResult result = service.edit(guard.requireAdmin(authUser), storeId, changes);
+        themeService.refresh();
+        return result;
     }
 }

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>테마로 걷기 - 이음</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/theme.css">
+</head>
+<body class="theme-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/themes.html" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>테마 목록
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <div id="account" class="account"></div>
+  </header>
+  <main id="main" class="theme-main" tabindex="-1">
+    <p class="eyebrow">테마로 걷기</p>
+    <h1 id="themeTitle">불러오는 중...</h1>
+    <p id="themeDesc" class="lead"></p>
+    <div class="theme-tools">
+      <p id="summary" class="summary" role="status"></p>
+      <button type="button" id="todayFilter" class="filter-chip" aria-pressed="false" hidden>오늘 장 서는 곳만</button>
+    </div>
+    <ul id="list" class="theme-list"></ul>
+    <button type="button" id="moreButton" class="button-secondary more-button" hidden>더 보기</button>
+    <p class="note" id="themeNote"></p>
+  </main>
+  <script type="module" src="/js/theme.js"></script>
+</body>
+</html>
