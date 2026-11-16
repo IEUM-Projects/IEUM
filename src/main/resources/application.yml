@@ -4,6 +4,10 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/ieum?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 1GB         # 인허가 CSV (일반음식점 서울·경기는 150MB 넘음)
+      max-request-size: 3GB      # 여러 파일을 한 번에
   jpa:
     hibernate:
       ddl-auto: validate   # 테이블을 절대 지우거나 바꾸지 않음
@@ -23,7 +27,8 @@ spring:
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_post   # 카카오는 시크릿을 요청 본문으로 받음
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope: profile_nickname
+            scope:
+              - profile_nickname
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize
@@ -43,3 +48,21 @@ festival:
     cron: "0 30 4 * * *"      # 매일 새벽 4시 30분 (서울 시간)
     on-startup: empty          # 서버를 켤 때 표가 비어 있으면 바로 받기 (always: 매번, never: 안 함)
     tour-detail-limit: 200     # 한 번에 받아 올 관광공사 소개글 수 (하루 호출 한도 1000회 안에서)
+
+# 백년가게 인허가 영업상태 확인 (DATA-02)
+# 관리자 '폐업 의심' 화면에서 공공데이터포털의 인허가 CSV(행정안전부_식품_일반음식점·휴게음식점·제과점영업)를 올려서 확인한다.
+# 가게 분류(categories)마다 위에서부터 차례로 찾다가 같은 가게를 찾으면 멈춘다. code = 관리번호 가운데 업종 번호
+license-check:
+  kinds:
+    - id: general_restaurants
+      label: 일반음식점
+      code: "101"
+      categories: [음식점, 기타, ""]          # "" = 분류 없음
+    - id: rest_restaurants
+      label: 휴게음식점
+      code: "104"
+      categories: [음식점, 카페·간식, 기타, ""]
+    - id: bakeries
+      label: 제과점
+      code: "121"
+      categories: [카페·간식, 기타, ""]
