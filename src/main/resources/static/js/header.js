@@ -1,6 +1,7 @@
 // 상단 바의 계정 영역 (지도 화면, 가게 상세 화면이 함께 씀)
 // 로그인 전: "로그인" 링크 / 로그인 후: 닉네임 버튼 → 메뉴(내 정보, 관리자일 때 관리자, 로그아웃)
 import * as auth from './auth.js';
+import './text-size.js';   // 고른 글자 크기를 이 화면에도 적용
 
 function el(tag, props = {}, ...children) {
   const node = document.createElement(tag);

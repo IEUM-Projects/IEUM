@@ -48,8 +48,10 @@ public class FestivalController {
                           BigDecimal latitude, BigDecimal longitude, String imageUrl) {
     }
 
+    /** imageLicense: 관광공사 사진의 공공누리 유형 (Type1 출처표시, Type3 출처표시·변경금지). 사진 아래 출처와 함께 적는다 */
     public record Nearby(Long id, String name, String place, LocalDate startDate, LocalDate endDate,
-                         boolean longTerm, String regionName, long distanceM, String imageUrl) {
+                         boolean longTerm, String regionName, long distanceM, String imageUrl,
+                         String imageLicense) {
     }
 
     @GetMapping("/nearby")
@@ -72,7 +74,7 @@ public class FestivalController {
         return festivals.stream().map(f -> new Nearby(f.getId(), f.getName(), f.getPlace(), f.getStartDate(),
                 f.getEndDate(), f.isLongTerm(), regionName(f, regions),
                 Math.round(distance(lat, lng, f.getLatitude().doubleValue(), f.getLongitude().doubleValue())),
-                f.getImageUrl())).toList();
+                f.getImageUrl(), f.getImageLicense())).toList();
     }
 
     /** 두 좌표 사이 거리(m). DB의 ST_Distance_Sphere와 같은 지구 반지름 사용 */

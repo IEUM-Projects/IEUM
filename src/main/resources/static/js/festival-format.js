@@ -3,6 +3,18 @@
 
 export const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
+/** 관광공사 사진의 공공누리 유형 표기 (사진 아래 출처와 함께) */
+export const LICENSES = {
+  Type1: '공공누리 제1유형 (출처표시)',
+  Type2: '공공누리 제2유형 (출처표시, 상업적 이용금지)',
+  Type3: '공공누리 제3유형 (출처표시, 변경금지)',
+  Type4: '공공누리 제4유형 (출처표시, 상업적 이용금지, 변경금지)',
+};
+
+export function photoCredit(license) {
+  return `사진: 한국관광공사${LICENSES[license] ? ` · ${LICENSES[license]}` : ''}`;
+}
+
 export const pad = (n) => String(n).padStart(2, '0');
 export const ymd = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
 export const daysIn = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();

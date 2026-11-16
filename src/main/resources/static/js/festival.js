@@ -2,17 +2,9 @@
 import { api } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
-import { longDate, status } from './festival-format.js';
+import { longDate, status, photoCredit } from './festival-format.js';
 
 const root = document.getElementById('detail');
-
-// 관광공사 사진의 이용 조건 (공공누리 유형)
-const LICENSES = {
-  Type1: '공공누리 제1유형 (출처표시)',
-  Type2: '공공누리 제2유형 (출처표시, 상업적 이용금지)',
-  Type3: '공공누리 제3유형 (출처표시, 변경금지)',
-  Type4: '공공누리 제4유형 (출처표시, 상업적 이용금지, 변경금지)',
-};
 
 function el(tag, props = {}, ...children) {
   const node = document.createElement(tag);
@@ -80,7 +72,7 @@ function render(f) {
     // 사진은 자르거나 바꾸지 않고 비율 그대로 보여 주고, 출처와 이용 조건을 함께 적는다
     f.imageUrl ? el('figure', { class: 'festival-photo' },
       el('img', { src: f.imageUrl, alt: `${f.name} 대표 사진`, loading: 'lazy', referrerpolicy: 'no-referrer' }),
-      el('figcaption', { text: `사진: 한국관광공사${LICENSES[f.imageLicense] ? ` · ${LICENSES[f.imageLicense]}` : ''}` }),
+      el('figcaption', { text: photoCredit(f.imageLicense) }),
     ) : null,
     el('dl', { class: 'info' },
       row('장소', f.place),

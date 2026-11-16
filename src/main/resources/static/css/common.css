@@ -202,3 +202,16 @@ a:hover { color: var(--text-link-hover); }
 @media (max-width: 380px) {
   .account-link, .account-button { max-width: 84px; padding: 0 var(--space-2); }
 }
+
+/* 화면에는 안 보이고 화면 낭독기만 읽는 글자 (UI-03) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
