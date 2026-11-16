@@ -29,6 +29,10 @@ public class Market {
     @Column(name = "source_key", nullable = false, length = 250)
     private String sourceKey;
 
+    /** 전통시장현황 시장코드 (market_facilities). 시설 정보와 이어지지 않았으면 null */
+    @Column(name = "market_code", length = 20)
+    private String marketCode;
+
     @Column(nullable = false, length = 100)
     private String name;
 
@@ -104,6 +108,15 @@ public class Market {
         latitude = BigDecimal.valueOf(lat).setScale(7, RoundingMode.HALF_UP);
         longitude = BigDecimal.valueOf(lng).setScale(7, RoundingMode.HALF_UP);
         geocodeStatus = "KAKAO";
+    }
+
+    /** 시설 정보와 잇기 / 풀기 (관리자 확인, DATA-01) */
+    public void linkFacility(String code) {
+        marketCode = code;
+    }
+
+    public void unlinkFacility() {
+        marketCode = null;
     }
 
     public void geocodeFailed() {

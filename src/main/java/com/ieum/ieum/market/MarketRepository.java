@@ -1,5 +1,8 @@
 package com.ieum.ieum.market;
 
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -26,6 +29,9 @@ public interface MarketRepository extends JpaRepository<Market, Long> {
         Integer getStoreCount();
         Boolean getHasToilet();
         Boolean getHasParking();
+        /** 시설 정보와 이어진 시장만 값이 있음 (아니면 null) */
+        Boolean getArcade();
+        Integer getKidsFriendly();
         Double getDistanceM();
     }
 
@@ -45,8 +51,12 @@ public interface MarketRepository extends JpaRepository<Market, Long> {
                    m.market_days AS marketDays, m.road_address AS roadAddress, m.jibun_address AS jibunAddress,
                    m.latitude AS latitude, m.longitude AS longitude, m.store_count AS storeCount,
                    m.has_toilet AS hasToilet, m.has_parking AS hasParking,
+                   f.arcade AS arcade,
+                   CASE WHEN f.market_code IS NULL THEN NULL
+                        WHEN f.nursing_room = 1 OR f.kids_room = 1 THEN 1 ELSE 0 END AS kidsFriendly,
                    ROUND(ST_Distance_Sphere(POINT(m.longitude, m.latitude), POINT(:lng, :lat))) AS distanceM
             FROM markets m
+            LEFT JOIN market_facilities f ON f.market_code = m.market_code
             WHERE m.latitude  BETWEEN :lat - :radius / 111320.0 AND :lat + :radius / 111320.0
               AND m.longitude BETWEEN :lng - :radius / (111320.0 * COS(RADIANS(:lat)))
                                   AND :lng + :radius / (111320.0 * COS(RADIANS(:lat)))
@@ -71,6 +81,24 @@ public interface MarketRepository extends JpaRepository<Market, Long> {
             LIMIT 30
             """, nativeQuery = true)
     List<NearbyStoreRow> findStoresNear(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") int radius);
+
+    /** 관리자가 시설 정보와 이을 때 잠그고 읽는다 */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select m from Market m where m.id = :id")
+    Optional<Market> findForUpdate(@Param("id") Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select m from Market m where m.marketCode = :code")
+    Optional<Market> findByMarketCodeForUpdate(@Param("code") String code);
+
+    @Query("select m from Market m where m.marketCode = :code")
+    Optional<Market> findByMarketCode(@Param("code") String code);
+
+    @Query("select m from Market m where m.marketCode in :codes")
+    List<Market> findAllByMarketCodeIn(@Param("codes") java.util.Collection<String> codes);
+
+    @Query("select m from Market m where m.id in :ids")
+    List<Market> findAllByIdIn(@Param("ids") java.util.Collection<Long> ids);
 
     /** 같은 건물(같은 좌표)에 있는 다른 시장 */
     @Query("select m from Market m where m.latitude = :lat and m.longitude = :lng and m.id <> :id order by m.name")

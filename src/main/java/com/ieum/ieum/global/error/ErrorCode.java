@@ -41,7 +41,11 @@ public enum ErrorCode {
 
     // 공지사항 (NOT-01)
     NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "공지를 찾을 수 없어요."),
-    TOO_MANY_PINNED(HttpStatus.CONFLICT, "상단 고정은 3개까지 할 수 있어요. 다른 공지의 고정을 먼저 풀어 주세요.");
+    TOO_MANY_PINNED(HttpStatus.CONFLICT, "상단 고정은 3개까지 할 수 있어요. 다른 공지의 고정을 먼저 풀어 주세요."),
+
+    // 전통시장 시설 연결 (DATA-01)
+    MARKET_LINK_NOT_FOUND(HttpStatus.NOT_FOUND, "시설 정보를 찾을 수 없어요."),
+    MARKET_ALREADY_LINKED(HttpStatus.CONFLICT, "이 시장은 이미 다른 시설 정보와 이어져 있어요. 그쪽 연결을 먼저 풀어 주세요.");
 
     private final HttpStatus status;
     private final String message;

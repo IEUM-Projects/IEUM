@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>시장 연결 확인 - 관리자 - 이음</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header admin-header">
+    <a class="logo" href="/">이음</a>
+    <span class="admin-tag">관리자</span>
+    <div id="account" class="account"></div>
+  </header>
+
+  <main id="main" class="admin-main" tabindex="-1">
+    <nav class="admin-nav" aria-label="관리 메뉴">
+      <a href="/admin.html">제보 처리</a>
+      <a href="/admin-notices.html">공지사항</a>
+      <a href="/admin-markets.html" aria-current="page">시장 연결 확인</a>
+    </nav>
+    <h1>시장 시설 정보 연결 확인</h1>
+    <p class="page-lead">소상공인시장진흥공단 '전통시장현황'의 시설 정보를 이음의 시장과 잇는 일이에요.
+      시장명과 주소가 같은 곳은 자동으로 이었고, <strong>이름만 같고 주소가 다른 곳</strong>을 여기서 확인해요.</p>
+
+    <p id="gate" class="gate" role="status">확인하는 중...</p>
+
+    <div id="workspace" hidden>
+      <div class="tabs link-tabs" role="tablist" aria-label="연결 상태">
+        <button type="button" role="tab" id="tab-PENDING" aria-controls="panel" aria-selected="true" data-status="PENDING">확인 대기 <span class="count" id="count-PENDING"></span></button>
+        <button type="button" role="tab" id="tab-LINKED" aria-controls="panel" aria-selected="false" tabindex="-1" data-status="LINKED">직접 이음 <span class="count" id="count-LINKED"></span></button>
+        <button type="button" role="tab" id="tab-IGNORED" aria-controls="panel" aria-selected="false" tabindex="-1" data-status="IGNORED">맞는 시장 없음 <span class="count" id="count-IGNORED"></span></button>
+        <button type="button" role="tab" id="tab-AUTO" aria-controls="panel" aria-selected="false" tabindex="-1" data-status="AUTO">자동 연결 <span class="count" id="count-AUTO"></span></button>
+      </div>
+      <section id="panel" role="tabpanel" aria-labelledby="tab-PENDING" tabindex="-1">
+        <p id="listStatus" class="list-status" role="status"></p>
+        <ul id="list" class="admin-list"></ul>
+        <button type="button" id="moreButton" class="button-secondary more-button" hidden>더 보기</button>
+      </section>
+    </div>
+  </main>
+
+  <p id="toast" class="toast" role="status" hidden></p>
+  <script type="module" src="/js/admin-markets.js"></script>
+</body>
+</html>

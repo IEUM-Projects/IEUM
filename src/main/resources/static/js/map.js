@@ -3,6 +3,7 @@ import { api, loadKakaoMapSdk, formatDistance, directionsUrl } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { marketDaySummary } from './market-days.js';
+import { MARKET_NEEDS } from './market-facilities.js';
 
 const CATEGORIES = ['음식점', '카페·간식', '도소매', '생활서비스', '공방·공예', '기타'];
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.9780, label: '서울 중구' }; // 위치를 모를 때 시작점 (서울시청)
@@ -12,6 +13,7 @@ const state = {
   center: { lat: DEFAULT_CENTER.lat, lng: DEFAULT_CENTER.lng },
   radius: 1000,
   categories: new Set(),   // 비어 있으면 전체
+  marketNeeds: new Set(),  // 시장만 볼 때 거르는 조건 (주차 가능, 비 와도 OK, 아이와 함께). DATA-01
   stores: [],
   markets: [],
   showMarkets: true,   // 전통시장 핀 표시 (칩으로 켜고 끔)
@@ -58,7 +60,9 @@ function syncAddress() {
   else if (!state.showMarkets) params.set('show', 'store');
   else params.delete('show');
   params.delete('category');
+  params.delete('need');
   if (state.showStores) state.categories.forEach((c) => params.append('category', c));
+  else state.marketNeeds.forEach((n) => params.append('need', n));
   const query = params.toString();
   history.replaceState(null, '', location.pathname + (query ? `?${query}` : ''));
 }
@@ -74,16 +78,35 @@ function renderChips() {
     if (!state.showMarkets) state.showStores = true;   // 둘 다 꺼지면 빈 지도가 되므로 가게를 다시 켠다
     renderChips(); syncAddress(); search();
   });
-  nav.append(market, el('span', { class: 'chip-divider', 'aria-hidden': 'true' }));
+  nav.append(market);
+  // 시장만 볼 때: 시설 조건 (지도를 다시 부르지 않고 받아 둔 시장에서 거른다)
+  if (!state.showStores) {
+    Object.entries(MARKET_NEEDS).forEach(([key, need]) => {
+      const chip = el('button', { type: 'button', class: 'chip chip-need', 'aria-pressed': String(state.marketNeeds.has(key)), text: need.label });
+      chip.addEventListener('click', () => {
+        if (state.marketNeeds.has(key)) state.marketNeeds.delete(key);
+        else state.marketNeeds.add(key);
+        renderChips();
+        syncAddress();
+        hideCard();
+        drawMarkers();
+        renderList();
+        if (state.markets.length && !shownMarkets().length) toast('조건에 맞는 시장이 없어요. 조건을 줄이거나 반경을 넓혀 보세요.');
+      });
+      nav.append(chip);
+    });
+  }
+  nav.append(el('span', { class: 'chip-divider', 'aria-hidden': 'true' }));
   // 가게 분류: 시장만 보는 중이면 아무것도 눌려 있지 않고, 하나를 누르면 가게가 다시 보인다
   const all = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.showStores && state.categories.size === 0), text: '전체' });
-  all.addEventListener('click', () => { state.showStores = true; state.categories.clear(); renderChips(); syncAddress(); search(); });
+  all.addEventListener('click', () => { state.showStores = true; state.categories.clear(); state.marketNeeds.clear(); renderChips(); syncAddress(); search(); });
   nav.append(all);
   CATEGORIES.forEach((category) => {
     const chip = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.showStores && state.categories.has(category)), text: category });
     chip.addEventListener('click', () => {
       if (!state.showStores) {
         state.showStores = true;
+        state.marketNeeds.clear();
         state.categories = new Set([category]);
       } else if (state.categories.has(category)) state.categories.delete(category);
       else state.categories.add(category);
@@ -93,6 +116,12 @@ function renderChips() {
     });
     nav.append(chip);
   });
+}
+
+/** 화면에 보일 시장 (시장만 볼 때는 시설 조건으로 거름) */
+function shownMarkets() {
+  if (state.showStores || state.marketNeeds.size === 0) return state.markets;
+  return state.markets.filter((m) => [...state.marketNeeds].every((key) => MARKET_NEEDS[key].test(m)));
 }
 
 // ---------------------------------------------------------------- 검색
@@ -112,7 +141,9 @@ async function search() {
   if (failed) toast(failed.reason.message);
   drawMarkers();
   renderList();
-  if (!failed && state.stores.length === 0 && state.markets.length === 0) {
+  if (!failed && state.stores.length === 0 && state.markets.length > 0 && shownMarkets().length === 0) {
+    toast('조건에 맞는 시장이 없어요. 조건을 줄이거나 반경을 넓혀 보세요.');
+  } else if (!failed && state.stores.length === 0 && state.markets.length === 0) {
     const what = state.showStores ? '가게' : '전통시장';
     toast(`반경 ${formatDistance(state.radius)} 안에 ${what}${state.showStores ? '가' : '이'} 없어요. 반경을 넓히거나 다른 지역을 골라 보세요.`);
   }
@@ -153,7 +184,7 @@ function marketPinImage() {
 
 function drawMarkers() {
   marketMarkers.forEach((marker) => marker.setMap(null));
-  marketMarkers = state.markets.map((market) => {
+  marketMarkers = shownMarkets().map((market) => {
     const marker = new kakao.maps.Marker({
       map,
       position: new kakao.maps.LatLng(market.latitude, market.longitude),
@@ -209,18 +240,19 @@ function onMapMoved() {
 function renderList() {
   const parts = [
     state.showStores ? `가게 ${state.stores.length}곳` : null,
-    state.showMarkets ? `전통시장 ${state.markets.length}곳` : null,
+    state.showMarkets ? `전통시장 ${shownMarkets().length}곳` : null,
   ].filter(Boolean).join(' · ');
-  $('listSummary').textContent = `반경 ${formatDistance(state.radius)} 안 ${parts} · 가까운 순`;
-  $('marketListTitle').hidden = state.markets.length === 0;
-  $('marketList').replaceChildren(...state.markets.map((market) => el('li', {},
+  const needs = state.showStores ? '' : [...state.marketNeeds].map((key) => MARKET_NEEDS[key].label).join(', ');
+  $('listSummary').textContent = `반경 ${formatDistance(state.radius)} 안 ${parts}${needs ? ` (${needs})` : ''} · 가까운 순`;
+  $('marketListTitle').hidden = shownMarkets().length === 0;
+  $('marketList').replaceChildren(...shownMarkets().map((market) => el('li', {},
     el('a', { href: `/market.html?id=${market.id}` },
       el('span', { class: 'name', text: market.name }),
       el('span', { class: 'badge-market', text: '전통시장' }),
       el('div', { class: 'meta', text: `${formatDistance(market.distanceM)} · ${marketDaySummary(market)}` }),
     ),
   )));
-  $('storeListTitle').hidden = state.markets.length === 0 || state.stores.length === 0;
+  $('storeListTitle').hidden = shownMarkets().length === 0 || state.stores.length === 0;
   const list = $('storeList');
   list.replaceChildren(...state.stores.map((store) => el('li', {},
     el('a', { href: `/store.html?id=${store.id}` },
@@ -290,6 +322,8 @@ function showMarketCard(market) {
     market.storeCount ? `점포 ${market.storeCount.toLocaleString()}개` : null,
     `주차장 ${market.hasParking ? '있음' : '없음'}`,
     `화장실 ${market.hasToilet ? '있음' : '없음'}`,
+    market.arcade ? '아케이드' : null,
+    market.kidsFriendly ? '수유실·놀이방' : null,
   ].filter(Boolean).join(' · ');
   card.replaceChildren(...[
     close,
@@ -402,6 +436,8 @@ async function init() {
   }
   // 홈 메뉴의 '백년가게 → 음식점' 등: /map.html?show=store&category=음식점 (정해진 분류만 받음)
   params.getAll('category').filter((c) => CATEGORIES.includes(c)).forEach((c) => state.categories.add(c));
+  // 시장만 볼 때의 시설 조건: /map.html?show=market&need=parking (정해진 값만 받음)
+  if (!state.showStores) params.getAll('need').filter((n) => MARKET_NEEDS[n]).forEach((n) => state.marketNeeds.add(n));
   // 홈 메뉴의 '지역별 보기': 내 위치를 묻지 않고 지역 고르기 창부터 연다
   const pickRegion = params.get('pick') === 'region';
   if (pickRegion) {
