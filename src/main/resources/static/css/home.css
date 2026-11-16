@@ -360,7 +360,22 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
 .fair-legend { margin: var(--space-3) 0 0; display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); font-size: var(--font-body-xsmall); color: var(--text-subtle); }
 .fair-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--color-accent-60); }
 
-/* ⑥ 제보 안내 */
+/* ⑥ 공지사항 + 제보 안내 */
+.info-grid { display: grid; gap: var(--space-8); }
+.notice-box { min-width: 0; }
+.notice-list { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--color-gray-80); }
+.notice-list:empty { display: none; }
+.notice-list li { border-bottom: 1px solid var(--border-divider); }
+.notice-row { display: flex; align-items: center; gap: var(--space-3); min-height: 56px; padding: var(--space-2) 0; color: var(--text-body); text-decoration: none; }
+.notice-row:hover .notice-title { color: var(--text-link); text-decoration: underline; }
+.notice-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notice-row time { flex: none; font-size: var(--font-body-small); color: var(--text-subtle); }
+.pin-badge { flex: none; padding: 2px var(--space-2); border-radius: var(--radius-xsmall); background: var(--color-primary-70); color: var(--text-on-primary); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); }
+.utility-link, .menu-link, .footer-links a { display: inline-flex; align-items: center; min-height: var(--touch-min); color: var(--text-body); font-weight: var(--font-weight-bold); }
+.utility-link { margin-left: auto; margin-right: var(--space-4); text-decoration: none; }
+.utility-link:hover { color: var(--text-link); text-decoration: underline; }
+.menu-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.report-box:focus { outline: none; }
 .report-box { display: grid; grid-template-columns: 1fr; gap: var(--space-4); padding: var(--space-6) var(--space-5); border-radius: var(--radius-large); background: var(--color-primary-5); border: 1px solid var(--color-primary-10); }
 .report-icon { width: 40px; height: 40px; color: var(--color-primary-70); }
 .report-text { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); min-width: 0; }
@@ -495,6 +510,7 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
   .festival-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .market-layout { grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); }
   .market-layout.no-calendar { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
 }
 @media (prefers-reduced-motion: reduce) {
   .nav-button .caret { transition: none; }

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>공지 관리 - 관리자 - 이음</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header admin-header">
+    <a class="logo" href="/">이음</a>
+    <span class="admin-tag">관리자</span>
+    <div id="account" class="account"></div>
+  </header>
+
+  <main id="main" class="admin-main" tabindex="-1">
+    <nav class="admin-nav" aria-label="관리 메뉴">
+      <a href="/admin.html">제보 처리</a>
+      <a href="/admin-notices.html" aria-current="page">공지사항</a>
+    </nav>
+    <h1>공지사항 관리</h1>
+
+    <p id="gate" class="gate" role="status">확인하는 중...</p>
+
+    <div id="workspace" hidden>
+      <div class="notice-tools">
+        <p id="listStatus" class="list-status" role="status"></p>
+        <button type="button" id="newButton" class="button-primary">새 공지 쓰기</button>
+      </div>
+      <ul id="list" class="admin-list"></ul>
+      <button type="button" id="moreButton" class="button-secondary more-button" hidden>더 보기</button>
+    </div>
+  </main>
+
+  <p id="toast" class="toast" role="status" hidden></p>
+
+  <dialog id="noticeDialog" class="review-dialog" aria-labelledby="dialogTitle">
+    <form id="noticeForm" class="review-form" novalidate>
+      <div class="dialog-head">
+        <h2 id="dialogTitle">새 공지 쓰기</h2>
+        <button type="button" class="icon-button" id="closeDialog" aria-label="닫기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p id="dialogAlert" class="dialog-alert" role="alert" tabindex="-1" hidden></p>
+        <div class="field">
+          <label for="title">제목</label>
+          <input id="title" type="text" maxlength="100" autocomplete="off" required aria-describedby="titleCount">
+          <p class="help"><span id="titleCount">0/100</span></p>
+        </div>
+        <div class="field">
+          <label for="content">내용</label>
+          <textarea id="content" rows="10" maxlength="5000" required aria-describedby="contentHelp contentCount"></textarea>
+          <p class="help"><span id="contentHelp">글자만 써 주세요. 줄바꿈은 그대로 보여요. (HTML·링크 꾸밈은 적용되지 않아요)</span> <span id="contentCount">0/5000</span></p>
+        </div>
+        <fieldset class="set">
+          <legend>보이기</legend>
+          <div class="check-row">
+            <label class="check"><input type="checkbox" id="visible" checked> 공개</label>
+            <label class="check"><input type="checkbox" id="pinned"> 목록 맨 위에 고정 <span class="hint">(3개까지)</span></label>
+          </div>
+          <p class="help">공개를 끄면 숨겨져서 관리자만 볼 수 있어요. 공지는 지우지 않고 숨겨서 내려요.</p>
+        </fieldset>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="button-secondary" id="cancelButton">닫기</button>
+        <button type="submit" class="button-primary" id="submitButton">올리기</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/admin-notices.js"></script>
+</body>
+</html>
