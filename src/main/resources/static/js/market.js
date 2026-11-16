@@ -4,6 +4,7 @@ import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { todayString } from './festival-format.js';
 import { digitsOf, cycleLabel, daysOfMonth, isMarketDay, nextMarketDay, dayText } from './market-days.js';
+import { facilityGroups } from './market-facilities.js';
 
 const root = document.getElementById('detail');
 
@@ -22,6 +23,7 @@ const ICONS = {
   market: '<path d="M3 10l2-6h14l2 6"/><path d="M3 10c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3"/><path d="M5 13v7h14v-7"/>',
   directions: '<path d="M3 11l18-8-8 18-2-8z"/>',
   link: '<path d="M10 14l4-4"/><path d="M8.5 16.5l-1 1a3.5 3.5 0 01-5-5l3-3a3.5 3.5 0 015 0"/><path d="M15.5 7.5l1-1a3.5 3.5 0 015 5l-3 3a3.5 3.5 0 01-5 0"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   calendar: '<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
 };
 function icon(name, className = 'icon-small') {
@@ -52,6 +54,20 @@ function marketDayBox(m) {
     el('p', { class: 'day-main', text: m.permanent ? `매일 열고, ${cycleLabel(digits)}에 장이 서요` : `${cycleLabel(digits)}에 장이 서요` }),
     el('p', { class: `day-status ${todayIs ? 'today' : ''}`, text: todayIs ? '오늘 장 서는 날이에요' : next ? `다음 장날: ${dayText(next)}` : '' }),
     el('p', { class: 'day-sub', text: `매월 ${daysOfMonth(digits).join(', ')}일 · 31일은 시장마다 달라요` }));
+}
+
+/** 편의시설 상자 (DATA-01): 전통시장현황과 이어진 시장만. '있음'인 시설만 묶음별로 보여 준다 */
+function facilityBox(m) {
+  if (!m.facilities) return null;
+  const groups = facilityGroups(m);
+  return el('section', { class: 'facility-box', 'aria-labelledby': 'facilityTitle' },
+    el('h2', { id: 'facilityTitle', text: '편의시설' }),
+    ...groups.map((g) => el('div', { class: 'facility-group' },
+      el('h3', { text: g.title }),
+      g.items.length
+        ? el('ul', { class: 'facility-list' }, ...g.items.map((label) => el('li', {}, icon('check', 'icon-xsmall'), label)))
+        : el('p', { class: 'facility-none', text: '해당 시설이 없어요' }))),
+    el('p', { class: 'facility-note', text: `표시하지 않은 시설은 없거나 정보가 없어요. 시장이 소상공인시장진흥공단에 알린 내용(${m.facilities.dataDate} 기준)이라 실제와 다를 수 있어요.` }));
 }
 
 function storeItem(s) {
@@ -85,10 +101,11 @@ function render(m) {
       row('주소', address),
       m.roadAddress && m.jibunAddress ? row('지번', m.jibunAddress) : null,
       row('점포 수', m.storeCount ? `${m.storeCount.toLocaleString()}개` : null),
-      row('편의시설', `주차장 ${m.hasParking ? '있음' : '없음'} · 공중화장실 ${m.hasToilet ? '있음' : '없음'}`),
+      m.facilities ? null : row('편의시설', `주차장 ${m.hasParking ? '있음' : '없음'} · 공중화장실 ${m.hasToilet ? '있음' : '없음'}`),
       row('개설', m.openedYear ? `${m.openedYear}년${age > 0 ? ` (${age}년째)` : ''}` : null),
       m.goods.length ? row('취급품목', el('ul', { class: 'goods' }, ...m.goods.map((g) => el('li', { text: g })))) : null,
     ),
+    facilityBox(m),
     m.sameBuilding.length ? el('section', { class: 'near', 'aria-labelledby': 'sameTitle' },
       el('h2', { id: 'sameTitle', text: '같은 건물의 시장' }),
       el('ul', { class: 'near-list' }, ...m.sameBuilding.map((o) => el('li', {},
@@ -104,6 +121,7 @@ function render(m) {
       m.homepageUrl ? el('a', { class: 'button-secondary wide', href: m.homepageUrl, target: '_blank', rel: 'noopener noreferrer' }, icon('link'), '홈페이지') : null,
     ),
     el('p', { class: 'source', text: `시장 정보: 전국전통시장표준데이터 (소상공인시장진흥공단)${m.dataDate ? ` · 기준일 ${m.dataDate}` : ''}` }),
+    m.facilities ? el('p', { class: 'source', text: `편의시설: 전통시장현황 (소상공인시장진흥공단) · 기준일 ${m.facilities.dataDate}` }) : null,
   ].filter(Boolean));
 }
 

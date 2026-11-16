@@ -38,10 +38,22 @@ public class MarketController {
     static final int NEARBY_STORE_RADIUS = 300;
 
     private final MarketRepository repository;
+    private final MarketFacilityRepository facilityRepository;
 
     public record Summary(Long id, String name, String marketType, boolean permanent, String marketDays,
                           String address, BigDecimal latitude, BigDecimal longitude, Integer storeCount,
-                          boolean hasToilet, boolean hasParking, long distanceM) {
+                          boolean hasToilet, boolean hasParking, Boolean arcade, Boolean kidsFriendly, long distanceM) {
+    }
+
+    /** 시설 정보 (true 있음 / false 없음 / null 정보 없음). 출처·기준일과 함께 */
+    public record Facilities(Boolean customerParking, Boolean arcade, Boolean elevator, Boolean shoppingCart,
+                             Boolean lockers, Boolean bikeRack, Boolean nursingRoom, Boolean kidsRoom, Boolean restArea,
+                             Boolean helpCenter, Boolean foreignDesk, Boolean aed, String source, LocalDate dataDate) {
+        static Facilities of(MarketFacility f) {
+            return new Facilities(f.getCustomerParking(), f.getArcade(), f.getElevator(), f.getShoppingCart(),
+                    f.getLockers(), f.getBikeRack(), f.getNursingRoom(), f.getKidsRoom(), f.getRestArea(),
+                    f.getHelpCenter(), f.getForeignDesk(), f.getAed(), f.getSource(), f.getDataDate());
+        }
     }
 
     public record NearbyStore(Long id, String name, String type, String category, String infoStatus, long distanceM) {
@@ -54,6 +66,7 @@ public class MarketController {
                          String roadAddress, String jibunAddress, BigDecimal latitude, BigDecimal longitude,
                          String regionName, Integer storeCount, List<String> goods, String homepageUrl,
                          boolean hasToilet, boolean hasParking, Integer openedYear, String source, LocalDate dataDate,
+                         Facilities facilities,
                          int nearbyRadiusM, List<NearbyStore> nearbyStores, List<SameBuilding> sameBuilding) {
     }
 
@@ -70,7 +83,7 @@ public class MarketController {
                         m.getMarketDays(), m.getRoadAddress() != null ? m.getRoadAddress() : m.getJibunAddress(),
                         m.getLatitude(), m.getLongitude(), m.getStoreCount(),
                         Boolean.TRUE.equals(m.getHasToilet()), Boolean.TRUE.equals(m.getHasParking()),
-                        Math.round(m.getDistanceM())))
+                        m.getArcade(), m.getKidsFriendly() == null ? null : m.getKidsFriendly() == 1, Math.round(m.getDistanceM())))
                 .toList();
     }
 
@@ -92,11 +105,13 @@ public class MarketController {
             regionName = repository.findRegion(m.getSigunguCode())
                     .map(r -> r.getSidoName() + " " + r.getSigunguName()).orElse(null);
         }
+        Facilities facilities = m.getMarketCode() == null ? null
+                : facilityRepository.findById(m.getMarketCode()).map(Facilities::of).orElse(null);
         List<String> goods = m.getGoods() == null ? List.of()
                 : List.of(m.getGoods().split("\\+")).stream().map(String::trim).filter(s -> !s.isEmpty()).toList();
         return new Detail(m.getId(), m.getName(), m.getMarketType(), m.isPermanent(), m.getCycleRaw(), m.getMarketDays(),
                 m.getRoadAddress(), m.getJibunAddress(), m.getLatitude(), m.getLongitude(), regionName,
                 m.getStoreCount(), goods, m.getHomepageUrl(), m.isHasToilet(), m.isHasParking(), m.getOpenedYear(),
-                m.getSource(), m.getDataDate(), NEARBY_STORE_RADIUS, stores, same);
+                m.getSource(), m.getDataDate(), facilities, NEARBY_STORE_RADIUS, stores, same);
     }
 }
