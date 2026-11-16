@@ -24,6 +24,7 @@ import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 /**
  * 회원가입, 로그인, 토큰 재발급, 로그아웃.
@@ -31,6 +32,10 @@ import java.util.Locale;
  * Refresh Token은 JWT가 아니라 아무 의미 없는 무작위 문자열이다.
  * DB에 해시를 저장해 두고, 재발급할 때마다 새 토큰으로 바꾼다(회전).
  * → 로그아웃하면 즉시 무효가 되고, 훔친 토큰이 한 번 쓰이면 원래 주인의 토큰이 무효가 되어 알아챌 수 있다.
+ *
+ * 한 번 로그인해서 이어지는 토큰들은 같은 묶음(family)이다 (SYS-02).
+ * 로그아웃은 묶음을 통째로 지운다: 로그아웃 순간 재발급이 겹쳐 새로 나온 토큰이나,
+ * 재발급 직후 30초 동안 더 받아 주는 옛 토큰이 로그아웃 뒤에 살아남지 않게 하려는 것.
  */
 @Service
 @RequiredArgsConstructor
@@ -98,7 +103,7 @@ public class AuthService {
 
         user.loginSucceeded(now);
         refreshTokenRepository.deleteExpiredByUserId(user.getId(), now);
-        return issueTokens(user, now);
+        return issueTokens(user, newFamily(), now);
     }
 
     /**
@@ -117,7 +122,7 @@ public class AuthService {
         }
         user.loginSucceeded(now);
         refreshTokenRepository.deleteExpiredByUserId(user.getId(), now);
-        return issueTokens(user, now);
+        return issueTokens(user, newFamily(), now);
     }
 
     /** 쿠키의 Refresh Token으로 새 Access Token + 새 Refresh Token 발급 */
@@ -127,7 +132,8 @@ public class AuthService {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new BusinessException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
-        RefreshToken saved = refreshTokenRepository.findByTokenHash(sha256(refreshToken))
+        // 잠그고 읽는다: 같은 토큰으로 로그아웃이 동시에 오면 둘 중 하나가 끝날 때까지 기다린다
+        RefreshToken saved = refreshTokenRepository.findByTokenHashForUpdate(sha256(refreshToken))
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_INVALID));
         if (saved.isExpired(now)) {
             refreshTokenRepository.delete(saved);
@@ -138,22 +144,36 @@ public class AuthService {
         User user = userRepository.findById(saved.getUserId())
                 .filter(u -> u.getStatus() != UserStatus.WITHDRAWN)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REFRESH_TOKEN_INVALID));
-        return issueTokens(user, now);
+        // 새 토큰은 같은 묶음을 물려받는다 (묶음이 없던 옛 토큰이면 지금 묶음을 만들어 둘 다 넣는다)
+        String family = saved.getFamilyId() != null ? saved.getFamilyId() : newFamily();
+        saved.joinFamily(family);
+        return issueTokens(user, family, now);
     }
 
+    /** 로그아웃: 이 로그인에서 이어진 토큰을 모두 지운다 (다른 기기의 로그인은 그대로) */
     @Transactional
     public void logout(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) return;
-        refreshTokenRepository.findByTokenHash(sha256(refreshToken)).ifPresent(refreshTokenRepository::delete);
+        refreshTokenRepository.findByTokenHashForUpdate(sha256(refreshToken)).ifPresent(saved -> {
+            if (saved.getFamilyId() != null) {
+                refreshTokenRepository.deleteByFamilyId(saved.getFamilyId());
+            } else {
+                refreshTokenRepository.delete(saved);
+            }
+        });
     }
 
-    private AuthDtos.LoginResult issueTokens(User user, LocalDateTime now) {
+    private static String newFamily() {
+        return UUID.randomUUID().toString();
+    }
+
+    private AuthDtos.LoginResult issueTokens(User user, String family, LocalDateTime now) {
         String accessToken = jwtProvider.createAccessToken(user.getId(), user.getRole());
 
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
         String refreshToken = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        refreshTokenRepository.save(new RefreshToken(user.getId(), sha256(refreshToken), now.plus(REFRESH_TOKEN_TTL)));
+        refreshTokenRepository.save(new RefreshToken(user.getId(), family, sha256(refreshToken), now.plus(REFRESH_TOKEN_TTL)));
 
         var body = new AuthDtos.TokenResponse(accessToken, JwtProvider.ACCESS_TOKEN_TTL.toSeconds(),
                 AuthDtos.UserSummary.from(user));

@@ -26,6 +26,13 @@ public class RefreshToken {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    /**
+     * 같은 로그인에서 이어진 토큰 묶음 (SYS-02). 로그인할 때 새로 만들고, 재발급한 토큰은 그대로 물려받는다.
+     * 로그아웃은 이 묶음을 통째로 지운다. (11_schema_token_family.sql 이전에 만든 토큰은 비어 있음)
+     */
+    @Column(name = "family_id", columnDefinition = "char(36)")
+    private String familyId;
+
     @Column(name = "token_hash", nullable = false, columnDefinition = "char(64)")
     private String tokenHash;
 
@@ -35,10 +42,18 @@ public class RefreshToken {
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    public RefreshToken(Long userId, String tokenHash, LocalDateTime expiresAt) {
+    public RefreshToken(Long userId, String familyId, String tokenHash, LocalDateTime expiresAt) {
         this.userId = userId;
+        this.familyId = familyId;
         this.tokenHash = tokenHash;
         this.expiresAt = expiresAt;
+    }
+
+    /** 묶음이 없는 옛 토큰을 재발급할 때, 이 토큰도 새 묶음에 넣는다 (로그아웃 때 함께 지워지도록) */
+    public void joinFamily(String familyId) {
+        if (this.familyId == null) {
+            this.familyId = familyId;
+        }
     }
 
     public boolean isExpired(LocalDateTime now) {
