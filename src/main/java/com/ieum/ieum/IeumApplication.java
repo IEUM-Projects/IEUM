@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class IeumApplication {
-
-	public static void main(String[] args) {
-		SpringApplication.run(IeumApplication.class, args);
-	}
-
+    public static void main(String[] args) {
+        SpringApplication.run(IeumApplication.class, args);
+    }
 }

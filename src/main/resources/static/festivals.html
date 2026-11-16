@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>지역 축제 달력 - 이음</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/festival.css">
+</head>
+<body class="festival-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>홈
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <!-- 로그인 전: 로그인 링크 / 로그인 후: 닉네임 버튼 + 메뉴 (header.js가 채움) -->
+    <div id="account" class="account"></div>
+  </header>
+
+  <main id="main" class="festival-main" tabindex="-1">
+    <h1 class="page-title">지역 축제 달력</h1>
+
+    <div class="toolbar">
+      <label class="region-filter">지역
+        <select id="sidoSelect">
+          <option value="">전국</option>
+        </select>
+      </label>
+    </div>
+
+    <section class="calendar-card" aria-labelledby="monthTitle">
+      <div class="month-nav">
+        <button type="button" id="prevMonth" class="icon-button" aria-label="이전 달">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <h2 id="monthTitle" class="month-title" aria-live="polite"></h2>
+        <button type="button" id="nextMonth" class="icon-button" aria-label="다음 달">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="weekdays" aria-hidden="true">
+        <span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span><span class="sun">일</span>
+      </div>
+      <div id="calendar" class="calendar" role="group" aria-labelledby="monthTitle"></div>
+      <p class="calendar-legend"><span class="legend-dot" aria-hidden="true"></span>숫자: 그날 열리는 축제 수 · 날짜를 누르면 그날 축제만 보여요</p>
+    </section>
+
+    <section class="list-section" aria-labelledby="listTitle">
+      <div class="list-head">
+        <h2 id="listTitle"></h2>
+        <button type="button" id="clearDate" class="text-button" hidden>이번 달 전체 보기</button>
+      </div>
+      <p id="listStatus" class="list-status" role="status"></p>
+      <ul id="festivalList" class="festival-list"></ul>
+
+      <details id="longTerm" class="long-term" hidden>
+        <summary id="longTermTitle"></summary>
+        <ul id="longTermList" class="festival-list"></ul>
+      </details>
+    </section>
+
+    <p class="notice" role="note">
+      <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5v.5"/></svg>
+      일정은 바뀔 수 있어요. 방문 전에 주최 측에 확인해 주세요.
+    </p>
+    <p class="source">축제 정보: 전국문화축제표준데이터(문화체육관광부) · 한국관광공사</p>
+  </main>
+  <script type="module" src="/js/festivals.js"></script>
+</body>
+</html>

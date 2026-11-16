@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>내 정보 - 이음</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body class="auth-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a class="back-link" href="/map.html">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>지도
+    </a>
+    <a class="logo" href="/">이음</a>
+    <span class="header-spacer"></span>
+  </header>
+  <main id="main" class="auth-main" tabindex="-1">
+    <section class="auth-card" id="card" hidden>
+      <h1>내 정보</h1>
+      <p class="lead" id="welcome"></p>
+
+      <dl class="info-list">
+        <div><dt>로그인 방법</dt><dd id="provider"></dd></div>
+        <div><dt>이메일</dt><dd id="email"></dd></div>
+        <div><dt>가입일</dt><dd id="createdAt"></dd></div>
+      </dl>
+
+      <p id="formAlert" class="form-alert" role="status" hidden></p>
+      <form id="nicknameForm" novalidate>
+        <div class="field">
+          <label for="nickname">닉네임</label>
+          <div class="inline-form">
+            <input id="nickname" name="nickname" type="text" maxlength="12" required aria-describedby="nicknameHelp nicknameError">
+            <button type="submit" id="saveButton" class="button-primary">변경</button>
+          </div>
+          <p id="nicknameHelp" class="help">한글, 영문, 숫자로 2~12자</p>
+          <p id="nicknameError" class="error"></p>
+        </div>
+      </form>
+
+      <button type="button" id="logoutButton" class="button-secondary wide">로그아웃</button>
+    </section>
+
+    <!-- 내 영업 정보 제보 (STO-01) -->
+    <section class="auth-card reports-card" id="reports" aria-labelledby="reportsTitle" hidden>
+      <h2 id="reportsTitle">내 제보</h2>
+      <p class="lead">보낸 영업 정보 제보와 처리 상태예요.</p>
+      <p id="reportsStatus" class="reports-status" role="status"></p>
+      <ul id="reportList" class="report-list"></ul>
+    </section>
+  </main>
+  <script type="module" src="/js/mypage.js"></script>
+</body>
+</html>

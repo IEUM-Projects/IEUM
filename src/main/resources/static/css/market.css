@@ -1,0 +1,105 @@
+/* 전통시장 상세 화면 (MKT-01) (값은 tokens.css) */
+body.market-page { background: var(--surface-subtle); }
+
+.site-header .back-link { flex: 1 1 0; }
+.center-logo { margin: 0; }
+.site-header .account { flex: 1 1 0; display: flex; justify-content: flex-end; }
+
+.market-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--screen-margin) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.market-main:focus { outline: none; }
+.icon-xsmall { width: 14px; height: 14px; flex: none; }
+
+.title-block { display: flex; flex-direction: column; gap: var(--space-2); }
+.badges { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+.market-main h1 { font-size: var(--font-heading-xlarge); margin: 0; }
+
+/* 장날 상자 */
+.day-box {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-left-width: 1px;
+  border-radius: var(--radius-large);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.day-box h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-body-small);
+  color: var(--text-subtle);
+}
+.day-main { margin: 0; font-size: var(--font-body-large); font-weight: var(--font-weight-bold); }
+.day-status { margin: 0; font-weight: var(--font-weight-bold); color: var(--text-link); }
+.day-status:empty { display: none; }
+.day-status.today {
+  align-self: flex-start;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-small);
+  background: var(--color-primary-5);
+}
+.day-sub { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+
+/* 기본 정보 */
+.info {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-large);
+  padding: 0 var(--space-4);
+}
+.info div {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-divider);
+}
+.info div:last-child { border-bottom: none; }
+.info dt { color: var(--text-subtle); font-size: var(--font-body-small); }
+.info dd { margin: 0; }
+.goods { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.goods li {
+  font-size: var(--font-body-small);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-small);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-light);
+}
+
+/* 근처 백년가게, 같은 건물의 시장 */
+.near h2 { font-size: var(--font-heading-small); margin: 0 0 var(--space-2); }
+.near-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.near-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: var(--touch-min);
+  justify-content: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-large);
+  color: var(--text-body);
+  text-decoration: none;
+}
+.near-item:hover { border-color: var(--action-primary); color: var(--text-body); }
+.near-item:hover strong { color: var(--text-link); text-decoration: underline; }
+.near-name { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.near-meta { font-size: var(--font-body-small); color: var(--text-subtle); }
+.near .empty { margin: 0; color: var(--text-subtle); font-size: var(--font-body-small); }
+
+.actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.actions .wide { grid-column: 1 / -1; min-height: 52px; }
+.source { margin: 0; font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+.loading, .error { color: var(--text-subtle); margin: 0; }

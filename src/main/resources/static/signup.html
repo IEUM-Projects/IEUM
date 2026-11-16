@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>회원가입 - 이음</title>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body class="auth-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a class="back-link" href="/map.html">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>지도
+    </a>
+    <a class="logo" href="/">이음</a>
+    <span class="header-spacer"></span>
+  </header>
+  <main id="main" class="auth-main" tabindex="-1">
+    <section class="auth-card">
+      <h1>회원가입</h1>
+      <p class="lead">가입하면 바로 로그인돼요.</p>
+
+      <p id="formAlert" class="form-alert" role="alert" hidden></p>
+
+      <form id="signupForm" novalidate>
+        <div class="field">
+          <label for="email">이메일</label>
+          <input id="email" name="email" type="email" autocomplete="email" maxlength="100" required aria-describedby="emailError">
+          <p id="emailError" class="error"></p>
+        </div>
+        <div class="field">
+          <label for="nickname">닉네임</label>
+          <input id="nickname" name="nickname" type="text" autocomplete="nickname" maxlength="12" required aria-describedby="nicknameHelp nicknameError">
+          <p id="nicknameHelp" class="help">한글, 영문, 숫자로 2~12자</p>
+          <p id="nicknameError" class="error"></p>
+        </div>
+        <div class="field">
+          <label for="password">비밀번호</label>
+          <input id="password" name="password" type="password" autocomplete="new-password" maxlength="64" required aria-describedby="passwordRules passwordError">
+          <ul id="passwordRules" class="rules" aria-live="polite"></ul>
+          <p id="passwordError" class="error"></p>
+        </div>
+        <div class="field">
+          <label for="passwordConfirm">비밀번호 확인</label>
+          <input id="passwordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" maxlength="64" required aria-describedby="confirmError">
+          <p id="confirmError" class="error"></p>
+        </div>
+        <button type="submit" id="submitButton" class="button-primary wide">가입하기</button>
+      </form>
+
+      <div class="divider">또는</div>
+      <button type="button" id="kakaoButton" class="kakao-button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#000" d="M12 4C7 4 3 7.1 3 11c0 2.5 1.7 4.7 4.2 5.9l-.9 3.4c-.1.3.3.6.6.4l4-2.6c.4 0 .7.1 1.1.1 5 0 9-3.1 9-7S17 4 12 4z"/></svg>카카오로 시작하기
+      </button>
+
+      <p class="switch-link">이미 회원이신가요? <a id="loginLink" href="/login.html">로그인</a></p>
+    </section>
+  </main>
+  <script type="module" src="/js/signup.js"></script>
+</body>
+</html>
