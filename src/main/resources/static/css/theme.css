@@ -1,0 +1,71 @@
+/* 테마로 걷기 (THM-01) (값은 tokens.css) */
+body.theme-page { height: auto; min-height: 100%; background: var(--surface-subtle); }
+.site-header .back-link { flex: 1 1 0; }
+.center-logo { margin: 0; }
+.site-header .account { flex: 1 1 0; display: flex; justify-content: flex-end; }
+
+.theme-main { max-width: 800px; margin: 0 auto; padding: var(--space-6) var(--screen-margin) var(--space-12); display: flex; flex-direction: column; gap: var(--space-3); }
+.theme-main:focus { outline: none; }
+.theme-main h1 { margin: 0; font-size: var(--font-heading-large); }
+.eyebrow { margin: 0; font-size: var(--font-body-small); font-weight: var(--font-weight-bold); color: var(--color-primary-70); }
+.lead { margin: 0; color: var(--text-subtle); }
+.list-status { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.list-status:empty { display: none; }
+.note { margin: var(--space-2) 0 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+
+/* 테마 목록 카드 */
+.theme-cards { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: grid; gap: var(--space-3); }
+.theme-card {
+  display: flex; gap: var(--space-4); align-items: flex-start;
+  padding: var(--space-5); border: 1px solid var(--border-light); border-radius: var(--radius-large);
+  background: var(--surface); color: var(--text-body); text-decoration: none;
+}
+.theme-card:hover { border-color: var(--action-primary); }
+.theme-card:hover .theme-card-title { color: var(--text-link); text-decoration: underline; }
+.theme-card-icon { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: var(--radius-medium); background: var(--color-primary-5); color: var(--color-primary-70); }
+.theme-card-icon svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.theme-card-text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.theme-card-title { font-size: var(--font-heading-small); }
+.theme-card-desc { color: var(--text-subtle); }
+.theme-card-count { font-size: var(--font-body-small); font-weight: var(--font-weight-bold); color: var(--color-primary-70); }
+
+/* 테마 안의 목록 */
+.theme-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); margin-top: var(--space-2); }
+.summary { margin: 0; font-weight: var(--font-weight-bold); }
+.filter-chip {
+  min-height: var(--touch-min); padding: 0 var(--space-4);
+  border: 1px solid var(--border-light); border-radius: var(--radius-max);
+  background: var(--surface); color: var(--text-body); font: inherit;
+}
+.filter-chip[hidden] { display: none; }
+.filter-chip[aria-pressed="true"] { border-color: var(--color-primary-70); background: var(--color-primary-70); color: var(--text-on-primary); font-weight: var(--font-weight-bold); }
+.filter-chip[aria-pressed="true"]::before { content: '✓ '; }
+
+.theme-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.theme-item { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border: 1px solid var(--border-light); border-radius: var(--radius-large); background: var(--surface); }
+.theme-item.compact { padding: 0; }
+.item-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+.item-title { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-size: var(--font-body-large); }
+.item-title a { color: var(--text-body); }
+.item-title a:hover { color: var(--text-link); }
+.item-meta { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); overflow-wrap: anywhere; }
+.item-side { flex: none; font-size: var(--font-body-small); font-weight: var(--font-weight-bold); color: var(--color-primary-70); white-space: nowrap; }
+.item-link { align-self: flex-start; display: inline-flex; align-items: center; min-height: var(--touch-min); color: var(--text-link); font-weight: var(--font-weight-bold); }
+.item-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 64px; padding: var(--space-3) var(--space-4); color: var(--text-body); text-decoration: none; }
+.item-row:hover .item-title-text > span:first-child { color: var(--text-link); text-decoration: underline; }
+.item-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.item-title-text { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font-weight: var(--font-weight-bold); }
+.badge-today { display: inline-block; padding: 2px var(--space-2); border-radius: var(--radius-xsmall); background: var(--color-accent-5); color: var(--color-accent-70); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); }
+
+.store-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.store-chip {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  min-height: var(--touch-min); padding: 0 var(--space-3);
+  border: 1px solid var(--border-light); border-radius: var(--radius-max);
+  background: var(--surface); color: var(--text-body); text-decoration: none;
+}
+.store-chip:hover { border-color: var(--action-primary); color: var(--text-link); }
+.chip-sub { font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+
+.more-button { width: 100%; margin-top: var(--space-2); }
+.more-button[hidden] { display: none; }

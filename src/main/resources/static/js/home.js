@@ -9,6 +9,7 @@ import { changeTextSize, textSize, TEXT_SIZES } from './text-size.js';
 import { WEEKDAYS, ymd, weekday, daysIn, todayString, periodText, status, photoCredit } from './festival-format.js';
 import { digitsOf, cycleLabel, isMarketDay, marketDaySummary } from './market-days.js';
 import { cleanQuery, clearRecent, recentSearches, removeRecent, SEARCH_EXAMPLES } from './search-common.js';
+import { THEME_ICONS, placeLinkQuery } from './theme-common.js';
 
 const DEFAULT_PLACE = { lat: 37.5665, lng: 126.9780, label: '서울 중구', isDefault: true };   // 서울시청
 const PLACE_KEY = 'ieum_home_place';    // 고른 지역을 이 브라우저에만 기억 (편의 기능)
@@ -124,6 +125,11 @@ function updateMapLinks() {
       else if (latest.storeRadius !== 1000) params.set('radius', String(latest.storeRadius));   // 홈에서 넓혀 보여 준 반경 그대로
     }
     a.href = `/map.html?${params}`;
+  });
+  // 테마로 걷기: 홈의 위치를 넘겨 가까운 순으로 (data-theme="" 은 목록, 값이 있으면 그 테마)
+  document.querySelectorAll('a[data-theme]').forEach((a) => {
+    const id = a.dataset.theme;
+    a.href = id ? `/theme.html?id=${id}&${placeLinkQuery(place)}` : `/themes.html?${placeLinkQuery(place)}`;
   });
 }
 
@@ -636,6 +642,35 @@ async function loadMarkets(place) {
   }
 }
 
+// ================================================================ ⑤-1 테마로 걷기
+
+function themeCount(t) {
+  if (t.id === 'fair-markets') {
+    const near = `30km 안 ${t.near.toLocaleString()}${t.unit}`;
+    return t.today ? `${near} · 오늘 장 서는 곳 전국 ${t.today.toLocaleString()}${t.unit}` : near;
+  }
+  return `30km 안 ${t.near.toLocaleString()}${t.unit} · 전국 ${t.total.toLocaleString()}${t.unit}`;
+}
+
+async function loadThemes(place) {
+  $('themesStatus').textContent = '불러오는 중...';
+  try {
+    const res = await fetch(`/api/themes?lat=${place.lat.toFixed(6)}&lng=${place.lng.toFixed(6)}`);
+    if (!res.ok) throw new Error();
+    const themes = await res.json();
+    $('themeCards').replaceChildren(...themes.map((t, i) => el('li', { class: i === 0 ? 'theme-big' : 'theme-small' },
+      el('a', { class: 'theme-tile', href: `/theme.html?id=${t.id}&${placeLinkQuery(place)}`, 'data-theme': t.id },
+        el('span', { class: 'theme-tile-icon' }, icon(THEME_ICONS[t.id])),
+        el('span', { class: 'theme-tile-title', text: t.title }),
+        el('span', { class: 'theme-tile-desc', text: t.description }),
+        el('span', { class: 'theme-tile-count', text: themeCount(t) })))));
+    $('themesStatus').textContent = `${placeText(place)} 30km 안의 수예요.`;
+  } catch (_) {
+    $('themeCards').replaceChildren();
+    $('themesStatus').textContent = '테마를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
 // ================================================================ ⑥ 공지사항
 
 async function loadNotices() {
@@ -662,7 +697,7 @@ async function show(place) {
   $('placeLabel').textContent = placeText(place);
   $('placeNote').textContent = place.isDefault ? '위치 권한이 없어 기본 위치를 보여 드려요.' : '';
   updateMapLinks();
-  await Promise.all([loadStores(place), loadFestivals(place), loadMarkets(place)]);
+  await Promise.all([loadStores(place), loadFestivals(place), loadMarkets(place), loadThemes(place)]);
   renderHero();
 }
 

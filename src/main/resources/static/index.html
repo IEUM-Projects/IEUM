@@ -39,6 +39,7 @@
               <li><a href="/map.html" data-map="all">지도로 보기</a></li>
               <li><a href="/map.html?show=store" data-map="store">내 주변 백년가게</a></li>
               <li><a href="/map.html?pick=region">지역별 보기</a></li>
+              <li><a href="/themes.html" data-theme="">테마로 걷기</a></li>
             </ul>
           </li>
           <li class="nav-item">
@@ -203,6 +204,21 @@
             <p class="fair-legend"><span class="fair-dot" aria-hidden="true"></span>장이 서는 날</p>
           </section>
         </div>
+      </div>
+    </section>
+
+    <!-- ⑤-1 테마로 걷기 (THM-01) -->
+    <section class="section section-theme" id="themes" aria-labelledby="themesTitle">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <h2 id="themesTitle">테마로 걷기</h2>
+            <p class="theme-lead">오래된 가게가 모인 골목, 시장, 장날을 따라 걸어 보세요.</p>
+          </div>
+          <a class="more" href="/themes.html" data-theme="">테마 전체<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a>
+        </div>
+        <p id="themesStatus" class="status" role="status"></p>
+        <ul id="themeCards" class="theme-grid"></ul>
       </div>
     </section>
 

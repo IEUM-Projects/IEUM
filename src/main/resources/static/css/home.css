@@ -564,3 +564,35 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
 @media (prefers-reduced-motion: reduce) {
   .nav-button .caret { transition: none; }
 }
+
+/* ⑤-1 테마로 걷기 (THM-01): 짙은 청록 바탕, 큰 카드 1 + 작은 카드 2 */
+.section-theme { background: var(--color-primary-90); color: var(--surface); }
+.section-theme .section-head h2 { color: var(--surface); }
+.section-theme .theme-lead { margin: var(--space-2) 0 0; color: #d3e4df; }
+.section-theme .more { color: var(--surface); }
+.section-theme .more:hover { color: var(--color-accent-30); }
+.section-theme .status { color: #d3e4df; margin: 0 0 var(--space-4); }
+.theme-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-4); grid-template-columns: 1fr; }
+.theme-tile {
+  display: flex; flex-direction: column; gap: var(--space-2); height: 100%;
+  padding: var(--space-5); border-radius: var(--radius-large);
+  background: var(--color-primary-80); border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--surface); text-decoration: none;
+}
+.theme-tile:hover { border-color: var(--color-accent-30); }
+.theme-tile:hover .theme-tile-title { text-decoration: underline; }
+.theme-tile:focus-visible { outline: 3px solid var(--color-accent-30); outline-offset: 2px; }
+.theme-tile-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--radius-medium); background: rgba(255, 255, 255, 0.1); color: var(--color-accent-30); }
+.theme-tile-icon svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.theme-tile-title { font-size: var(--font-heading-small); font-weight: var(--font-weight-bold); }
+.theme-tile-desc { color: #d3e4df; }
+.theme-tile-count { margin-top: auto; padding-top: var(--space-2); font-size: var(--font-body-small); font-weight: var(--font-weight-bold); color: var(--color-accent-30); }
+@media (min-width: 900px) {
+  .theme-grid { grid-template-columns: 1.4fr 1fr; grid-template-rows: auto auto; }
+  .theme-big { grid-row: 1 / span 2; }
+  .theme-big .theme-tile { justify-content: flex-end; padding: var(--space-8); min-height: 320px; }
+  .theme-big .theme-tile-icon { width: 64px; height: 64px; margin-bottom: auto; }
+  .theme-big .theme-tile-icon svg { width: 36px; height: 36px; }
+  .theme-big .theme-tile-title { font-size: var(--font-heading-large); }
+  .theme-big .theme-tile-count { margin-top: var(--space-2); }
+}
