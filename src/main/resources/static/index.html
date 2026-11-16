@@ -18,6 +18,7 @@
     <div class="utility">
       <div class="inner utility-inner">
         <p class="tagline">우리 동네의 오래된 이야기를 잇습니다</p>
+        <a class="utility-link" href="/notices.html">공지사항</a>
         <div class="text-size" role="group" aria-labelledby="textSizeLabel">
           <span id="textSizeLabel">글자 크기</span>
           <button type="button" class="size-button" data-step="-1" aria-label="글자 작게">가<span aria-hidden="true">−</span></button>
@@ -201,10 +202,18 @@
       </div>
     </section>
 
-    <!-- ⑥ 제보 안내 -->
-    <section class="section" id="report" aria-labelledby="reportTitle" tabindex="-1">
-      <div class="inner">
-        <div class="report-box">
+    <!-- ⑥ 공지사항 + 제보 안내 -->
+    <div class="section">
+      <div class="inner info-grid">
+        <section class="notice-box" id="notices" aria-labelledby="noticesTitle">
+          <div class="section-head">
+            <h2 id="noticesTitle">공지사항</h2>
+            <a class="more" href="/notices.html">더 보기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a>
+          </div>
+          <p id="noticesStatus" class="status" role="status"></p>
+          <ul id="noticeList" class="notice-list"></ul>
+        </section>
+        <section class="report-box" id="report" aria-labelledby="reportTitle" tabindex="-1">
           <svg class="report-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18H6zM9 3v3h6V3M9 11h6M9 15h4"/></svg>
           <div class="report-text">
             <p class="eyebrow">함께 만드는 이음</p>
@@ -217,9 +226,9 @@
             </ol>
             <a class="button-primary report-button" href="/map.html?show=store" data-map="store">지도에서 가게 찾기</a>
           </div>
-        </div>
+        </section>
       </div>
-    </section>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -229,6 +238,7 @@
         <p>동네의 오래된 가게와 장터, 축제를 잇는 로컬 가이드</p>
       </div>
       <div class="footer-info">
+        <p class="footer-links"><a href="/notices.html">공지사항</a></p>
         <p><b>데이터 출처</b> 소상공인시장진흥공단 백년가게 · 전국전통시장표준데이터 · 전국문화축제표준데이터 · 한국관광공사(축제 정보·사진)</p>
         <p>© 2026 이음</p>
       </div>
@@ -264,6 +274,7 @@
     <div class="menu-user" id="menuUser"></div>
     <nav aria-label="전체 메뉴" id="menuNav" class="menu-nav"></nav>
     <div class="menu-bottom">
+      <a class="menu-link" href="/notices.html">공지사항</a>
       <div class="text-size" role="group" aria-labelledby="menuTextSizeLabel">
         <span id="menuTextSizeLabel">글자 크기</span>
         <button type="button" class="size-button" data-step="-1" aria-label="글자 작게">가<span aria-hidden="true">−</span></button>

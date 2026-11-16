@@ -37,7 +37,11 @@ public enum ErrorCode {
     // 관리자 (ADM-01)
     REPORT_ALREADY_REVIEWED(HttpStatus.CONFLICT, "이미 처리된 제보가 있어요. 목록을 새로 불러와 주세요."),
     ADDRESS_NOT_FOUND(HttpStatus.BAD_REQUEST, "주소로 위치를 찾지 못했어요. 도로명 주소를 확인해 주세요."),
-    MAP_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "지금은 주소로 위치를 찾을 수 없어요. 잠시 후 다시 시도해 주세요.");
+    MAP_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "지금은 주소로 위치를 찾을 수 없어요. 잠시 후 다시 시도해 주세요."),
+
+    // 공지사항 (NOT-01)
+    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "공지를 찾을 수 없어요."),
+    TOO_MANY_PINNED(HttpStatus.CONFLICT, "상단 고정은 3개까지 할 수 있어요. 다른 공지의 고정을 먼저 풀어 주세요.");
 
     private final HttpStatus status;
     private final String message;

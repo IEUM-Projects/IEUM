@@ -598,6 +598,25 @@ async function loadMarkets(place) {
   }
 }
 
+// ================================================================ ⑥ 공지사항
+
+async function loadNotices() {
+  $('noticesStatus').textContent = '불러오는 중...';
+  try {
+    const res = await fetch('/api/notices?size=4');
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    $('noticeList').replaceChildren(...data.items.map((n) => el('li', {},
+      el('a', { href: `/notice.html?id=${n.id}`, class: 'notice-row' },
+        n.pinned ? el('span', { class: 'pin-badge', text: '고정' }) : null,
+        el('span', { class: 'notice-title', text: n.title }),
+        el('time', { datetime: n.createdAt.slice(0, 10), text: n.createdAt.slice(0, 10).replaceAll('-', '.') })))));
+    $('noticesStatus').textContent = data.items.length ? '' : '아직 공지가 없어요.';
+  } catch (_) {
+    $('noticesStatus').textContent = '공지를 불러오지 못했어요.';
+  }
+}
+
 // ================================================================ 그리기
 
 async function show(place) {
@@ -670,6 +689,7 @@ async function init() {
   setupTextSize();
   setupHero();
   setupStoreTabs();
+  loadNotices();   // 위치와 상관없으므로 먼저
   if (await handleLoginReturn((message) => toast(message))) return;   // 카카오 로그인 후 보던 화면으로 이동
 
   $('placeButton').addEventListener('click', openPlaceDialog);
