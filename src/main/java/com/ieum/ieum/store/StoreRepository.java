@@ -1,6 +1,8 @@
 package com.ieum.ieum.store;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -16,6 +18,11 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     /** 지도에 보이는 가게 1곳 (숨김 처리된 가게는 찾지 않음) */
     Optional<Store> findByIdAndVisibleTrue(Long id);
+
+    /** 관리자 처리 중 같은 가게를 동시에 고치지 않도록 행을 잠그고 읽는다 (트랜잭션이 끝나면 풀림) */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from Store s where s.id = :id")
+    Optional<Store> findForUpdate(@Param("id") Long id);
 
     /**
      * 현재 위치 기준 반경 검색 (MAP-01).

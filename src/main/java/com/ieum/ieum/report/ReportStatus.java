@@ -1,6 +1,6 @@
 package com.ieum.ieum.report;
 
-/** 제보 처리 상태. 지금은 Workbench에서 직접 바꾸고, 나중에 관리자 화면에서 바꾼다 */
+/** 제보 처리 상태. 관리자 화면(/admin.html, ADM-01)에서 반영·반려한다 */
 public enum ReportStatus {
     RECEIVED("접수됨"),
     APPLIED("반영됨"),

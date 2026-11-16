@@ -51,9 +51,10 @@ public class StoreReportController {
                           ReportStatus status, String statusLabel) {
     }
 
-    public record MyReport(Long id, Long storeId, String storeName, ReportType type, String typeLabel,
+    /** storeVisible: false면 폐업 등으로 지도에서 숨긴 가게 (화면에서 가게 링크를 걸지 않음) */
+    public record MyReport(Long id, Long storeId, String storeName, boolean storeVisible, ReportType type, String typeLabel,
                            String content, ReportStatus status, String statusLabel, String adminNote,
-                           LocalDateTime createdAt) {
+                           LocalDateTime createdAt, LocalDateTime reviewedAt) {
     }
 
     @PostMapping("/api/stores/{storeId}/reports")
@@ -75,8 +76,9 @@ public class StoreReportController {
     public List<MyReport> myReports(@AuthenticationPrincipal AuthUser authUser) {
         return reportService.myReports(authUser.id()).stream().map(m -> {
             StoreReport r = m.report();
-            return new MyReport(r.getId(), r.getStoreId(), m.storeName(), r.getType(), r.getType().label(),
-                    r.getContent(), r.getStatus(), r.getStatus().label(), r.getAdminNote(), r.getCreatedAt());
+            return new MyReport(r.getId(), r.getStoreId(), m.storeName(), m.storeVisible(), r.getType(), r.getType().label(),
+                    r.getContent(), r.getStatus(), r.getStatus().label(), r.getAdminNote(), r.getCreatedAt(),
+                    r.getReviewedAt());
         }).toList();
     }
 }

@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/** store_reports 테이블 (sql/schema_report.sql) */
+/** store_reports 테이블 (sql/06_schema_report.sql, 처리 기록 칸은 09_schema_admin.sql) */
 @Entity
 @Table(name = "store_reports")
 @Getter
@@ -46,6 +46,12 @@ public class StoreReport {
     @Column(name = "admin_note", length = 300)
     private String adminNote;
 
+    @Column(name = "reviewed_by")
+    private Long reviewedBy;
+
+    @Column(name = "reviewed_at")
+    private LocalDateTime reviewedAt;
+
     @Column(name = "report_date", nullable = false)
     private LocalDate reportDate;
 
@@ -64,5 +70,18 @@ public class StoreReport {
         report.status = ReportStatus.RECEIVED;
         report.reportDate = today;
         return report;
+    }
+
+    public boolean isReceived() {
+        return status == ReportStatus.RECEIVED;
+    }
+
+    /** 관리자 처리 (ADM-01): 반영 또는 반려. 메모는 제보한 사람에게 보인다 */
+    public void review(ReportStatus decision, String note, Long adminId, LocalDateTime now) {
+        if (decision == ReportStatus.RECEIVED) throw new IllegalArgumentException("처리 결과는 반영 또는 반려여야 해요.");
+        this.status = decision;
+        this.adminNote = note;
+        this.reviewedBy = adminId;
+        this.reviewedAt = now;
     }
 }

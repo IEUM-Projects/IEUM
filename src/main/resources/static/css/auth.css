@@ -147,6 +147,8 @@ body.auth-page { background: var(--surface-subtle); min-height: 100dvh; }
 .report-rejected { background: var(--color-danger-5); color: var(--color-danger-70); }
 .report-date { font-size: var(--font-body-xsmall); color: var(--text-subtle); }
 .report-store-link { align-self: flex-start; display: inline-flex; align-items: center; min-height: var(--touch-min); font-weight: var(--font-weight-bold); }
+.report-store-name { display: inline-flex; align-items: center; min-height: var(--touch-min); }
+.report-note-date { color: var(--text-subtle); }
 .report-type, .report-content, .report-note { margin: 0; font-size: var(--font-body-small); }
 .report-content { color: var(--text-subtle); white-space: pre-line; overflow-wrap: anywhere; }
 .report-note { color: var(--text-body); background: var(--surface-subtle); padding: var(--space-2) var(--space-3); border-radius: var(--radius-small); margin-top: var(--space-1); }
