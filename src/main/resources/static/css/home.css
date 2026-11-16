@@ -464,6 +464,50 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
 .menu-bottom { padding: var(--space-4) var(--screen-margin) calc(var(--space-4) + env(safe-area-inset-bottom)); border-top: 1px solid var(--border-light); font-size: var(--font-body-small); color: var(--text-subtle); }
 .menu-bottom .size-button { border-color: var(--border-light); }
 
+/* ================================================================ 검색 창 */
+.search-button span { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+.search-dialog {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: var(--surface);
+  color: var(--text-body);
+}
+.search-dialog::backdrop { background: var(--dim); }
+.search-panel { max-width: 960px; margin: 0 auto; padding-bottom: var(--space-6); }
+.search-panel .menu-head h2 { margin: 0; font-size: var(--font-heading-medium); }
+.home-search-form { display: flex; gap: var(--space-2); padding: var(--space-5) var(--screen-margin) 0; }
+.home-search-form input {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0 var(--space-4);
+  border: 2px solid var(--color-primary-70);
+  border-radius: var(--radius-medium);
+  font: inherit;
+  font-size: var(--font-body-large);
+  color: var(--text-body);
+}
+.home-search-form .button-primary { min-height: 52px; padding: 0 var(--space-5); }
+.search-columns { display: grid; gap: var(--space-6); padding: var(--space-6) var(--screen-margin) 0; }
+.search-columns h3 { margin: 0 0 var(--space-3); font-size: var(--font-body-large); }
+.search-col-head { display: flex; align-items: center; justify-content: space-between; }
+.search-col-head h3 { margin: 0; }
+.text-button { min-height: var(--touch-min); border: none; background: none; color: var(--text-subtle); text-decoration: underline; font-size: var(--font-body-small); }
+.text-button[hidden] { display: none; }
+.search-chips { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.search-chips:empty { display: none; }
+.search-chip { display: inline-flex; align-items: center; min-height: var(--touch-min); padding: 0 var(--space-4); border: 1px solid var(--border-light); border-radius: var(--radius-max); color: var(--text-body); text-decoration: none; }
+.search-chip:hover { border-color: var(--action-primary); color: var(--text-link); }
+.chip-with-remove { display: inline-flex; }
+.chip-with-remove .search-chip { border-radius: var(--radius-max) 0 0 var(--radius-max); border-right: none; }
+.chip-remove { min-width: var(--touch-min); min-height: var(--touch-min); border: 1px solid var(--border-light); border-radius: 0 var(--radius-max) var(--radius-max) 0; background: var(--surface); color: var(--text-subtle); font-size: 1.25rem; }
+.chip-remove:hover { color: var(--color-danger-70); }
+.search-empty { margin: var(--space-2) 0 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.search-empty[hidden] { display: none; }
+
 /* ================================================================ 위치 바꾸기 창 */
 .place-dialog { width: min(420px, calc(100% - 32px)); padding: 0; border: none; border-radius: var(--radius-large); box-shadow: var(--shadow-4); color: var(--text-body); }
 .place-dialog::backdrop { background: var(--dim); }
@@ -494,10 +538,15 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
   .slide-art { display: flex; align-items: center; justify-content: center; gap: var(--space-6); }
   .slide-photo img { max-height: 300px; }
   .menu-dialog { width: 420px; margin-left: auto; }
+  .search-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .section { padding: var(--space-12) 0; }
   .section-head h2 { font-size: 1.75rem; }
 }
+@media (max-width: 599px) {
+  .search-button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
 @media (min-width: 1024px) {
+  .menu-button.search-button { display: inline-flex; }
   .utility { display: block; }
   .main-nav { display: flex; }
   .menu-button { display: none; }

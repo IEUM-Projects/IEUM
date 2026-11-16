@@ -8,6 +8,7 @@ import { handleLoginReturn } from './login-return.js';
 import { changeTextSize, textSize, TEXT_SIZES } from './text-size.js';
 import { WEEKDAYS, ymd, weekday, daysIn, todayString, periodText, status, photoCredit } from './festival-format.js';
 import { digitsOf, cycleLabel, isMarketDay, marketDaySummary } from './market-days.js';
+import { cleanQuery, clearRecent, recentSearches, removeRecent, SEARCH_EXAMPLES } from './search-common.js';
 
 const DEFAULT_PLACE = { lat: 37.5665, lng: 126.9780, label: '서울 중구', isDefault: true };   // 서울시청
 const PLACE_KEY = 'ieum_home_place';    // 고른 지역을 이 브라우저에만 기억 (편의 기능)
@@ -235,6 +236,43 @@ function setupTextSize() {
     update();
   }));
   update();
+}
+
+// ================================================================ 검색 창
+
+function setupSearch() {
+  const dialog = $('searchDialog');
+  const chip = (q) => el('a', { class: 'search-chip', href: `/search.html?q=${encodeURIComponent(q)}`, text: q });
+  function renderRecent() {
+    const recent = recentSearches();
+    $('homeRecent').replaceChildren(...recent.map((q) => {
+      const remove = el('button', { type: 'button', class: 'chip-remove', 'aria-label': `최근 검색어 ${q} 지우기`, text: '×' });
+      remove.addEventListener('click', () => { removeRecent(q); renderRecent(); $('homeQ').focus(); });
+      return el('li', { class: 'chip-with-remove' }, chip(q), remove);
+    }));
+    $('homeRecentEmpty').hidden = recent.length > 0;
+    $('homeClearRecent').hidden = recent.length === 0;
+  }
+  $('homeExamples').replaceChildren(...SEARCH_EXAMPLES.map((q) => el('li', {}, chip(q))));
+  $('searchButton').addEventListener('click', () => {
+    renderRecent();
+    dialog.showModal();
+    $('homeQ').focus();
+  });
+  $('searchClose').addEventListener('click', () => dialog.close());
+  $('homeClearRecent').addEventListener('click', () => { clearRecent(); renderRecent(); $('homeQ').focus(); });
+  dialog.addEventListener('close', () => $('searchButton').focus());
+  // 바깥(어두운 부분)을 누르면 닫기
+  dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+  $('homeSearchForm').addEventListener('submit', (event) => {
+    const q = cleanQuery($('homeQ').value);
+    if (!q) {
+      event.preventDefault();
+      $('homeQ').focus();
+      return;
+    }
+    $('homeQ').value = q;
+  });
 }
 
 // ================================================================ ① 주요 소식 (슬라이드)
@@ -686,6 +724,7 @@ async function init() {
   mountAccount($('account'), { next: '/', onLogout: () => toast('로그아웃했어요.') });
   setupNav();
   setupMenuDialog();
+  setupSearch();
   setupTextSize();
   setupHero();
   setupStoreTabs();

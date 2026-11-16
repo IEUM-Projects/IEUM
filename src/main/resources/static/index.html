@@ -68,6 +68,10 @@
       </nav>
 
       <div class="header-actions">
+        <button type="button" id="searchButton" class="menu-button search-button" aria-haspopup="dialog" aria-controls="searchDialog">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <span>검색</span>
+        </button>
         <div id="account" class="account"></div>
         <button type="button" id="menuButton" class="menu-button" aria-haspopup="dialog" aria-controls="menuDialog">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
@@ -279,6 +283,37 @@
         <span id="menuTextSizeLabel">글자 크기</span>
         <button type="button" class="size-button" data-step="-1" aria-label="글자 작게">가<span aria-hidden="true">−</span></button>
         <button type="button" class="size-button" data-step="1" aria-label="글자 크게">가<span aria-hidden="true">+</span></button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 검색 창 -->
+  <dialog id="searchDialog" class="search-dialog" aria-labelledby="searchDialogTitle">
+    <div class="search-panel">
+      <div class="menu-head">
+        <h2 id="searchDialogTitle">통합 검색</h2>
+        <button type="button" class="icon-button" id="searchClose" aria-label="검색 닫기">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <form id="homeSearchForm" class="home-search-form" role="search" action="/search.html">
+        <label for="homeQ" class="sr-only">검색어</label>
+        <input id="homeQ" name="q" type="search" maxlength="30" autocomplete="off" enterkeyhint="search" placeholder="가게, 시장, 축제 이름이나 지역">
+        <button type="submit" class="button-primary">검색</button>
+      </form>
+      <div class="search-columns">
+        <section aria-labelledby="homeRecentTitle">
+          <div class="search-col-head">
+            <h3 id="homeRecentTitle">최근 검색어</h3>
+            <button type="button" id="homeClearRecent" class="text-button">전체 삭제</button>
+          </div>
+          <ul id="homeRecent" class="search-chips"></ul>
+          <p id="homeRecentEmpty" class="search-empty">최근 검색어가 없어요.</p>
+        </section>
+        <section aria-labelledby="homeExampleTitle">
+          <h3 id="homeExampleTitle">이렇게 찾아보세요</h3>
+          <ul id="homeExamples" class="search-chips"></ul>
+        </section>
       </div>
     </div>
   </dialog>
