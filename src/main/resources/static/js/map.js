@@ -51,12 +51,14 @@ function toast(message, ms = 3000) {
 
 // ---------------------------------------------------------------- 카테고리
 
-// 주소의 ?show=market|store 를 지금 상태에 맞춘다 (새로고침·공유해도 같은 화면)
+// 주소의 ?show=market|store, ?category= 를 지금 상태에 맞춘다 (새로고침·공유해도 같은 화면)
 function syncAddress() {
   const params = new URLSearchParams(location.search);
   if (!state.showStores) params.set('show', 'market');
   else if (!state.showMarkets) params.set('show', 'store');
   else params.delete('show');
+  params.delete('category');
+  if (state.showStores) state.categories.forEach((c) => params.append('category', c));
   const query = params.toString();
   history.replaceState(null, '', location.pathname + (query ? `?${query}` : ''));
 }
@@ -398,6 +400,14 @@ async function init() {
     // 홈의 '내 주변 백년가게 → 지도에서 보기': 가게만 (전통시장 칩을 누르면 시장도 보임)
     state.showMarkets = false;
   }
+  // 홈 메뉴의 '백년가게 → 음식점' 등: /map.html?show=store&category=음식점 (정해진 분류만 받음)
+  params.getAll('category').filter((c) => CATEGORIES.includes(c)).forEach((c) => state.categories.add(c));
+  // 홈 메뉴의 '지역별 보기': 내 위치를 묻지 않고 지역 고르기 창부터 연다
+  const pickRegion = params.get('pick') === 'region';
+  if (pickRegion) {
+    params.delete('pick');
+    history.replaceState(null, '', location.pathname + (params.toString() ? `?${params}` : ''));
+  }
   // 홈에서 1km 안에 가게가 없어 3km로 넓혀 보여 줬다면 같은 반경으로 (정해진 값만 받음)
   if (LEVEL_BY_RADIUS[params.get('radius')]) state.radius = Number(params.get('radius'));
   $('radiusSelect').value = String(state.radius);
@@ -447,6 +457,10 @@ async function init() {
   $('regionButton').textContent = DEFAULT_CENTER.label;
   await search();
   await ready;
+  if (pickRegion) {
+    openRegionDialog();
+    return;
+  }
   await useMyLocation({ openRegionOnFail: true });
 }
 

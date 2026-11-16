@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>이음 - 우리 동네 백년가게·시장·축제</title>
+  <meta name="description" content="내 주변 백년가게와 오늘 장 서는 전통시장, 이번 주 근처 축제를 한곳에서 찾아보세요.">
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/common.css">
@@ -11,87 +12,265 @@
 </head>
 <body class="home-page">
   <a class="skip-link" href="#main">본문 바로가기</a>
-  <header class="site-header home-header">
-    <a class="logo" href="/" aria-current="page">이음</a>
-    <!-- 넓은 화면에서만 보이는 메뉴 (휴대폰은 아래 고정 메뉴) -->
-    <nav class="top-nav" aria-label="주 메뉴">
-      <a href="/map.html">지도</a>
-      <a href="/festivals.html">축제 달력</a>
-    </nav>
-    <div id="account" class="account"></div>
+
+  <header class="gnb">
+    <!-- 넓은 화면의 맨 위 얇은 줄 -->
+    <div class="utility">
+      <div class="inner utility-inner">
+        <p class="tagline">우리 동네의 오래된 이야기를 잇습니다</p>
+        <div class="text-size" role="group" aria-labelledby="textSizeLabel">
+          <span id="textSizeLabel">글자 크기</span>
+          <button type="button" class="size-button" data-step="-1" aria-label="글자 작게">가<span aria-hidden="true">−</span></button>
+          <button type="button" class="size-button" data-step="1" aria-label="글자 크게">가<span aria-hidden="true">+</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="inner header-row">
+      <a class="logo" href="/" aria-current="page">이음</a>
+
+      <!-- 주 메뉴: 넓은 화면은 펼침 메뉴, 휴대폰은 '전체 메뉴' 창에 같은 내용 -->
+      <nav class="main-nav" id="mainNav" aria-label="주 메뉴">
+        <ul class="nav-list">
+          <li class="nav-item">
+            <button type="button" class="nav-button" aria-expanded="false" aria-controls="sub-area">동네 찾기<svg class="caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+            <ul class="sub" id="sub-area">
+              <li><a href="/map.html" data-map="all">지도로 보기</a></li>
+              <li><a href="/map.html?show=store" data-map="store">내 주변 백년가게</a></li>
+              <li><a href="/map.html?pick=region">지역별 보기</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="nav-button" aria-expanded="false" aria-controls="sub-store">백년가게<svg class="caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+            <ul class="sub" id="sub-store">
+              <li><a href="/map.html?show=store&amp;category=%EC%9D%8C%EC%8B%9D%EC%A0%90" data-map="store" data-category="음식점">음식점</a></li>
+              <li><a href="/map.html?show=store&amp;category=%EC%B9%B4%ED%8E%98%C2%B7%EA%B0%84%EC%8B%9D" data-map="store" data-category="카페·간식">카페·간식</a></li>
+              <li><a href="/map.html?show=store&amp;category=%EB%8F%84%EC%86%8C%EB%A7%A4" data-map="store" data-category="도소매">도소매</a></li>
+              <li><a href="/map.html?show=store&amp;category=%EC%83%9D%ED%99%9C%EC%84%9C%EB%B9%84%EC%8A%A4" data-map="store" data-category="생활서비스">생활서비스</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="nav-button" aria-expanded="false" aria-controls="sub-market">전통시장<svg class="caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+            <ul class="sub" id="sub-market">
+              <li><a href="#markets">오늘 장 서는 시장</a></li>
+              <li><a href="/map.html?show=market" data-map="market">시장 지도</a></li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <button type="button" class="nav-button" aria-expanded="false" aria-controls="sub-festival">축제·행사<svg class="caret" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+            <ul class="sub" id="sub-festival">
+              <li><a href="/festivals.html">축제 달력</a></li>
+              <li><a href="#festivals">이번 주 근처 축제</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <div id="account" class="account"></div>
+        <button type="button" id="menuButton" class="menu-button" aria-haspopup="dialog" aria-controls="menuDialog">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <span>전체 메뉴</span>
+        </button>
+      </div>
+    </div>
   </header>
 
   <main id="main" class="home-main" tabindex="-1">
-    <section class="hero" aria-labelledby="heroTitle">
-      <div class="place-row">
-        <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 10-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
-        <span id="placeLabel" class="place-label" aria-live="polite">위치 확인 중...</span>
-        <button type="button" id="placeButton" class="place-button" aria-haspopup="dialog">위치 바꾸기</button>
+    <h1 class="sr-only">이음 홈</h1>
+
+    <!-- ① 주요 소식: 실제 데이터로 2~3장 (자동 넘김은 꺼진 채 시작) -->
+    <section class="hero" id="hero" aria-roledescription="회전 목록" aria-label="주요 소식">
+      <div class="hero-slides" id="heroSlides" aria-live="polite">
+        <div class="slide slide-loading" role="group">
+          <div class="inner slide-inner">
+            <div class="slide-text">
+              <p class="eyebrow">주요 소식</p>
+              <p class="slide-title">불러오는 중...</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <h1 id="heroTitle">오늘은 어느 골목을<br>걸어 볼까요?</h1>
-      <nav class="quick" aria-label="바로가기">
-        <a href="/map.html" data-map="all">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>지도
-        </a>
-        <a href="/festivals.html">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>축제 달력
-        </a>
-        <a href="/map.html?show=market" data-map="market">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l2-6h14l2 6"/><path d="M3 10c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3c0 1.7 1.3 3 3 3s3-1.3 3-3"/><path d="M5 13v7h14v-7"/></svg>전통시장
-        </a>
-      </nav>
+      <div class="inner hero-controls-wrap">
+        <div class="hero-controls" id="heroControls" hidden>
+          <span class="hero-count"><b id="heroCurrent">1</b> / <span id="heroTotal">1</span></span>
+          <button type="button" id="heroPrev" aria-label="이전 소식">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+          </button>
+          <button type="button" id="heroNext" aria-label="다음 소식">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+          </button>
+          <button type="button" id="heroPlay" aria-label="자동 넘김 시작">
+            <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 6 10 6-10 6z"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>
+          </button>
+        </div>
+      </div>
     </section>
 
-    <div class="home-grid">
-      <section id="stores" class="home-card" aria-labelledby="storesTitle">
-        <div class="card-head">
-          <h2 id="storesTitle">내 주변 백년가게</h2>
-          <a href="/map.html?show=store" class="more" data-map="store">지도에서 보기</a>
-        </div>
-        <p id="storesStatus" class="status" role="status">불러오는 중...</p>
-        <ul id="storeList" class="item-list"></ul>
-      </section>
-
-      <section id="festivals" class="home-card" aria-labelledby="festivalsTitle">
-        <div class="card-head">
-          <h2 id="festivalsTitle">이번 주 근처 축제</h2>
-          <a href="/festivals.html" class="more">달력 보기</a>
-        </div>
-        <ol id="weekStrip" class="week-strip" aria-label="이번 주"></ol>
-        <p id="festivalsStatus" class="status" role="status">불러오는 중...</p>
-        <ul id="festivalList" class="item-list"></ul>
-      </section>
-
-      <section id="markets" class="home-card" aria-labelledby="marketsTitle">
-        <div class="card-head">
-          <h2 id="marketsTitle">가까운 전통시장</h2>
-          <a href="/map.html?show=market" class="more" data-map="market">지도에서 보기</a>
-        </div>
-        <p id="marketsStatus" class="status" role="status">불러오는 중...</p>
-        <ul id="marketList" class="item-list"></ul>
-      </section>
+    <!-- 지금 위치 -->
+    <div class="location-bar">
+      <div class="inner location-inner">
+        <p class="place">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <strong id="placeLabel" aria-live="polite">위치 확인 중...</strong>
+          <span id="placeNote" class="place-note"></span>
+        </p>
+        <button type="button" id="placeButton" class="place-button" aria-haspopup="dialog">위치 바꾸기</button>
+      </div>
     </div>
 
-    <p class="source">가게 정보: 소상공인시장진흥공단 백년가게 · 축제 정보: 전국문화축제표준데이터, 한국관광공사 · 시장 정보: 전국전통시장표준데이터</p>
+    <!-- ② 바로가기 -->
+    <nav class="inner quick" aria-label="바로가기">
+      <ul>
+        <li><a href="/map.html" data-map="all"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-2 6 2 6-2v14l-6 2-6-2-6 2Z"/><path d="M9 4v14M15 6v14"/></svg></span>지도로 보기</a></li>
+        <li><a href="/map.html?show=store" data-map="store"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v10h16V10M3 10l2-6h14l2 6"/><path d="M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-5h6v5"/></svg></span>백년가게</a></li>
+        <li><a href="/map.html?show=market" data-map="market"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l2-6h14l2 6"/><path d="M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 13v7h14v-7"/></svg></span>전통시장</a></li>
+        <li><a href="/festivals.html"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>축제 달력</a></li>
+        <li><a href="#markets"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.6"/></svg></span>오늘 장날</a></li>
+        <li><a href="#report"><span class="quick-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18H6zM9 3v3h6V3M9 11h6M9 15h4"/></svg></span>제보하기</a></li>
+      </ul>
+    </nav>
+
+    <!-- ③ 내 주변 백년가게 -->
+    <section class="section" id="stores" aria-labelledby="storesTitle">
+      <div class="inner">
+        <div class="section-head">
+          <h2 id="storesTitle">내 주변 백년가게</h2>
+          <a class="more" href="/map.html?show=store" data-map="store">지도에서 보기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a>
+        </div>
+        <div class="tabs" role="tablist" aria-label="가게 분류" id="storeTabs">
+          <button type="button" role="tab" id="tab-all" aria-selected="true" aria-controls="storePanel" data-category="">전체</button>
+          <button type="button" role="tab" id="tab-food" aria-selected="false" tabindex="-1" aria-controls="storePanel" data-category="음식점">음식점</button>
+          <button type="button" role="tab" id="tab-cafe" aria-selected="false" tabindex="-1" aria-controls="storePanel" data-category="카페·간식">카페·간식</button>
+          <button type="button" role="tab" id="tab-retail" aria-selected="false" tabindex="-1" aria-controls="storePanel" data-category="도소매">도소매</button>
+          <button type="button" role="tab" id="tab-service" aria-selected="false" tabindex="-1" aria-controls="storePanel" data-category="생활서비스">생활서비스</button>
+        </div>
+        <div id="storePanel" role="tabpanel" aria-labelledby="tab-all">
+          <p id="storesStatus" class="status" role="status"></p>
+          <!-- 휴대폰에서는 옆으로 밀어서 보는 줄 (키보드로도 넘길 수 있게 초점을 받는다) -->
+          <ul id="storeList" class="card-row store-row" tabindex="0" aria-label="가게 목록, 옆으로 넘겨 보기"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ④ 이번 주 근처 축제 -->
+    <section class="section section-tint" id="festivals" aria-labelledby="festivalsTitle">
+      <div class="inner">
+        <div class="section-head">
+          <h2 id="festivalsTitle">이번 주 근처 축제</h2>
+          <a class="more" href="/festivals.html">축제 달력<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a>
+        </div>
+        <ol id="weekStrip" class="week-strip" aria-label="이번 주"></ol>
+        <p id="festivalsStatus" class="status" role="status"></p>
+        <ul id="festivalList" class="card-row festival-row" tabindex="0" aria-label="축제 목록, 옆으로 넘겨 보기"></ul>
+      </div>
+    </section>
+
+    <!-- ⑤ 오늘 장 서는 시장 + 5일장 달력 -->
+    <section class="section" id="markets" aria-labelledby="marketsTitle" tabindex="-1">
+      <div class="inner">
+        <div class="section-head">
+          <h2 id="marketsTitle">오늘 장 서는 시장</h2>
+          <a class="more" href="/map.html?show=market" data-map="market">시장 지도<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a>
+        </div>
+        <div class="market-layout">
+          <div class="market-main">
+            <p id="marketsStatus" class="status" role="status"></p>
+            <ul id="marketList" class="market-list"></ul>
+          </div>
+          <section class="fair-calendar" id="fairCalendar" aria-labelledby="fairTitle" hidden>
+            <div class="fair-head">
+              <button type="button" id="fairPrev" class="month-button" aria-label="이전 달">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>
+              </button>
+              <h3 id="fairTitle"></h3>
+              <button type="button" id="fairNext" class="month-button" aria-label="다음 달">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+              </button>
+            </div>
+            <p id="fairMarket" class="fair-market"></p>
+            <table class="fair-table">
+              <caption class="sr-only" id="fairCaption"></caption>
+              <thead><tr><th scope="col">일</th><th scope="col">월</th><th scope="col">화</th><th scope="col">수</th><th scope="col">목</th><th scope="col">금</th><th scope="col">토</th></tr></thead>
+              <tbody id="fairBody"></tbody>
+            </table>
+            <p class="fair-legend"><span class="fair-dot" aria-hidden="true"></span>장이 서는 날</p>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑥ 제보 안내 -->
+    <section class="section" id="report" aria-labelledby="reportTitle" tabindex="-1">
+      <div class="inner">
+        <div class="report-box">
+          <svg class="report-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18H6zM9 3v3h6V3M9 11h6M9 15h4"/></svg>
+          <div class="report-text">
+            <p class="eyebrow">함께 만드는 이음</p>
+            <h2 id="reportTitle">가게 정보가 달라졌나요?</h2>
+            <p>영업시간이 바뀌었거나 문을 닫은 가게를 알려 주세요. 확인한 뒤 바로 고쳐요.</p>
+            <ol class="report-steps">
+              <li>지도나 목록에서 가게를 눌러 가게 화면을 열어요.</li>
+              <li>'영업 정보 제보'를 누르고 무엇이 달라졌는지 골라요.</li>
+              <li>처리 결과는 '내 정보'에서 볼 수 있어요.</li>
+            </ol>
+            <a class="button-primary report-button" href="/map.html?show=store" data-map="store">지도에서 가게 찾기</a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="inner footer-inner">
+      <div>
+        <p class="footer-logo">이음</p>
+        <p>동네의 오래된 가게와 장터, 축제를 잇는 로컬 가이드</p>
+      </div>
+      <div class="footer-info">
+        <p><b>데이터 출처</b> 소상공인시장진흥공단 백년가게 · 전국전통시장표준데이터 · 전국문화축제표준데이터 · 한국관광공사(축제 정보·사진)</p>
+        <p>© 2026 이음</p>
+      </div>
+    </div>
+  </footer>
 
   <p id="toast" class="toast" role="status" hidden></p>
 
   <!-- 휴대폰 아래 고정 메뉴 -->
   <nav class="tabbar" aria-label="화면 이동">
     <a href="/" aria-current="page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>홈
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>홈
     </a>
-    <a href="/map.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>지도
+    <a href="/map.html" data-map="all">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></svg>지도
     </a>
     <a href="/festivals.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>축제
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>축제
     </a>
     <a href="/mypage.html">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>내 정보
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>내 정보
     </a>
   </nav>
+
+  <!-- 전체 메뉴 (휴대폰·좁은 화면) -->
+  <dialog id="menuDialog" class="menu-dialog" aria-labelledby="menuTitle">
+    <div class="menu-head">
+      <p class="logo" id="menuTitle">이음 <span class="sr-only">전체 메뉴</span></p>
+      <button type="button" class="icon-button" id="menuClose" aria-label="메뉴 닫기">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="menu-user" id="menuUser"></div>
+    <nav aria-label="전체 메뉴" id="menuNav" class="menu-nav"></nav>
+    <div class="menu-bottom">
+      <div class="text-size" role="group" aria-labelledby="menuTextSizeLabel">
+        <span id="menuTextSizeLabel">글자 크기</span>
+        <button type="button" class="size-button" data-step="-1" aria-label="글자 작게">가<span aria-hidden="true">−</span></button>
+        <button type="button" class="size-button" data-step="1" aria-label="글자 크게">가<span aria-hidden="true">+</span></button>
+      </div>
+    </div>
+  </dialog>
 
   <!-- 위치 바꾸기 -->
   <dialog id="placeDialog" class="place-dialog" aria-labelledby="placeDialogTitle">
