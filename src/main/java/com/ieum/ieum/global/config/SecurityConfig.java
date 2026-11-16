@@ -59,7 +59,7 @@ public class SecurityConfig {
                         // 화면 파일
                         // (mypage.html도 화면 파일은 누구나 받을 수 있고, 내용은 로그인해야 받는 API로 채운다)
                         .requestMatchers("/", "/index.html", "/map.html", "/store.html", "/login.html", "/signup.html",
-                                "/mypage.html", "/festivals.html", "/festival.html", "/market.html",
+                                "/mypage.html", "/festivals.html", "/festival.html", "/market.html", "/admin.html",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error").permitAll()
                         // 카카오 로그인 시작(/oauth2/authorization/kakao)과 돌아오는 주소(/login/oauth2/code/kakao)
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
@@ -69,6 +69,9 @@ public class SecurityConfig {
                                 "/api/regions", "/api/config/map").permitAll()
                         // 가입·로그인·재발급·로그아웃
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                        // 관리자 API: 토큰 권한으로 한 번 막고, AdminGuard가 DB 권한으로 한 번 더 확인
+                        // (admin.html 화면 파일은 누구나 받지만, 내용은 이 API로만 채워진다)
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // 나머지는 로그인 필요
                         .anyRequest().authenticated()
                 );

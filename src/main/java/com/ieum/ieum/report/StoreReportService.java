@@ -54,7 +54,7 @@ public class StoreReportService {
         return reportRepository.save(StoreReport.create(storeId, userId, type, content, today));
     }
 
-    public record MyReport(StoreReport report, String storeName) {
+    public record MyReport(StoreReport report, String storeName, boolean storeVisible) {
     }
 
     /** 내 제보 (최근 50건) */
@@ -62,8 +62,12 @@ public class StoreReportService {
     public List<MyReport> myReports(Long userId) {
         List<StoreReport> reports = reportRepository.findByUserIdOrderByCreatedAtDescIdDesc(userId, PageRequest.of(0, MY_REPORTS_LIMIT));
         if (reports.isEmpty()) return List.of();
-        Map<Long, String> names = reportRepository.findStoreNames(reports.stream().map(StoreReport::getStoreId).distinct().toList())
-                .stream().collect(Collectors.toMap(row -> (Long) row[0], row -> (String) row[1]));
-        return reports.stream().map(r -> new MyReport(r, names.getOrDefault(r.getStoreId(), "알 수 없는 가게"))).toList();
+        Map<Long, Object[]> stores = reportRepository.findStoreNames(reports.stream().map(StoreReport::getStoreId).distinct().toList())
+                .stream().collect(Collectors.toMap(row -> (Long) row[0], row -> row));
+        return reports.stream().map(r -> {
+            Object[] store = stores.get(r.getStoreId());
+            return store == null ? new MyReport(r, "알 수 없는 가게", false)
+                    : new MyReport(r, (String) store[1], (Boolean) store[2]);
+        }).toList();
     }
 }

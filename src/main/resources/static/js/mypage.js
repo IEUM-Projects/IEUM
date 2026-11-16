@@ -66,10 +66,11 @@ function reportItem(r) {
   date.className = 'report-date';
   date.textContent = r.createdAt ? r.createdAt.slice(0, 10).replaceAll('-', '.') : '';
   top.append(status, date);
-  const store = document.createElement('a');
-  store.href = `/store.html?id=${r.storeId}`;
-  store.className = 'report-store-link';
-  store.textContent = r.storeName;
+  // 폐업 처리 등으로 지도에서 내려간 가게는 화면이 없으므로 링크 대신 이름만
+  const store = document.createElement(r.storeVisible ? 'a' : 'strong');
+  if (r.storeVisible) store.href = `/store.html?id=${r.storeId}`;
+  store.className = r.storeVisible ? 'report-store-link' : 'report-store-name';
+  store.textContent = r.storeVisible ? r.storeName : `${r.storeName} (지도에서 내려간 가게)`;
   const type = document.createElement('p');
   type.className = 'report-type';
   type.textContent = r.typeLabel;
@@ -84,6 +85,12 @@ function reportItem(r) {
     const note = document.createElement('p');
     note.className = 'report-note';
     note.textContent = `처리 메모: ${r.adminNote}`;
+    if (r.reviewedAt) {
+      const when = document.createElement('span');
+      when.className = 'report-note-date';
+      when.textContent = ` (${r.reviewedAt.slice(0, 10).replaceAll('-', '.')} 처리)`;
+      note.append(when);
+    }
     li.append(note);
   }
   return li;

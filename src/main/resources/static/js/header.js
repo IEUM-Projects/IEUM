@@ -1,5 +1,5 @@
 // 상단 바의 계정 영역 (지도 화면, 가게 상세 화면이 함께 씀)
-// 로그인 전: "로그인" 링크 / 로그인 후: 닉네임 버튼 → 메뉴(내 정보, 로그아웃)
+// 로그인 전: "로그인" 링크 / 로그인 후: 닉네임 버튼 → 메뉴(내 정보, 관리자일 때 관리자, 로그아웃)
 import * as auth from './auth.js';
 
 function el(tag, props = {}, ...children) {
@@ -36,6 +36,7 @@ export function mountAccount(box, { onLogout, next } = {}) {
     const menu = el('div', { id: 'accountMenu', class: 'account-menu', role: 'menu', hidden: '' },
       el('div', { class: 'menu-name', text: `${user.nickname}님` }),
       el('a', { href: '/mypage.html', role: 'menuitem', text: '내 정보' }),
+      user.role === 'ADMIN' ? el('a', { href: '/admin.html', role: 'menuitem', text: '관리자' }) : null,
       logout,
     );
     const setOpen = (open) => {

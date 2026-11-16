@@ -32,7 +32,12 @@ public enum ErrorCode {
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "가게를 찾을 수 없어요."),
     MARKET_NOT_FOUND(HttpStatus.NOT_FOUND, "시장을 찾을 수 없어요."),
     DUPLICATE_REPORT(HttpStatus.CONFLICT, "오늘 이미 같은 내용으로 제보했어요. 내일 다시 보낼 수 있어요."),
-    TOO_MANY_REPORTS(HttpStatus.TOO_MANY_REQUESTS, "오늘은 제보를 더 보낼 수 없어요. 내일 다시 시도해 주세요.");
+    TOO_MANY_REPORTS(HttpStatus.TOO_MANY_REQUESTS, "오늘은 제보를 더 보낼 수 없어요. 내일 다시 시도해 주세요."),
+
+    // 관리자 (ADM-01)
+    REPORT_ALREADY_REVIEWED(HttpStatus.CONFLICT, "이미 처리된 제보가 있어요. 목록을 새로 불러와 주세요."),
+    ADDRESS_NOT_FOUND(HttpStatus.BAD_REQUEST, "주소로 위치를 찾지 못했어요. 도로명 주소를 확인해 주세요."),
+    MAP_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "지금은 주소로 위치를 찾을 수 없어요. 잠시 후 다시 시도해 주세요.");
 
     private final HttpStatus status;
     private final String message;

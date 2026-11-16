@@ -4,6 +4,7 @@ import org.springframework.data.repository.Repository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 지역(regions) 조회.
@@ -39,4 +40,7 @@ public interface RegionRepository extends Repository<Region, String> {
         Double getCenterLng();
         Long getStoreCount();
     }
+
+    /** 지역 코드 확인 (관리자가 가게 주소를 바꿀 때) */
+    Optional<Region> findByCode(String code);
 }
