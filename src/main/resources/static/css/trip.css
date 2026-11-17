@@ -1,0 +1,21 @@
+/* 걷기 코스 출발점 고르기 (TOUR-01) (값은 tokens.css) */
+.trip-lead { margin: 0; color: var(--text-subtle); }
+.trip-box { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); }
+.trip-box h2 { margin: 0; }
+.trip-error { margin: 0; color: var(--color-danger-70); font-size: var(--font-body-small); }
+.trip-error:empty, .trip-status:empty { display: none; }
+.trip-search { display: flex; flex-direction: column; gap: var(--space-2); }
+.trip-search label { font-weight: var(--font-weight-bold); }
+.trip-search-row { display: flex; gap: var(--space-2); }
+.trip-search-row input { flex: 1 1 auto; min-width: 0; min-height: var(--touch-min); padding: 0 var(--space-3); border: 1px solid var(--border-input); border-radius: var(--radius-medium); font: inherit; background: var(--surface); color: var(--text-body); }
+.trip-search-row button { flex: none; }
+.trip-hint { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.trip-status { margin: 0; font-weight: var(--font-weight-bold); }
+.trip-results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.trip-results li + li { border-top: 1px solid var(--border-light); }
+.trip-result { display: flex; align-items: center; gap: var(--space-3); min-height: var(--touch-min); padding: var(--space-3) 0; color: var(--text-body); text-decoration: none; }
+.trip-result-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.trip-result-text strong { overflow-wrap: anywhere; }
+.trip-result-meta { font-size: var(--font-body-small); color: var(--text-subtle); overflow-wrap: anywhere; }
+.trip-result-go { flex: none; font-weight: var(--font-weight-bold); color: var(--text-link); text-decoration: underline; }
+.trip-result:hover strong { color: var(--text-link); text-decoration: underline; }

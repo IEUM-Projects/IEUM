@@ -40,6 +40,7 @@
               <li><a href="/map.html?show=store" data-map="store">내 주변 백년가게</a></li>
               <li><a href="/map.html?pick=region">지역별 보기</a></li>
               <li><a href="/themes.html" data-theme="">테마로 걷기</a></li>
+              <li><a href="/trip.html">걷기 코스 만들기</a></li>
             </ul>
           </li>
           <li class="nav-item">
@@ -207,6 +208,32 @@
       </div>
     </section>
 
+    <!-- ⑤-0 주변 관광지와 걷기 코스 (TOUR-01) -->
+    <section class="section section-tint" id="tour" aria-labelledby="tourTitle">
+      <div class="inner">
+        <div class="section-head">
+          <div>
+            <h2 id="tourTitle">주변 관광지와 걷기 코스</h2>
+            <p class="tour-lead">관광지를 누르면 그곳에서 출발해 백년가게까지 들르는 걷기 코스를 만들어 드려요.</p>
+          </div>
+          <a class="more" href="/trip.html">출발점 고르기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a>
+        </div>
+        <div class="trip-start">
+          <a id="tourCourseLink" class="button-primary" href="/trip.html">
+            <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="13" cy="4" r="2"/><path d="m9 21 3-7 3 3v4M7 12l3-4 4 1 3 4"/></svg>
+            <span id="tourCourseText">이 위치에서 코스 만들기</span>
+          </a>
+          <form class="trip-start-form" action="/trip.html" role="search" aria-label="출발점 찾기">
+            <label for="tripStartQ" class="sr-only">출발할 장소 이름이나 주소</label>
+            <input id="tripStartQ" name="q" type="search" minlength="2" maxlength="30" autocomplete="off" enterkeyhint="search" placeholder="출발할 장소 찾기 (예: 경주역)">
+            <button type="submit" class="button-secondary">찾기</button>
+          </form>
+        </div>
+        <p id="tourStatus" class="status" role="status"></p>
+        <ul id="tourList" class="card-row festival-row" tabindex="0" aria-label="주변 관광지 목록, 옆으로 넘겨 보기"></ul>
+      </div>
+    </section>
+
     <!-- ⑤-1 테마로 걷기 (THM-01) -->
     <section class="section section-theme" id="themes" aria-labelledby="themesTitle">
       <div class="inner">
@@ -259,7 +286,7 @@
       </div>
       <div class="footer-info">
         <p class="footer-links"><a href="/notices.html">공지사항</a></p>
-        <p><b>데이터 출처</b> 소상공인시장진흥공단 백년가게 · 전국전통시장표준데이터 · 전국문화축제표준데이터 · 한국관광공사(축제 정보·사진)</p>
+        <p><b>데이터 출처</b> 소상공인시장진흥공단 백년가게 · 전국전통시장표준데이터 · 전국문화축제표준데이터 · 한국관광공사(축제·관광 정보·사진)</p>
         <p>© 2026 이음</p>
       </div>
     </div>

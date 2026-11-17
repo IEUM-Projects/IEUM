@@ -5,6 +5,7 @@ import { mountAccount } from './header.js';
 import { todayString } from './festival-format.js';
 import { digitsOf, cycleLabel, daysOfMonth, isMarketDay, nextMarketDay, dayText } from './market-days.js';
 import { facilityGroups } from './market-facilities.js';
+import { photoCredit } from './festival-format.js';
 
 const root = document.getElementById('detail');
 
@@ -24,6 +25,7 @@ const ICONS = {
   directions: '<path d="M3 11l18-8-8 18-2-8z"/>',
   link: '<path d="M10 14l4-4"/><path d="M8.5 16.5l-1 1a3.5 3.5 0 01-5-5l3-3a3.5 3.5 0 015 0"/><path d="M15.5 7.5l1-1a3.5 3.5 0 015 5l-3 3a3.5 3.5 0 01-5 0"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="M10 21l2-6 3 3v5M8 12l2.5-4.5 4 1.5 2 3.5M12 15l-1.5-3"/>',
   calendar: '<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
 };
 function icon(name, className = 'icon-small') {
@@ -117,6 +119,11 @@ function render(m) {
         ? el('ul', { class: 'near-list' }, ...m.nearbyStores.map(storeItem))
         : el('p', { class: 'empty', text: hasCoords ? `반경 ${m.nearbyRadiusM}m 안에 백년가게가 없어요.` : '시장 위치를 찾지 못해서 근처 가게를 보여 드릴 수 없어요.' }),
     ),
+    hasCoords ? el('section', { id: 'tourBox', class: 'near tour-box', 'aria-labelledby': 'tourTitle' },
+      el('h2', { id: 'tourTitle', text: '주변 관광지 (2km 안)' }),
+      el('p', { id: 'tourStatus', class: 'empty', role: 'status', text: '불러오는 중...' }),
+      el('ul', { id: 'tourList', class: 'near-list' }),
+      el('a', { class: 'button-secondary wide course-link', href: `/course.html?market=${m.id}` }, icon('walk'), '이 시장에서 걷기 코스 만들기')) : null,
     el('div', { class: 'actions' },
       hasCoords ? el('a', { class: 'button-primary wide', href: directionsUrl(m), target: '_blank', rel: 'noopener' }, icon('directions'), '길찾기') : null,
       m.homepageUrl ? el('a', { class: 'button-secondary wide', href: m.homepageUrl, target: '_blank', rel: 'noopener noreferrer' }, icon('link'), '홈페이지') : null,
@@ -125,6 +132,31 @@ function render(m) {
     m.facilities ? el('p', { class: 'source', text: `편의시설: 전통시장현황 (소상공인시장진흥공단) · 기준일 ${m.facilities.dataDate}` }) : null,
     m.onnuri ? el('p', { class: 'source', text: `온누리상품권: 전국 온누리상품권 가맹점 현황 (소상공인시장진흥공단) · 기준일 ${m.onnuri.dataDate} · 2026년 하반기 개편으로 달라질 수 있어요` }) : null,
   ].filter(Boolean));
+}
+
+/** 주변 관광지 (TOUR-01): 관광공사 정보가 느릴 수 있어서 화면을 먼저 보여 주고 나중에 채운다 */
+async function loadTour(m) {
+  const status = document.getElementById('tourStatus');
+  if (!status) return;
+  try {
+    const res = await fetch(`/api/tour/nearby?lat=${m.latitude}&lng=${m.longitude}&radius=2000`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const spots = data.spots.slice(0, 8);
+    if (!spots.length) {
+      status.textContent = data.available ? '2km 안에 관광공사에 등록된 관광지가 없어요.' : '관광지 정보를 불러오지 못했어요.';
+      return;
+    }
+    status.textContent = `${data.source} · 가까운 순`;
+    status.className = 'tour-source';
+    document.getElementById('tourList').replaceChildren(...spots.map((t) => el('li', { class: 'tour-item' },
+      t.imageUrl ? el('figure', { class: 'tour-photo' }, el('img', { src: t.imageUrl, alt: '', loading: 'lazy' }), el('figcaption', { text: photoCredit(t.imageLicense) })) : null,
+      el('div', {},
+        el('strong', { text: t.title }),
+        el('p', { class: 'near-meta', text: `${t.typeName} · ${t.distanceM.toLocaleString()}m${t.address ? ` · ${t.address}` : ''}` })))));
+  } catch (_) {
+    status.textContent = '관광지 정보를 불러오지 못했어요.';
+  }
 }
 
 async function init() {
@@ -136,7 +168,9 @@ async function init() {
     return;
   }
   try {
-    render(await api.market(id));
+    const m = await api.market(id);
+    render(m);
+    if (m.latitude != null && m.longitude != null) loadTour(m);
   } catch (e) {
     root.replaceChildren(el('p', { class: 'error', text: '시장 정보를 불러오지 못했어요. 지도로 돌아가 다시 선택해 주세요.' }));
   }

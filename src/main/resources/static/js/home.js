@@ -1,5 +1,5 @@
 // 홈 화면 (UI-02 → UI-03 새 디자인)
-// 주요 소식(슬라이드), 내 주변 백년가게(분류 탭), 이번 주 근처 축제, 오늘 장 서는 시장 + 5일장 달력, 제보 안내
+// 주요 소식(슬라이드), 내 주변 백년가게(분류 탭), 이번 주 근처 축제, 오늘 장 서는 시장 + 5일장 달력, 주변 관광지와 걷기 코스, 제보 안내
 // 모든 내용은 서버의 실제 데이터로만 채운다 (지어낸 숫자·문구 없음).
 import { api, formatDistance } from './api.js';
 import * as auth from './auth.js';
@@ -671,6 +671,55 @@ async function loadThemes(place) {
   }
 }
 
+// ================================================================ ⑤-0 주변 관광지와 걷기 코스 (TOUR-01)
+
+const TOUR_RADIUS = 2000;
+let tourRequest = 0;
+
+function courseLink(lat, lng, label) {
+  return `/course.html?${new URLSearchParams({ lat: Number(lat).toFixed(6), lng: Number(lng).toFixed(6), label, from: 'home' })}`;
+}
+
+function tourCard(t) {
+  return el('li', {},
+    el('a', { href: courseLink(t.latitude, t.longitude, t.title), class: 'festival-card tour-card' },
+      // 관광공사 사진은 '변경금지' 조건이 있을 수 있어 자르지 않고 비율 그대로 보여 준다
+      t.imageUrl
+        ? el('span', { class: 'festival-photo' }, el('img', { src: t.imageUrl, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }))
+        : el('span', { class: 'festival-art', 'aria-hidden': 'true' }, icon(ICONS.pin)),
+      el('span', { class: 'card-body' },
+        el('span', { class: 'card-meta' }, el('span', { class: 'tour-type', text: t.typeName }), el('b', { text: formatDistance(t.distanceM) })),
+        el('strong', { class: 'card-title', text: t.title }),
+        t.address ? el('span', { class: 'card-sub', text: t.address }) : null,
+        el('span', { class: 'tour-go', text: '여기서 걷기 코스 만들기' }),
+        t.imageUrl ? el('span', { class: 'credit', text: photoCredit(t.imageLicense) }) : null)));
+}
+
+async function loadTour(place) {
+  const mine = ++tourRequest;
+  $('tourCourseLink').href = courseLink(place.lat, place.lng, place.label);
+  $('tourCourseText').textContent = `${place.label === '내 주변' ? '내 위치' : place.label}에서 코스 만들기`;
+  $('tourStatus').textContent = '불러오는 중...';
+  $('tourList').replaceChildren();
+  $('tourList').hidden = true;
+  try {
+    const res = await fetch(`/api/tour/nearby?lat=${place.lat.toFixed(6)}&lng=${place.lng.toFixed(6)}&radius=${TOUR_RADIUS}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    if (mine !== tourRequest) return;
+    const spots = data.spots.slice(0, 8);
+    $('tourList').replaceChildren(...spots.map(tourCard));
+    $('tourList').hidden = !spots.length;
+    $('tourStatus').textContent = spots.length
+      ? `${placeText(place)} 2km 안 · ${data.source}`
+      : data.available
+        ? `${placeText(place)} 2km 안에 관광공사에 등록된 관광지가 없어요. 출발할 장소를 찾아 보세요.`
+        : '관광지 정보를 지금 불러오지 못했어요. 장소를 찾아 코스를 만들 수는 있어요.';
+  } catch (_) {
+    if (mine === tourRequest) $('tourStatus').textContent = '관광지 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
 // ================================================================ ⑥ 공지사항
 
 async function loadNotices() {
@@ -697,6 +746,7 @@ async function show(place) {
   $('placeLabel').textContent = placeText(place);
   $('placeNote').textContent = place.isDefault ? '위치 권한이 없어 기본 위치를 보여 드려요.' : '';
   updateMapLinks();
+  loadTour(place);   // 관광공사 응답을 기다리느라 주요 소식이 늦어지지 않게 따로
   await Promise.all([loadStores(place), loadFestivals(place), loadMarkets(place), loadThemes(place)]);
   renderHero();
 }

@@ -10,17 +10,24 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
  * 카카오 로컬 API (서버 전용 REST API 키 사용)
  * - 주소 → 좌표: 원본에 좌표가 없는 축제
  * - 좌표 → 지역 코드: 가게와 같은 지역 코드(regions 표)를 쓰기 위해
+ * - 장소 이름 검색: 걷기 코스의 출발점 고르기 (TOUR-01)
  */
 @Component
 public class KakaoLocalClient {
 
     public record Point(double lat, double lng) {
+    }
+
+    /** 장소 검색 결과 하나 */
+    public record Place(String id, String name, String category, String address, double lat, double lng) {
     }
 
     private final RestClient http;
@@ -71,6 +78,30 @@ public class KakaoLocalClient {
             }
         }
         return Optional.empty();
+    }
+
+    /** 장소 이름(키워드)으로 찾기. 카카오가 정한 정확도 순, 최대 size곳 */
+    public List<Place> keyword(String query, int size) {
+        JsonNode docs = get(UriComponentsBuilder.fromUriString(baseUrl + "/v2/local/search/keyword.json")
+                .queryParam("query", query).queryParam("size", Math.clamp(size, 1, 15))
+                .encode().build().toUri()).path("documents");
+        List<Place> out = new ArrayList<>();
+        if (!docs.isArray()) return out;
+        for (JsonNode d : docs.values()) {
+            try {
+                double lat = Double.parseDouble(d.path("y").asString());
+                double lng = Double.parseDouble(d.path("x").asString());
+                String road = d.path("road_address_name").asString("");
+                String category = d.path("category_name").asString("");
+                int cut = category.lastIndexOf('>');
+                out.add(new Place(d.path("id").asString(""), d.path("place_name").asString(""),
+                        cut >= 0 ? category.substring(cut + 1).strip() : category,
+                        road.isBlank() ? d.path("address_name").asString("") : road, lat, lng));
+            } catch (NumberFormatException e) {
+                // 좌표가 없는 결과는 건너뜀
+            }
+        }
+        return out;
     }
 
     private JsonNode get(URI uri) {
