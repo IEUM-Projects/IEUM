@@ -11,7 +11,7 @@ import com.ieum.ieum.admin.AdminDtos.ReviewedPage;
 import com.ieum.ieum.admin.AdminDtos.StoreBrief;
 import com.ieum.ieum.admin.AdminDtos.StoreChanges;
 import com.ieum.ieum.admin.AdminDtos.StoreDetail;
-import com.ieum.ieum.festival.KakaoLocalClient;
+import com.ieum.ieum.region.GeoService;
 import com.ieum.ieum.global.error.BusinessException;
 import com.ieum.ieum.global.error.ErrorCode;
 import com.ieum.ieum.region.Region;
@@ -70,7 +70,7 @@ public class AdminReportService {
     private final StoreEditLogRepository editLogRepository;
     private final UserRepository userRepository;
     private final RegionRepository regionRepository;
-    private final KakaoLocalClient kakao;
+    private final GeoService geo;
     private final TransactionTemplate transaction;
 
     // ---------------------------------------------------------------- 조회
@@ -246,18 +246,16 @@ public class AdminReportService {
     }
 
     private Located locate(String address) {
-        if (!kakao.hasKey()) throw new BusinessException(ErrorCode.MAP_SERVICE_UNAVAILABLE);
+        if (!geo.available()) throw new BusinessException(ErrorCode.MAP_SERVICE_UNAVAILABLE);
         try {
-            KakaoLocalClient.Point point = kakao.geocode(address)
+            // 브이월드 주소 검색 (DATA-05: 카카오 결과는 저장할 수 없음)
+            GeoService.Located point = geo.locate(address)
                     .orElseThrow(() -> new BusinessException(ErrorCode.ADDRESS_NOT_FOUND));
-            if (!(point.lat() >= 33 && point.lat() <= 39 && point.lng() >= 124 && point.lng() <= 132)) {
-                throw new BusinessException(ErrorCode.ADDRESS_NOT_FOUND);
-            }
-            Optional<Region> region = kakao.sigunguCode(point.lat(), point.lng()).flatMap(regionRepository::findByCode);
+            Optional<Region> region = Optional.ofNullable(point.sigunguCode()).flatMap(regionRepository::findByCode);
             return new Located(address, point.lat(), point.lng(), region);
         } catch (BusinessException e) {
             throw e;
-        } catch (RuntimeException e) {   // 카카오 연결·인증 오류, 잘못된 설정(kakao.local-url) 모두
+        } catch (RuntimeException e) {   // 브이월드 연결·키·한도 오류(VWorldException), 잘못된 설정 모두
             log.warn("관리자 주소 확인 실패: {}", e.toString());
             throw new BusinessException(ErrorCode.MAP_SERVICE_UNAVAILABLE);
         }

@@ -51,6 +51,7 @@ public enum ErrorCode {
     CLOSURE_NOT_FOUND(HttpStatus.NOT_FOUND, "확인 결과를 찾을 수 없어요."),
     CLOSURE_ALREADY_REVIEWED(HttpStatus.CONFLICT, "이미 처리된 가게예요. 목록을 새로 불러와 주세요."),
     LICENSE_CHECK_RUNNING(HttpStatus.CONFLICT, "지금 파일을 확인하고 있어요. 끝난 뒤에 다시 올려 주세요."),
+    PLACE_JOB_RUNNING(HttpStatus.CONFLICT, "좌표 찾기나 카카오맵 연결을 하고 있어요. 끝난 뒤에 다시 눌러 주세요."),
 
     // 시장 이야기 (MKT-02)
     STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "아직 저장한 이야기가 없어요. 먼저 저장해 주세요.");

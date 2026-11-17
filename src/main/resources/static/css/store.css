@@ -147,3 +147,4 @@
 .near-market:hover strong { color: var(--text-link); text-decoration: underline; }
 .near-market-name { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 .near-market-meta { font-size: var(--font-body-small); color: var(--text-subtle); }
+.phone-source { color: var(--text-subtle); font-size: var(--font-body-small); }

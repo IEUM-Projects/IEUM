@@ -60,7 +60,7 @@ public class SecurityConfig {
                         // (mypage.html도 화면 파일은 누구나 받을 수 있고, 내용은 로그인해야 받는 API로 채운다)
                         .requestMatchers("/", "/index.html", "/map.html", "/store.html", "/login.html", "/signup.html",
                                 "/mypage.html", "/festivals.html", "/festival.html", "/market.html", "/admin.html",
-                                "/notices.html", "/notice.html", "/admin-notices.html", "/admin-markets.html", "/admin-closures.html", "/admin-stories.html", "/search.html", "/themes.html", "/theme.html", "/course.html", "/trip.html", "/news.html", "/creators.html",
+                                "/notices.html", "/notice.html", "/admin-notices.html", "/admin-markets.html", "/admin-closures.html", "/admin-stories.html", "/admin-places.html", "/search.html", "/themes.html", "/theme.html", "/course.html", "/trip.html", "/news.html", "/creators.html",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error").permitAll()
                         // 카카오 로그인 시작(/oauth2/authorization/kakao)과 돌아오는 주소(/login/oauth2/code/kakao)
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()

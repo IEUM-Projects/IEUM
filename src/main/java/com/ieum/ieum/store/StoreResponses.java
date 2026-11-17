@@ -63,6 +63,7 @@ public final class StoreResponses {
             BigDecimal longitude,
             InfoStatus infoStatus,
             String kakaoMapUrl,
+            String kakaoPlaceId,     // 가게 화면이 카카오맵에서 전화번호를 그때그때 불러올 때 씀 (DATA-05)
             Onnuri onnuri,
             List<Selection> creatorSelections
     ) {
@@ -72,7 +73,7 @@ public final class StoreResponses {
             return new Detail(s.getId(), s.getName(), s.getType(), s.getCategory(), s.getPhone(),
                     s.getHours(), s.getHistory(), s.getCertifiedYear(), s.getSnsUrl(),
                     s.getRoadAddress(), s.getJibunAddress(), s.getLatitude(), s.getLongitude(),
-                    s.getInfoStatus(), mapUrl, Onnuri.of(onnuri), selections);
+                    s.getInfoStatus(), mapUrl, s.getKakaoPlaceId(), Onnuri.of(onnuri), selections);
         }
     }
 }

@@ -41,6 +41,11 @@ public-data:
   standard-festival-url: https://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api   # 전국문화축제표준데이터
   tour-url: https://apis.data.go.kr/B551011/KorService2                                   # 한국관광공사 국문 관광정보
 
+# 브이월드 주소 검색 (DATA-05) - 가게·시장·축제의 좌표와 지역을 찾는다 (카카오 결과는 저장할 수 없어서)
+# 인증키 vworld.api-key 는 application-local.yml 에 (커밋 금지). 키가 없으면 좌표 채우기를 건너뛴다.
+vworld:
+  url: https://api.vworld.kr/req/address
+
 # 축제 데이터 동기화
 festival:
   sync:

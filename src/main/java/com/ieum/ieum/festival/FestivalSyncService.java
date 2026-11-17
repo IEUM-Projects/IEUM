@@ -1,5 +1,7 @@
 package com.ieum.ieum.festival;
 
+import com.ieum.ieum.region.GeoService;
+import com.ieum.ieum.region.VWorldClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -36,7 +38,7 @@ import java.util.stream.Collectors;
  *  3) 같은 축제(정리한 이름 + 시작일)는 하나로 합침
  *     - 표준데이터 안의 중복: 정보가 더 많은 쪽을 기본으로, 빈 칸은 다른 쪽에서 채움
  *     - 관광공사에도 있는 축제: 표준데이터 내용 + 관광공사 사진·좌표
- *  4) 좌표가 없으면 카카오 주소 검색으로 채움, 지역 코드는 좌표로 정함 (가게와 같은 regions 코드)
+ *  4) 좌표가 없으면 브이월드 주소 검색으로 채움, 지역 코드는 주소 글자 → 브이월드 순으로 정함 (가게와 같은 regions 코드, DATA-05)
  *  5) 두 API를 모두 받은 경우에만, 원본에서 사라진 축제를 지움 (한쪽이 실패한 날 데이터가 사라지지 않게)
  */
 @Slf4j
@@ -46,7 +48,7 @@ public class FestivalSyncService {
     private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
 
     private final PublicDataClient publicData;
-    private final KakaoLocalClient kakao;
+    private final GeoService geo;
     private final FestivalRepository repository;
     private final TransactionTemplate tx;
     private final boolean enabled;
@@ -54,13 +56,13 @@ public class FestivalSyncService {
     private final int tourDetailLimit;
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    public FestivalSyncService(PublicDataClient publicData, KakaoLocalClient kakao, FestivalRepository repository,
+    public FestivalSyncService(PublicDataClient publicData, GeoService geo, FestivalRepository repository,
                                PlatformTransactionManager transactionManager,
                                @Value("${festival.sync.enabled:true}") boolean enabled,
                                @Value("${festival.sync.on-startup:empty}") String onStartup,
                                @Value("${festival.sync.tour-detail-limit:200}") int tourDetailLimit) {
         this.publicData = publicData;
-        this.kakao = kakao;
+        this.geo = geo;
         this.repository = repository;
         this.tx = new TransactionTemplate(transactionManager);
         this.enabled = enabled;
@@ -80,6 +82,20 @@ public class FestivalSyncService {
         if (!enabled || "never".equals(onStartup)) return;
         if ("always".equals(onStartup) || repository.count() == 0) {
             Thread.ofVirtual().name("festival-sync").start(this::syncSafely);
+        } else {
+            // 받기는 새벽에 하고, 좌표·지역이 빈 축제만 지금 채운다 (DATA-05: 23번 SQL로 카카오 좌표를 지운 뒤 등)
+            Thread.ofVirtual().name("festival-locations").start(() -> {
+                if (!running.compareAndSet(false, true)) return;
+                try {
+                    Counter c = new Counter();
+                    locations(c);
+                    log.info("축제 좌표·지역 채우기: 좌표 {}곳, 못 찾음 {}곳, 지역 {}곳", c.geocoded, c.geocodeFailed, c.regioned);
+                } catch (RuntimeException e) {
+                    log.error("축제 좌표·지역 채우기 중 오류", e);
+                } finally {
+                    running.set(false);
+                }
+            });
         }
     }
 
@@ -224,17 +240,25 @@ public class FestivalSyncService {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
     }
 
-    private void enrich(LocalDate today, Counter c) {
-        if (!kakao.hasKey()) {
-            log.warn("kakao.rest-api-key가 없어서 좌표·지역을 채우지 못했어요.");
-        } else {
-            try {
+    /** 좌표 없는 축제 → 브이월드 좌표, 지역 코드 없는 축제 → 지역 (DATA-05) */
+    private void locations(Counter c) {
+        try {
+            if (!geo.available()) {
+                log.warn("vworld.api-key가 없어서 좌표 없는 축제의 좌표를 채우지 못했어요.");
+            } else {
                 for (Festival f : repository.findNeedingGeocode()) {
-                    Optional<KakaoLocalClient.Point> point = Optional.empty();
-                    if (f.getRoadAddress() != null) point = kakao.geocode(f.getRoadAddress());
-                    if (point.isEmpty() && f.getJibunAddress() != null) point = kakao.geocode(f.getJibunAddress());
+                    Optional<GeoService.Located> point = Optional.empty();
+                    try {
+                        if (f.getRoadAddress() != null) point = geo.locate(f.getRoadAddress());
+                        if (point.isEmpty() && f.getJibunAddress() != null) point = geo.locate(f.getJibunAddress());
+                    } catch (VWorldClient.VWorldException e) {
+                        if (!e.isRetryable()) throw e;
+                        log.warn("축제 {} 좌표 찾기를 건너뜀 (다음에 다시): {}", f.getId(), e.getMessage());
+                        continue;   // 잠깐의 오류: 이 축제만 다음에 다시
+                    }
                     if (point.isPresent()) {
                         f.geocoded(point.get().lat(), point.get().lng());
+                        if (point.get().sigunguCode() != null) f.region(point.get().sigunguCode());
                         c.geocoded++;
                     } else {
                         f.geocodeFailed();
@@ -242,18 +266,28 @@ public class FestivalSyncService {
                     }
                     repository.save(f);
                 }
-                for (Festival f : repository.findNeedingRegion()) {
-                    Optional<String> code = kakao.sigunguCode(f.getLatitude().doubleValue(), f.getLongitude().doubleValue());
-                    if (code.isPresent()) {
-                        f.region(code.get());
-                        repository.save(f);
-                        c.regioned++;
-                    }
-                }
-            } catch (KakaoLocalClient.KakaoException e) {
-                log.warn("카카오 로컬 API를 쓸 수 없어 이번에는 좌표·지역 채우기를 멈춰요: {}", e.getMessage());
             }
+            for (Festival f : repository.findNeedingRegion()) {
+                Optional<String> code;
+                try {
+                    code = geo.regionOf(f.address(), f.getLatitude().doubleValue(), f.getLongitude().doubleValue());
+                } catch (VWorldClient.VWorldException e) {
+                    if (!e.isRetryable()) throw e;
+                    continue;
+                }
+                if (code.isPresent()) {
+                    f.region(code.get());
+                    repository.save(f);
+                    c.regioned++;
+                }
+            }
+        } catch (VWorldClient.VWorldException e) {
+            log.warn("브이월드 주소 검색을 쓸 수 없어 이번에는 좌표·지역 채우기를 멈춰요: {}", e.getMessage());
         }
+    }
+
+    private void enrich(LocalDate today, Counter c) {
+        locations(c);
 
         if (publicData.hasKey() && tourDetailLimit > 0) {
             try {
