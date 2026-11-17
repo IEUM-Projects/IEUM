@@ -32,4 +32,12 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Modifying
     @Query("delete from RefreshToken t where t.userId = :userId and t.expiresAt < :now")
     int deleteExpiredByUserId(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+
+    /**
+     * 매일 정리 (SYS-03): 만료된 토큰을 limit개씩 지운다 (한 번에 너무 많이 잠그지 않게).
+     * 회전에 쓰인 토큰(30초 뒤 만료)과, 다시 오지 않는 회원의 14일 지난 토큰이 여기서 지워진다.
+     */
+    @Modifying
+    @Query(value = "DELETE FROM refresh_tokens WHERE expires_at < :now ORDER BY expires_at LIMIT :limit", nativeQuery = true)
+    int deleteExpired(@Param("now") LocalDateTime now, @Param("limit") int limit);
 }

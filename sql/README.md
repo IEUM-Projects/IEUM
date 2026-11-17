@@ -20,6 +20,7 @@
 | 14 | `14_schema_store_license.sql` | 백년가게 인허가 영업상태 확인 결과(`store_license_checks`) 표 |
 | 15 | `15_schema_onnuri.sql` | 온누리상품권 가맹 정보 표(`store_onnuri`, `market_onnuri`) |
 | 16 | `16_data_onnuri.sql` | 온누리상품권 가맹 정보 (전국 가맹점 현황 2026-07-31 기준): 백년가게 583곳, 전통시장 968곳 |
+| 17 | `17_schema_token_cleanup.sql` | 로그인 유지 토큰 정리용 색인(`refresh_tokens.expires_at`) |
 | - | `report_queries.sql` | 제보 확인 쿼리, **관리자 지정·해제**, 수정 기록 보기 (필요할 때 골라서 실행) |
 
 ## 실행 방법 (MySQL Workbench)
@@ -27,7 +28,7 @@
 1. **File → Open SQL Script**로 파일을 엽니다.
    (File → Run SQL Script는 한글 파일에서 cp949 오류가 날 수 있어요.)
 2. 번개 모양(⚡) 버튼으로 실행합니다.
-3. 01부터 16까지 차례로 반복합니다.
+3. 01부터 17까지 차례로 반복합니다.
 
 ## 다시 실행해도 괜찮아요
 
@@ -45,5 +46,5 @@
 - **표를 지우는 파일은 없어요.** DB를 완전히 처음부터 다시 만들어야 할 때만 Workbench에서 직접
   `DROP DATABASE ieum;`을 실행한 뒤 01부터 다시 실행하세요. 회원·제보·축제 데이터가 모두 사라지니 신중하게!
 - 이미 있는 표에 칸을 더할 때도(09처럼) 이미 있으면 건너뛰게 만들어서 여러 번 실행해도 안전해요.
-- 새 표가 생기면 `17_...sql`처럼 다음 번호로 추가해요.
+- 새 표가 생기면 `18_...sql`처럼 다음 번호로 추가해요.
 - DB 비밀번호 같은 설정은 이 폴더가 아니라 `application-local.yml`에 있어요 (커밋하지 않음).
