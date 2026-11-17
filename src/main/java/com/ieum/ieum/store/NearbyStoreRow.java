@@ -17,4 +17,6 @@ public interface NearbyStoreRow {
     BigDecimal getLongitude();
     String getInfoStatus();
     Double getDistanceM();
+    /** 온누리상품권 가맹으로 확인된 가게면 1 (DATA-04) */
+    Integer getOnnuri();
 }

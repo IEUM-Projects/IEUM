@@ -23,6 +23,7 @@ public class StoreService {
     static final int MAX_RESULTS = 200;
 
     private final StoreRepository storeRepository;
+    private final com.ieum.ieum.onnuri.StoreOnnuriRepository onnuriRepository;
 
     public List<StoreResponses.Summary> findNearby(double lat, double lng, Integer radius, List<String> categories) {
         if (lat < 33 || lat > 39 || lng < 124 || lng > 132) {
@@ -42,6 +43,6 @@ public class StoreService {
     public StoreResponses.Detail findDetail(Long id) {
         Store store = storeRepository.findByIdAndVisibleTrue(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "가게를 찾을 수 없어요."));
-        return StoreResponses.Detail.from(store);
+        return StoreResponses.Detail.from(store, onnuriRepository.findById(id).orElse(null));
     }
 }

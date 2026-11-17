@@ -13,7 +13,8 @@ const state = {
   center: { lat: DEFAULT_CENTER.lat, lng: DEFAULT_CENTER.lng },
   radius: 1000,
   categories: new Set(),   // 비어 있으면 전체
-  marketNeeds: new Set(),  // 시장만 볼 때 거르는 조건 (주차 가능, 비 와도 OK, 아이와 함께). DATA-01
+  marketNeeds: new Set(),
+  onnuri: false,           // 가게: 온누리상품권 가맹으로 확인된 곳만 (DATA-04)  // 시장만 볼 때 거르는 조건 (주차 가능, 비 와도 OK, 아이와 함께). DATA-01
   stores: [],
   markets: [],
   showMarkets: true,   // 전통시장 핀 표시 (칩으로 켜고 끔)
@@ -63,6 +64,8 @@ function syncAddress() {
   params.delete('need');
   if (state.showStores) state.categories.forEach((c) => params.append('category', c));
   else state.marketNeeds.forEach((n) => params.append('need', n));
+  if (state.showStores && state.onnuri) params.set('onnuri', '1');
+  else params.delete('onnuri');
   const query = params.toString();
   history.replaceState(null, '', location.pathname + (query ? `?${query}` : ''));
 }
@@ -116,6 +119,26 @@ function renderChips() {
     });
     nav.append(chip);
   });
+  // 가게를 볼 때: 온누리상품권 (받아 둔 가게에서 거른다)
+  if (state.showStores) {
+    nav.append(el('span', { class: 'chip-divider', 'aria-hidden': 'true' }));
+    const onnuri = el('button', { type: 'button', class: 'chip chip-need chip-onnuri', 'aria-pressed': String(state.onnuri), text: '온누리상품권' });
+    onnuri.addEventListener('click', () => {
+      state.onnuri = !state.onnuri;
+      renderChips();
+      syncAddress();
+      hideCard();
+      drawMarkers();
+      renderList();
+      if (state.onnuri && state.stores.length && !shownStores().length) toast('반경 안에 온누리상품권 가맹으로 확인된 가게가 없어요. 반경을 넓혀 보세요.');
+    });
+    nav.append(onnuri);
+  }
+}
+
+/** 화면에 보일 가게 (온누리상품권 조건) */
+function shownStores() {
+  return state.onnuri ? state.stores.filter((s) => s.onnuri) : state.stores;
 }
 
 /** 화면에 보일 시장 (시장만 볼 때는 시설 조건으로 거름) */
@@ -196,7 +219,7 @@ function drawMarkers() {
     return marker;
   });
   markers.forEach((marker) => marker.setMap(null));
-  markers = state.stores.map((store) => {
+  markers = shownStores().map((store) => {
     const marker = new kakao.maps.Marker({
       map,
       position: new kakao.maps.LatLng(store.latitude, store.longitude),
@@ -239,7 +262,7 @@ function onMapMoved() {
 
 function renderList() {
   const parts = [
-    state.showStores ? `가게 ${state.stores.length}곳` : null,
+    state.showStores ? `가게 ${shownStores().length}곳${state.onnuri ? ' (온누리상품권)' : ''}` : null,
     state.showMarkets ? `전통시장 ${shownMarkets().length}곳` : null,
   ].filter(Boolean).join(' · ');
   const needs = state.showStores ? '' : [...state.marketNeeds].map((key) => MARKET_NEEDS[key].label).join(', ');
@@ -252,12 +275,13 @@ function renderList() {
       el('div', { class: 'meta', text: `${formatDistance(market.distanceM)} · ${marketDaySummary(market)}` }),
     ),
   )));
-  $('storeListTitle').hidden = shownMarkets().length === 0 || state.stores.length === 0;
+  $('storeListTitle').hidden = shownMarkets().length === 0 || shownStores().length === 0;
   const list = $('storeList');
-  list.replaceChildren(...state.stores.map((store) => el('li', {},
+  list.replaceChildren(...shownStores().map((store) => el('li', {},
     el('a', { href: `/store.html?id=${store.id}` },
       el('span', { class: 'name', text: store.name }),
       store.infoStatus === 'UNVERIFIED' ? el('span', { class: 'badge-unverified', text: '영업 정보 미확인' }) : null,
+      store.onnuri ? el('span', { class: 'badge-onnuri', text: '온누리' }) : null,
       el('div', { class: 'meta', text: `${formatDistance(store.distanceM)} · ${store.category ?? '분류 없음'} · ${store.roadAddress ?? ''}` }),
     ),
   )));
@@ -291,6 +315,7 @@ function showCard(store) {
     ),
     store.roadAddress ? el('p', { class: 'meta', text: store.roadAddress }) : null,
     store.phone ? el('p', { class: 'meta', text: store.phone }) : null,
+    store.onnuri ? el('p', { class: 'meta' }, el('span', { class: 'badge-onnuri', text: '온누리상품권 가맹점' })) : null,
     store.infoStatus === 'UNVERIFIED'
       ? el('p', { class: 'notice' }, el('span', { class: 'badge-unverified', text: '영업 정보 미확인' }), ' 방문 전 영업 여부를 확인하세요.')
       : null,
@@ -438,6 +463,7 @@ async function init() {
   params.getAll('category').filter((c) => CATEGORIES.includes(c)).forEach((c) => state.categories.add(c));
   // 시장만 볼 때의 시설 조건: /map.html?show=market&need=parking (정해진 값만 받음)
   if (!state.showStores) params.getAll('need').filter((n) => MARKET_NEEDS[n]).forEach((n) => state.marketNeeds.add(n));
+  state.onnuri = state.showStores && params.get('onnuri') === '1';
   // 홈 메뉴의 '지역별 보기': 내 위치를 묻지 않고 지역 고르기 창부터 연다
   const pickRegion = params.get('pick') === 'region';
   if (pickRegion) {

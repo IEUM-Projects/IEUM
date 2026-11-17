@@ -32,6 +32,12 @@ function icon(name, className = 'icon') {
   return span.firstChild;
 }
 
+/** 온누리상품권 (DATA-04): '종이·디지털 사용 가능' 처럼 */
+function onnuriText(o) {
+  const kinds = [o.paper ? '종이' : null, o.digital ? '디지털(카드·모바일)' : null].filter(Boolean).join('·');
+  return `온누리 ${kinds || '종이'} 상품권 가맹점`;
+}
+
 function render(store) {
   document.title = `${store.name} - 이음`;
   const isCreator = store.type === 'CREATOR';
@@ -47,6 +53,7 @@ function render(store) {
       el('div', { class: 'badges' },
         el('span', { class: isCreator ? 'badge-type creator' : 'badge-type', text: isCreator ? '로컬크리에이터' : '백년가게' }),
         el('span', { class: 'badge-category', text: store.category ?? '분류 없음' }),
+        store.onnuri ? el('span', { class: 'badge-onnuri', text: '온누리상품권' }) : null,
       ),
       el('h1', { text: store.name }),
     ),
@@ -63,7 +70,9 @@ function render(store) {
       row('전화', store.phone),
       row('영업시간', store.hours),
       store.certifiedYear ? row('지정 연도', `${store.certifiedYear}년`) : null,
+      store.onnuri ? row('상품권', onnuriText(store.onnuri)) : null,
     ),
+    store.onnuri ? el('p', { class: 'source-note', text: `온누리상품권 가맹 정보는 소상공인시장진흥공단 가맹점 현황(${store.onnuri.dataDate} 기준)이에요. 2026년 하반기 상품권 개편으로 달라질 수 있으니 결제 전에 가게에 확인해 주세요.` }) : null,
     store.history ? el('section', {}, el('h2', { text: '가게 이야기' }), el('p', { text: store.history })) : null,
     el('div', { class: 'actions' },
       el('a', { class: 'button-primary wide', href: directionsUrl(store), target: '_blank', rel: 'noopener' }, icon('directions', 'icon-small'), '길찾기'),
