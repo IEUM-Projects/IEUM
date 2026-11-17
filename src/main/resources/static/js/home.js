@@ -10,6 +10,7 @@ import { WEEKDAYS, ymd, weekday, daysIn, todayString, periodText, status, photoC
 import { digitsOf, cycleLabel, isMarketDay, marketDaySummary } from './market-days.js';
 import { cleanQuery, clearRecent, recentSearches, removeRecent, SEARCH_EXAMPLES } from './search-common.js';
 import { THEME_ICONS, placeLinkQuery } from './theme-common.js';
+import { NEWS_NOTE, NEWS_TOPICS, newsItem } from './news-common.js';
 
 const DEFAULT_PLACE = { lat: 37.5665, lng: 126.9780, label: '서울 중구', isDefault: true };   // 서울시청
 const PLACE_KEY = 'ieum_home_place';    // 고른 지역을 이 브라우저에만 기억 (편의 기능)
@@ -720,6 +721,53 @@ async function loadTour(place) {
   }
 }
 
+// ================================================================ ⑤-2 시장·로컬 소식 (NEWS-01)
+
+let newsRequest = 0;
+
+async function loadNews(topic) {
+  const mine = ++newsRequest;
+  $('newsStatus').textContent = '불러오는 중...';
+  $('newsList').replaceChildren();
+  $('newsMore').href = `/news.html?topic=${topic.key}`;
+  try {
+    const res = await fetch(`/api/news?topic=${topic.key}&size=5`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    if (mine !== newsRequest) return;
+    $('newsList').replaceChildren(...data.items.map(newsItem));
+    $('newsStatus').textContent = data.items.length ? ''
+      : data.available ? `${topic.label} 기사가 아직 없어요.` : '지금은 기사를 불러올 수 없어요. 잠시 후 다시 시도해 주세요.';
+  } catch (_) {
+    if (mine === newsRequest) $('newsStatus').textContent = '기사를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
+function setupNews() {
+  $('newsNote').textContent = NEWS_NOTE;
+  const tabs = NEWS_TOPICS.map((t, i) => el('button', {
+    type: 'button', role: 'tab', id: `news-tab-${t.key}`, 'aria-controls': 'newsPanel',
+    'aria-selected': String(i === 0), tabindex: i === 0 ? '0' : '-1', text: t.label,
+  }));
+  $('newsTabs').replaceChildren(...tabs);
+  const select = (i, focus) => {
+    tabs.forEach((t, j) => { t.setAttribute('aria-selected', String(i === j)); t.tabIndex = i === j ? 0 : -1; });
+    if (focus) tabs[i].focus();
+    $('newsPanel').setAttribute('aria-labelledby', tabs[i].id);
+    loadNews(NEWS_TOPICS[i]);
+  };
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => select(i, false));
+    tab.addEventListener('keydown', (event) => {
+      const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      select((next + tabs.length) % tabs.length, true);
+    });
+  });
+  select(0, false);
+}
+
 // ================================================================ ⑥ 공지사항
 
 async function loadNotices() {
@@ -814,6 +862,7 @@ async function init() {
   setupHero();
   setupStoreTabs();
   loadNotices();   // 위치와 상관없으므로 먼저
+  setupNews();
   if (await handleLoginReturn((message) => toast(message))) return;   // 카카오 로그인 후 보던 화면으로 이동
 
   $('placeButton').addEventListener('click', openPlaceDialog);
