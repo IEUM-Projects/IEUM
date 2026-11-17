@@ -1,5 +1,5 @@
 // 가게 상세 화면 (MAP-02): /store.html?id=381
-import { api, directionsUrl, formatDistance } from './api.js';
+import { api, directionsUrl, formatDistance, loadKakaoMapSdk } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { marketDaySummary } from './market-days.js';
@@ -82,7 +82,7 @@ function render(store) {
     el('dl', { class: 'info' },
       row('주소', store.roadAddress ?? store.jibunAddress),
       store.roadAddress && store.jibunAddress ? row('지번', store.jibunAddress) : null,
-      row('전화', store.phone),
+      phoneRow(store.phone),
       row('영업시간', store.hours),
       store.certifiedYear ? row('지정 연도', `${store.certifiedYear}년`) : null,
       store.onnuri ? row('상품권', onnuriText(store.onnuri)) : null,
@@ -92,9 +92,7 @@ function render(store) {
     isCreator && store.creatorSelections?.length ? creatorSection(store.creatorSelections) : null,
     el('div', { class: 'actions' },
       el('a', { class: 'button-primary wide', href: directionsUrl(store), target: '_blank', rel: 'noopener' }, icon('directions', 'icon-small'), '길찾기'),
-      store.phone
-        ? el('a', { class: 'button-secondary', href: `tel:${store.phone}`, text: '전화하기' })
-        : el('button', { type: 'button', class: 'button-secondary', disabled: '', text: '전화번호 없음' }),
+      phoneButton(store.phone),
       store.kakaoMapUrl
         ? el('a', { class: 'button-secondary', href: store.kakaoMapUrl, target: '_blank', rel: 'noopener', 'aria-label': '카카오맵에서 보기 (사진·리뷰)', text: '카카오맵' })
         : null,
@@ -103,6 +101,56 @@ function render(store) {
     el('p', { id: 'reportNotice', class: 'report-notice', role: 'status', hidden: '' }),
     el('section', { id: 'nearMarkets', class: 'near-markets', 'aria-labelledby': 'nearMarketsTitle', hidden: '' }),
   ].filter(Boolean));
+}
+
+// ---------------------------------------------------------------- 전화번호 (DATA-05)
+// 이음에 저장한 번호(관리자가 확인한 번호)가 없으면, 카카오맵에 이어 둔 장소의 번호를 화면을 열 때마다 카카오맵에서 불러온다.
+// 카카오 로컬 API 이용 조건상 이 번호는 저장하지 않고 보여 주기만 한다.
+
+function phoneRow(phone, fromKakao = false) {
+  return el('div', { id: 'phoneRow' }, el('dt', { text: '전화' }),
+    phone
+      ? el('dd', {}, phone, fromKakao ? el('span', { class: 'phone-source', text: ' (카카오맵 정보)' }) : null)
+      : el('dd', { class: 'empty', text: '정보 없음' }));
+}
+
+function phoneButton(phone) {
+  return phone
+    ? el('a', { id: 'phoneAction', class: 'button-secondary', href: `tel:${phone}`, text: '전화하기' })
+    : el('button', { id: 'phoneAction', type: 'button', class: 'button-secondary', disabled: '', text: '전화번호 없음' });
+}
+
+const PHONE_TIMEOUT_MS = 6000;
+
+function kakaoPlacePhone(store) {
+  return loadKakaoMapSdk().then((kakao) => new Promise((resolve) => {
+    const places = kakao.maps.services && new kakao.maps.services.Places();
+    if (!places) { resolve(null); return; }
+    const timer = setTimeout(() => resolve(null), PHONE_TIMEOUT_MS);
+    const options = { size: 15 };
+    if (store.latitude != null && store.longitude != null) {
+      options.location = new kakao.maps.LatLng(store.latitude, store.longitude);
+      options.radius = 2000;
+    }
+    places.keywordSearch(store.name, (data, status) => {
+      clearTimeout(timer);
+      const hit = status === kakao.maps.services.Status.OK ? data.find((d) => String(d.id) === String(store.kakaoPlaceId)) : null;
+      resolve(hit?.phone || null);
+    }, options);
+  }));
+}
+
+async function loadLivePhone(store) {
+  if (store.phone || !store.kakaoPlaceId) return;
+  let phone = null;
+  try {
+    phone = await kakaoPlacePhone(store);
+  } catch (_) {
+    return;   // 카카오맵을 못 불러오면 '정보 없음' 그대로
+  }
+  if (!phone || !/^[0-9+()\- ]{7,20}$/.test(phone)) return;
+  document.getElementById('phoneRow')?.replaceWith(phoneRow(phone, true));
+  document.getElementById('phoneAction')?.replaceWith(phoneButton(phone));
 }
 
 // ---------------------------------------------------------------- 가까운 전통시장 (MKT-01)
@@ -219,6 +267,7 @@ async function init() {
     store = await api.storeDetail(id);
     render(store);
     loadNearMarkets(store);
+    loadLivePhone(store);
   } catch (e) {
     root.replaceChildren(el('p', { class: 'error', text: '가게 정보를 불러오지 못했어요. 지도로 돌아가 다시 선택해 주세요.' }));
     return;

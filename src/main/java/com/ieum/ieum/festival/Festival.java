@@ -125,7 +125,7 @@ public class Festival {
 
     /**
      * API에서 받은 최신 내용으로 덮어쓴다.
-     * 단, 원본에 좌표가 없을 때는 예전에 카카오로 찾아 둔 좌표·지역을 지우지 않는다 (매일 다시 찾지 않도록).
+     * 단, 원본에 좌표가 없을 때는 예전에 브이월드로 찾아 둔 좌표·지역을 지우지 않는다 (매일 다시 찾지 않도록).
      */
     public void applyFrom(FestivalRecord r, LocalDateTime seenAt) {
         boolean addressChanged = !same(roadAddress, r.roadAddress()) || !same(jibunAddress, r.jibunAddress());
@@ -162,7 +162,7 @@ public class Festival {
             geocodeStatus = "SOURCE";
         } else if (addressChanged || "SOURCE".equals(geocodeStatus)) {
             // 원본 좌표가 사라졌거나 주소가 바뀌었으면, 주소로 다시 찾도록 비운다
-            // (그 밖에는 예전에 카카오로 찾은 좌표나 '못 찾음' 표시를 그대로 둔다)
+            // (그 밖에는 예전에 브이월드로 찾은 좌표나 '못 찾음' 표시를 그대로 둔다)
             latitude = null;
             longitude = null;
             sidoCode = null;
@@ -174,7 +174,7 @@ public class Festival {
     public void geocoded(double lat, double lng) {
         latitude = scale(lat);
         longitude = scale(lng);
-        geocodeStatus = "KAKAO";
+        geocodeStatus = "VWORLD";   // 브이월드 주소 검색으로 찾음 (DATA-05, 예전 KAKAO 는 23번 SQL로 지움)
     }
 
     public void geocodeFailed() {

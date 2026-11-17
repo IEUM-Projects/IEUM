@@ -188,6 +188,31 @@ public class LicenseImportService {
         });
     }
 
+    /**
+     * 인허가 확인 결과로 가게 정보 채우기 (DATA-05, 23_kakao_cleanup.sql 의 4번과 같음)
+     * - 분류가 비어 있는 백년가게: 인허가에서 '영업 중'인 업종으로 (일반음식점 → 음식점, 휴게음식점·제과점 → 카페·간식)
+     * - 인허가에서 '영업 중'인 가게: 영업 정보 미확인 → 영업 확인됨 (관리자가 직접 정한 상태는 그대로)
+     */
+    public void fillFromLicenses() {
+        MapSqlParameterSource none = new MapSqlParameterSource();
+        int categories = jdbc.update("""
+                UPDATE stores s
+                JOIN store_license_checks c ON c.store_id = s.id
+                SET s.category = CASE WHEN c.license_kind = 'general_restaurants' THEN '음식점' ELSE '카페·간식' END
+                WHERE s.type = 'CENTURY' AND s.category IS NULL
+                  AND c.result = 'OPEN'
+                  AND c.license_kind IN ('general_restaurants', 'rest_restaurants', 'bakeries')
+                """, none);
+        int verified = jdbc.update("""
+                UPDATE stores s
+                JOIN store_license_checks c ON c.store_id = s.id AND c.result = 'OPEN'
+                SET s.info_status = 'VERIFIED'
+                WHERE s.info_status = 'UNVERIFIED'
+                  AND NOT EXISTS (SELECT 1 FROM store_edit_logs l WHERE l.store_id = s.id AND l.field = 'INFO_STATUS')
+                """, none);
+        if (categories + verified > 0) log.info("인허가로 채움: 분류 {}곳, 영업 확인 {}곳", categories, verified);
+    }
+
     public long countTargets() {
         Long n = jdbc.queryForObject("SELECT COUNT(*) FROM stores WHERE type = 'CENTURY' AND (is_visible = 1 OR info_status = 'CLOSED')",
                 new MapSqlParameterSource(), Long.class);
@@ -218,6 +243,7 @@ public class LicenseImportService {
         }
         j.currentFile = null;
         decide(j, targets, found, covered);
+        fillFromLicenses();
         j.state = "DONE";
         j.message = "확인을 마쳤어요.";
         log.info("인허가 파일 확인: 파일 {}개, {}줄, 결과 {}, 바뀐 가게 {}곳", paths.size(), j.rowsRead.get(), j.results, j.changed);

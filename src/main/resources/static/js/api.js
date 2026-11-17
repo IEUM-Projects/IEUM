@@ -66,7 +66,8 @@ export function loadKakaoMapSdk() {
   if (sdkPromise) return sdkPromise;
   sdkPromise = api.mapConfig().then(({ javascriptKey }) => new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(javascriptKey)}&autoload=false`;
+    // services: 가게 화면에서 카카오맵 전화번호를 그때그때 불러올 때 (DATA-05, 저장하지 않음)
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(javascriptKey)}&autoload=false&libraries=services`;
     script.onload = () => window.kakao.maps.load(() => resolve(window.kakao));
     script.onerror = () => reject(new Error('카카오맵을 불러오지 못했어요. JavaScript 키와 등록 도메인을 확인하세요.'));
     document.head.appendChild(script);
@@ -79,7 +80,12 @@ export function formatDistance(m) {
   return m < 1000 ? `${m}m` : `${(m / 1000).toFixed(1)}km`;
 }
 
-/** 카카오맵 길찾기 링크 (목적지 이름, 위도, 경도) */
+/** 카카오맵 길찾기 링크 (목적지 이름, 위도, 경도). 좌표가 없으면 카카오맵 장소 ID나 이름 검색으로 */
 export function directionsUrl(store) {
+  if (store.latitude == null || store.longitude == null) {
+    return store.kakaoPlaceId
+      ? `https://map.kakao.com/link/to/${encodeURIComponent(store.kakaoPlaceId)}`
+      : `https://map.kakao.com/link/search/${encodeURIComponent(store.name)}`;
+  }
   return `https://map.kakao.com/link/to/${encodeURIComponent(store.name)},${store.latitude},${store.longitude}`;
 }

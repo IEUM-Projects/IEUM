@@ -12,19 +12,18 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
- * 카카오 로컬 API (서버 전용 REST API 키 사용)
- * - 주소 → 좌표: 원본에 좌표가 없는 축제
- * - 좌표 → 지역 코드: 가게와 같은 지역 코드(regions 표)를 쓰기 위해
- * - 장소 이름 검색: 걷기 코스의 출발점 고르기 (TOUR-01)
+ * 카카오 로컬 API (서버 전용 REST API 키 사용) - 장소 이름(키워드) 검색만 쓴다
+ * - 걷기 코스의 출발점 고르기 (TOUR-01)
+ * - 관리자가 가게를 카카오맵 장소와 잇기 (DATA-05)
+ *
+ * 카카오 로컬 API 이용 조건 (DATA-05):
+ * 결과는 그때그때 보여 주기만 하고 저장하지 않는다 (좌표·주소·전화번호·카테고리, 잠깐 저장하는 캐시도 안 됨).
+ * 저장해도 되는 것은 장소 ID(카카오맵 링크용)뿐이다. 저장하는 좌표·지역은 브이월드(VWorldClient)로 찾는다.
  */
 @Component
 public class KakaoLocalClient {
-
-    public record Point(double lat, double lng) {
-    }
 
     /** 장소 검색 결과 하나 */
     public record Place(String id, String name, String category, String address, double lat, double lng) {
@@ -49,42 +48,20 @@ public class KakaoLocalClient {
         return !restApiKey.isBlank();
     }
 
-    /** 주소로 좌표 찾기. 못 찾으면 빈 값 */
-    public Optional<Point> geocode(String address) {
-        JsonNode docs = get(UriComponentsBuilder.fromUriString(baseUrl + "/v2/local/search/address.json")
-                .queryParam("query", address).queryParam("size", 1)
-                .encode().build().toUri()).path("documents");
-        if (!docs.isArray() || docs.isEmpty()) return Optional.empty();
-        JsonNode first = docs.path(0);
-        try {
-            return Optional.of(new Point(Double.parseDouble(first.path("y").asString()),
-                    Double.parseDouble(first.path("x").asString())));
-        } catch (NumberFormatException e) {
-            return Optional.empty();
-        }
-    }
-
-    /** 좌표의 시·군·구 코드 (법정동 코드 앞 5자리). 못 찾으면 빈 값 */
-    public Optional<String> sigunguCode(double lat, double lng) {
-        JsonNode docs = get(UriComponentsBuilder.fromUriString(baseUrl + "/v2/local/geo/coord2regioncode.json")
-                .queryParam("x", lng).queryParam("y", lat)
-                .encode().build().toUri()).path("documents");
-        if (docs.isArray()) {
-            for (JsonNode doc : docs.values()) {
-                String code = doc.path("code").asString("");
-                if ("B".equals(doc.path("region_type").asString("")) && code.matches("\\d{10}")) {
-                    return Optional.of(code.substring(0, 5));
-                }
-            }
-        }
-        return Optional.empty();
-    }
-
     /** 장소 이름(키워드)으로 찾기. 카카오가 정한 정확도 순, 최대 size곳 */
     public List<Place> keyword(String query, int size) {
-        JsonNode docs = get(UriComponentsBuilder.fromUriString(baseUrl + "/v2/local/search/keyword.json")
-                .queryParam("query", query).queryParam("size", Math.clamp(size, 1, 15))
-                .encode().build().toUri()).path("documents");
+        return keyword(query, size, null, null, null);
+    }
+
+    /** 장소 이름으로 찾기. 위치(nearLat, nearLng)를 주면 그 주변 radius(m) 안에서 찾는다 */
+    public List<Place> keyword(String query, int size, Double nearLat, Double nearLng, Integer radius) {
+        UriComponentsBuilder b = UriComponentsBuilder.fromUriString(baseUrl + "/v2/local/search/keyword.json")
+                .queryParam("query", query).queryParam("size", Math.clamp(size, 1, 15));
+        if (nearLat != null && nearLng != null) {
+            b.queryParam("y", nearLat).queryParam("x", nearLng);
+            if (radius != null) b.queryParam("radius", Math.clamp(radius, 0, 20000));
+        }
+        JsonNode docs = get(b.encode().build().toUri()).path("documents");
         List<Place> out = new ArrayList<>();
         if (!docs.isArray()) return out;
         for (JsonNode d : docs.values()) {

@@ -134,6 +134,7 @@ public class Store {
     /**
      * 주소 변경 (가게 이전). 좌표와 지역도 새 주소 기준으로 바꾼다.
      * 지번 주소와 카카오 장소 번호는 옛 주소 기준이라 지운다 (틀린 정보를 보여 주지 않도록).
+     * 카카오맵 연결은 다시 찾도록 '확인 필요'로 둔다 (관리자 장소 정보 화면, DATA-05).
      */
     public void moveTo(String roadAddress, double lat, double lng, String sidoCode, String sigunguCode) {
         this.roadAddress = roadAddress;
@@ -145,6 +146,7 @@ public class Store {
         this.sigunguCode = sigunguCode;
         this.bCode = null;
         this.geocodeStatus = "OK";
+        this.enrichStatus = "REVIEW";
         this.visible = infoStatus != InfoStatus.CLOSED;
     }
 }

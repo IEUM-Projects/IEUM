@@ -107,7 +107,7 @@ public class Market {
     public void geocoded(double lat, double lng) {
         latitude = BigDecimal.valueOf(lat).setScale(7, RoundingMode.HALF_UP);
         longitude = BigDecimal.valueOf(lng).setScale(7, RoundingMode.HALF_UP);
-        geocodeStatus = "KAKAO";
+        geocodeStatus = "VWORLD";   // 브이월드 주소 검색으로 찾음 (DATA-05, 예전 KAKAO 는 23번 SQL로 지움)
     }
 
     /** 시설 정보와 잇기 / 풀기 (관리자 확인, DATA-01) */
