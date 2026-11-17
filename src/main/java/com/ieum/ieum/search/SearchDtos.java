@@ -10,7 +10,7 @@ public final class SearchDtos {
     }
 
     /** distanceM: 기준 위치(lat, lng)를 보냈을 때만 값이 있다 */
-    public record StoreHit(Long id, String name, String category, String roadAddress, String infoStatus, Long distanceM) {
+    public record StoreHit(Long id, String type, String name, String category, String roadAddress, String infoStatus, Long distanceM) {
     }
 
     /** goods: 주요 상품 (검색어가 상품에서 찾아졌을 때 보여 주려고, 80자까지) */

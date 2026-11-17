@@ -6,6 +6,7 @@ import { marketDaySummary } from './market-days.js';
 import { MARKET_NEEDS } from './market-facilities.js';
 
 const CATEGORIES = ['음식점', '카페·간식', '도소매', '생활서비스', '공방·공예', '기타'];
+const CREATOR = '로컬크리에이터';   // 분류 칩처럼 보이지만 종류(type=CREATOR)로 거른다 (LOC-01). 주소에는 category=로컬크리에이터
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.9780, label: '서울 중구' }; // 위치를 모를 때 시작점 (서울시청)
 const LEVEL_BY_RADIUS = { 500: 4, 1000: 5, 3000: 7 };                         // 반경에 맞는 지도 확대 수준
 
@@ -14,7 +15,8 @@ const state = {
   radius: 1000,
   categories: new Set(),   // 비어 있으면 전체
   marketNeeds: new Set(),
-  onnuri: false,           // 가게: 온누리상품권 가맹으로 확인된 곳만 (DATA-04)  // 시장만 볼 때 거르는 조건 (주차 가능, 비 와도 OK, 아이와 함께). DATA-01
+  onnuri: false,
+  creators: false,         // 로컬크리에이터만 (LOC-01)           // 가게: 온누리상품권 가맹으로 확인된 곳만 (DATA-04)  // 시장만 볼 때 거르는 조건 (주차 가능, 비 와도 OK, 아이와 함께). DATA-01
   stores: [],
   markets: [],
   showMarkets: true,   // 전통시장 핀 표시 (칩으로 켜고 끔)
@@ -62,7 +64,8 @@ function syncAddress() {
   else params.delete('show');
   params.delete('category');
   params.delete('need');
-  if (state.showStores) state.categories.forEach((c) => params.append('category', c));
+  if (state.showStores && state.creators) params.append('category', CREATOR);
+  else if (state.showStores) state.categories.forEach((c) => params.append('category', c));
   else state.marketNeeds.forEach((n) => params.append('need', n));
   if (state.showStores && state.onnuri) params.set('onnuri', '1');
   else params.delete('onnuri');
@@ -101,13 +104,14 @@ function renderChips() {
   }
   nav.append(el('span', { class: 'chip-divider', 'aria-hidden': 'true' }));
   // 가게 분류: 시장만 보는 중이면 아무것도 눌려 있지 않고, 하나를 누르면 가게가 다시 보인다
-  const all = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.showStores && state.categories.size === 0), text: '전체' });
-  all.addEventListener('click', () => { state.showStores = true; state.categories.clear(); state.marketNeeds.clear(); renderChips(); syncAddress(); search(); });
+  const all = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.showStores && !state.creators && state.categories.size === 0), text: '전체' });
+  all.addEventListener('click', () => { state.showStores = true; state.creators = false; state.categories.clear(); state.marketNeeds.clear(); renderChips(); syncAddress(); search(); });
   nav.append(all);
   CATEGORIES.forEach((category) => {
-    const chip = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.showStores && state.categories.has(category)), text: category });
+    const chip = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(state.showStores && !state.creators && state.categories.has(category)), text: category });
     chip.addEventListener('click', () => {
-      if (!state.showStores) {
+      if (!state.showStores || state.creators) {
+        state.creators = false;
         state.showStores = true;
         state.marketNeeds.clear();
         state.categories = new Set([category]);
@@ -119,6 +123,20 @@ function renderChips() {
     });
     nav.append(chip);
   });
+  // 로컬크리에이터만 보기 (LOC-01): 한 번 더 누르면 전체로
+  const creator = el('button', { type: 'button', class: 'chip chip-creator', 'aria-pressed': String(state.showStores && state.creators), text: CREATOR });
+  creator.addEventListener('click', () => {
+    state.creators = !(state.showStores && state.creators);
+    state.showStores = true;
+    state.categories.clear();
+    state.marketNeeds.clear();
+    renderChips(); syncAddress(); search();
+  });
+  nav.append(creator);
+  // 로컬크리에이터는 반경 안에 적을 수 있어서, 지역 전체를 보는 화면으로 가는 길도 둔다
+  if (state.showStores && state.creators) {
+    nav.append(el('a', { class: 'chip chip-link', href: '/creators.html', text: '지역별로 모두 보기' }));
+  }
   // 가게를 볼 때: 온누리상품권 (받아 둔 가게에서 거른다)
   if (state.showStores) {
     nav.append(el('span', { class: 'chip-divider', 'aria-hidden': 'true' }));
@@ -155,7 +173,7 @@ async function search() {
   const where = { lat: state.center.lat.toFixed(6), lng: state.center.lng.toFixed(6), radius: state.radius };
   // 가게와 전통시장을 함께 불러온다 (한쪽이 실패해도 다른 쪽은 보여 줌)
   const [stores, markets] = await Promise.allSettled([
-    state.showStores ? api.nearbyStores({ ...where, categories: [...state.categories] }) : Promise.resolve([]),
+    state.showStores ? api.nearbyStores({ ...where, categories: state.creators ? [] : [...state.categories], type: state.creators ? 'CREATOR' : '' }) : Promise.resolve([]),
     state.showMarkets ? api.nearbyMarkets(where) : Promise.resolve([]),
   ]);
   state.stores = stores.status === 'fulfilled' ? stores.value : [];
@@ -167,7 +185,7 @@ async function search() {
   if (!failed && state.stores.length === 0 && state.markets.length > 0 && shownMarkets().length === 0) {
     toast('조건에 맞는 시장이 없어요. 조건을 줄이거나 반경을 넓혀 보세요.');
   } else if (!failed && state.stores.length === 0 && state.markets.length === 0) {
-    const what = state.showStores ? '가게' : '전통시장';
+    const what = state.showStores ? (state.creators ? '로컬크리에이터' : '가게') : '전통시장';
     toast(`반경 ${formatDistance(state.radius)} 안에 ${what}${state.showStores ? '가' : '이'} 없어요. 반경을 넓히거나 다른 지역을 골라 보세요.`);
   }
 }
@@ -178,9 +196,10 @@ async function search() {
 const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 function pinImage(store) {
-  // 백년가게 청록, 로컬크리에이터 주황, 영업 정보 미확인은 회색 (모두 지도 바탕과 3:1 이상)
-  const color = store.infoStatus === 'UNVERIFIED' ? token('--pin-unverified')
-    : (store.type === 'CREATOR' ? token('--pin-creator') : token('--pin-store'));
+  // 백년가게 청록, 로컬크리에이터 주황, 영업 정보 미확인 백년가게는 회색 (모두 지도 바탕과 3:1 이상)
+  // 로컬크리에이터는 선정 목록이라 모두 '운영 여부 미확인'이어서 회색 대신 주황 그대로 둔다 (목록·카드에 미확인 표시)
+  const color = store.type === 'CREATOR' ? token('--pin-creator')
+    : (store.infoStatus === 'UNVERIFIED' ? token('--pin-unverified') : token('--pin-store'));
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">`
     + `<path d="M14 0C6.3 0 0 6.1 0 13.7 0 24 14 36 14 36s14-12 14-22.3C28 6.1 21.7 0 14 0z" fill="${color}"/>`
     + `<circle cx="14" cy="13.5" r="5.5" fill="#fff"/></svg>`;
@@ -262,7 +281,7 @@ function onMapMoved() {
 
 function renderList() {
   const parts = [
-    state.showStores ? `가게 ${shownStores().length}곳${state.onnuri ? ' (온누리상품권)' : ''}` : null,
+    state.showStores ? `${state.creators ? CREATOR : '가게'} ${shownStores().length}곳${state.onnuri ? ' (온누리상품권)' : ''}` : null,
     state.showMarkets ? `전통시장 ${shownMarkets().length}곳` : null,
   ].filter(Boolean).join(' · ');
   const needs = state.showStores ? '' : [...state.marketNeeds].map((key) => MARKET_NEEDS[key].label).join(', ');
@@ -280,7 +299,8 @@ function renderList() {
   list.replaceChildren(...shownStores().map((store) => el('li', {},
     el('a', { href: `/store.html?id=${store.id}` },
       el('span', { class: 'name', text: store.name }),
-      store.infoStatus === 'UNVERIFIED' ? el('span', { class: 'badge-unverified', text: '영업 정보 미확인' }) : null,
+      store.type === 'CREATOR' ? el('span', { class: 'badge-type creator', text: CREATOR }) : null,
+      store.infoStatus === 'UNVERIFIED' ? el('span', { class: 'badge-unverified', text: store.type === 'CREATOR' ? '운영 여부 미확인' : '영업 정보 미확인' }) : null,
       store.onnuri ? el('span', { class: 'badge-onnuri', text: '온누리' }) : null,
       el('div', { class: 'meta', text: `${formatDistance(store.distanceM)} · ${store.category ?? '분류 없음'} · ${store.roadAddress ?? ''}` }),
     ),
@@ -317,7 +337,9 @@ function showCard(store) {
     store.phone ? el('p', { class: 'meta', text: store.phone }) : null,
     store.onnuri ? el('p', { class: 'meta' }, el('span', { class: 'badge-onnuri', text: '온누리상품권 가맹점' })) : null,
     store.infoStatus === 'UNVERIFIED'
-      ? el('p', { class: 'notice' }, el('span', { class: 'badge-unverified', text: '영업 정보 미확인' }), ' 방문 전 영업 여부를 확인하세요.')
+      ? (store.type === 'CREATOR'
+        ? el('p', { class: 'notice' }, el('span', { class: 'badge-unverified', text: '운영 여부 미확인' }), ' 지원사업 선정 목록이에요. 방문 전 운영 여부를 확인하세요.')
+        : el('p', { class: 'notice' }, el('span', { class: 'badge-unverified', text: '영업 정보 미확인' }), ' 방문 전 영업 여부를 확인하세요.'))
       : null,
     el('div', { class: 'card-actions' },
       el('a', { class: 'button-primary', href: directionsUrl(store), target: '_blank', rel: 'noopener', text: '길찾기' }),
@@ -461,6 +483,8 @@ async function init() {
   }
   // 홈 메뉴의 '백년가게 → 음식점' 등: /map.html?show=store&category=음식점 (정해진 분류만 받음)
   params.getAll('category').filter((c) => CATEGORIES.includes(c)).forEach((c) => state.categories.add(c));
+  // 메뉴의 '동네 찾기 → 로컬크리에이터': /map.html?show=store&category=로컬크리에이터
+  if (state.showStores && params.getAll('category').includes(CREATOR)) { state.creators = true; state.categories.clear(); }
   // 시장만 볼 때의 시설 조건: /map.html?show=market&need=parking (정해진 값만 받음)
   if (!state.showStores) params.getAll('need').filter((n) => MARKET_NEEDS[n]).forEach((n) => state.marketNeeds.add(n));
   state.onnuri = state.showStores && params.get('onnuri') === '1';

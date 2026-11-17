@@ -38,6 +38,19 @@ function onnuriText(o) {
   return `온누리 ${kinds || '종이'} 상품권 가맹점`;
 }
 
+/** 로컬크리에이터 선정 내용 (LOC-01): 해마다 무엇으로 선정됐는지, 원본 그대로 */
+function creatorSection(selections) {
+  return el('section', { class: 'creator-box', 'aria-labelledby': 'creatorTitle' },
+    el('h2', { id: 'creatorTitle', text: '로컬크리에이터 선정 내용' }),
+    el('ul', { class: 'creator-list' }, ...selections.map((s) => el('li', {},
+      el('p', { class: 'creator-head' },
+        el('strong', { text: `${s.year}년 선정` }),
+        ...s.fields.map((f) => el('span', { class: 'badge-field', text: f }))),
+      s.item ? el('p', { class: 'creator-item', text: s.item }) : null,
+      s.organizer ? el('p', { class: 'creator-meta', text: `주관기관: ${s.organizer}` }) : null))),
+    el('p', { class: 'source-note', text: `출처: 중소벤처기업부 로컬크리에이터 리스트 (${selections[0].dataDate} 기준, 공공데이터포털). 지원사업 선정 당시의 내용이에요.` }));
+}
+
 function render(store) {
   document.title = `${store.name} - 이음`;
   const isCreator = store.type === 'CREATOR';
@@ -61,8 +74,10 @@ function render(store) {
       ? el('div', { class: 'warning', role: 'note' },
           icon('warning'),
           el('div', {},
-            el('strong', { text: '영업 정보 미확인' }),
-            '최근 영업 여부를 확인하지 못한 가게예요. 방문 전 전화나 지도 앱으로 확인해 주세요.'))
+            el('strong', { text: isCreator ? '운영 여부 미확인' : '영업 정보 미확인' }),
+            isCreator
+              ? '로컬크리에이터 지원사업에 선정된 곳이에요. 지금도 같은 곳에서 운영하는지는 확인하지 못했으니, 방문 전 지도 앱 등으로 확인해 주세요.'
+              : '최근 영업 여부를 확인하지 못한 가게예요. 방문 전 전화나 지도 앱으로 확인해 주세요.'))
       : null,
     el('dl', { class: 'info' },
       row('주소', store.roadAddress ?? store.jibunAddress),
@@ -74,6 +89,7 @@ function render(store) {
     ),
     store.onnuri ? el('p', { class: 'source-note', text: `온누리상품권 가맹 정보는 소상공인시장진흥공단 가맹점 현황(${store.onnuri.dataDate} 기준)이에요. 2026년 하반기 상품권 개편으로 달라질 수 있으니 결제 전에 가게에 확인해 주세요.` }) : null,
     store.history ? el('section', {}, el('h2', { text: '가게 이야기' }), el('p', { text: store.history })) : null,
+    isCreator && store.creatorSelections?.length ? creatorSection(store.creatorSelections) : null,
     el('div', { class: 'actions' },
       el('a', { class: 'button-primary wide', href: directionsUrl(store), target: '_blank', rel: 'noopener' }, icon('directions', 'icon-small'), '길찾기'),
       store.phone

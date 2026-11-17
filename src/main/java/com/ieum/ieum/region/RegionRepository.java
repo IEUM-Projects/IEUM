@@ -25,7 +25,7 @@ public interface RegionRepository extends Repository<Region, String> {
                    AVG(s.longitude) AS centerLng,
                    COUNT(s.id)      AS storeCount
             FROM regions r
-            JOIN stores s ON s.sigungu_code = r.code AND s.is_visible = 1
+            JOIN stores s ON s.sigungu_code = r.code AND s.is_visible = 1 AND s.type = 'CENTURY'
             GROUP BY r.code, r.sido_code, r.sido_name, r.sigungu_name
             ORDER BY r.sido_code, r.sigungu_name
             """, nativeQuery = true)

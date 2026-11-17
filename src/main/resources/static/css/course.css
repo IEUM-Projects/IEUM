@@ -26,6 +26,7 @@ body.course-page { height: auto; min-height: 100%; background: var(--surface-sub
 .stop-meta { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); overflow-wrap: anywhere; }
 .kind { display: inline-block; padding: 1px var(--space-2); border-radius: var(--radius-xsmall); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); }
 .kind-store { background: var(--color-primary-5); color: var(--color-primary-70); }
+.kind-creator { background: var(--color-accent-5); color: var(--color-accent-70); }
 .kind-12, .kind-14, .kind-28, .kind-25 { background: var(--color-accent-5); color: var(--color-accent-70); }
 .stop-photo { margin: var(--space-1) 0 0; }
 .stop-photo img { display: block; width: 100%; max-height: 200px; object-fit: contain; background: var(--surface-subtle); border-radius: var(--radius-medium); }

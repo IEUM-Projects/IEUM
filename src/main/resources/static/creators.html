@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>로컬크리에이터 모아 보기 - 이음</title>
+  <meta name="description" content="지역을 고르면 그 지역의 로컬크리에이터를 모두 보여 드려요.">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/course.css">
+  <link rel="stylesheet" href="/css/creators.css">
+</head>
+<body class="course-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span>홈</span>
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <div id="account" class="account"></div>
+  </header>
+  <main id="main" class="course-main creators-main" tabindex="-1">
+    <p class="eyebrow">동네 찾기</p>
+    <h1>로컬크리에이터 모아 보기</h1>
+    <p class="creators-lead">지역을 고르면 그 지역의 로컬크리에이터를 모두 보여 드려요. 지원사업 선정 목록이라 지금 운영 중인지는 확인하지 못했어요.</p>
+
+    <section class="filter-box" aria-labelledby="filterTitle">
+      <h2 id="filterTitle" class="sr-only">지역과 분야 고르기</h2>
+      <div class="filter-row">
+        <label>시·도
+          <select id="sidoSelect"><option value="">전국</option></select>
+        </label>
+        <label>시·군·구
+          <select id="sigunguSelect" disabled><option value="">전체</option></select>
+        </label>
+      </div>
+      <div class="field-chips" role="group" aria-label="분야" id="fieldChips"></div>
+    </section>
+
+    <p id="creatorStatus" class="creator-status" role="status"></p>
+    <ul id="creatorList" class="creator-cards"></ul>
+    <button type="button" id="moreButton" class="button-secondary wide" hidden>더 보기</button>
+    <p class="note" id="creatorNote"></p>
+  </main>
+  <script type="module" src="/js/creators.js"></script>
+</body>
+</html>

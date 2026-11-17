@@ -120,16 +120,18 @@ public class SearchService {
     // ---------------------------------------------------------------- 백년가게
 
     private String storeWhere(SearchQuery q, MapSqlParameterSource params) {
-        return "s.is_visible = 1 AND " + allWords(q, params, "s.name", "s.category", "s.road_address", "s.jibun_address");
+        // 종류 이름(백년가게·로컬크리에이터)으로도 찾을 수 있게 (LOC-01)
+        return "s.is_visible = 1 AND " + allWords(q, params, "s.name", "s.category", "s.road_address", "s.jibun_address",
+                "IF(s.type = 'CREATOR', '로컬크리에이터', '백년가게')");
     }
 
     private List<StoreHit> stores(SearchQuery q, Where where, int limit, int offset) {
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("limit", limit).addValue("offset", offset);
-        String sql = "SELECT s.id, s.name, s.category, s.road_address, s.info_status, "
+        String sql = "SELECT s.id, s.type, s.name, s.category, s.road_address, s.info_status, "
                 + distance("s", where, params) + " AS distance_m, " + nameScore("s.name", q, params) + " AS score "
                 + "FROM stores s WHERE " + storeWhere(q, params)
                 + " ORDER BY score, distance_m IS NULL, distance_m, s.name, s.id LIMIT :limit OFFSET :offset";
-        RowMapper<StoreHit> map = (rs, i) -> new StoreHit(rs.getLong("id"), rs.getString("name"), rs.getString("category"),
+        RowMapper<StoreHit> map = (rs, i) -> new StoreHit(rs.getLong("id"), rs.getString("type"), rs.getString("name"), rs.getString("category"),
                 rs.getString("road_address"), rs.getString("info_status"), nullableLong(rs, "distance_m"));
         return jdbc.query(sql, params, map);
     }
