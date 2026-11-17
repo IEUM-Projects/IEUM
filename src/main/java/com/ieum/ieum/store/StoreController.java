@@ -28,8 +28,9 @@ public class StoreController {
     public List<StoreResponses.Summary> nearby(@RequestParam double lat,
                                                @RequestParam double lng,
                                                @RequestParam(required = false) Integer radius,
-                                               @RequestParam(name = "category", required = false) List<String> categories) {
-        return storeService.findNearby(lat, lng, radius, categories);
+                                               @RequestParam(name = "category", required = false) List<String> categories,
+                                               @RequestParam(required = false) StoreType type) {
+        return storeService.findNearby(lat, lng, radius, categories, type);
     }
 
     @GetMapping("/{id}")

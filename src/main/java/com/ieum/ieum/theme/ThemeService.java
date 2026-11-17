@@ -104,7 +104,7 @@ public class ThemeService {
         });
         List<Store> stores = jdbc.query("""
                 SELECT id, name, category, road_address, latitude, longitude, sigungu_code
-                FROM stores WHERE is_visible = 1 AND latitude IS NOT NULL AND longitude IS NOT NULL
+                FROM stores WHERE type = 'CENTURY' AND is_visible = 1 AND latitude IS NOT NULL AND longitude IS NOT NULL
                 """, new MapSqlParameterSource(), (rs, i) -> new Store(rs.getLong("id"), rs.getString("name"),
                 rs.getString("category"), rs.getString("road_address"), rs.getDouble("latitude"), rs.getDouble("longitude"),
                 regions.get(rs.getString("sigungu_code"))));

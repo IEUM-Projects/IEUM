@@ -54,7 +54,8 @@ function storeItem(s) {
     el('a', { href: `/store.html?id=${s.id}`, class: 'result-item' },
       el('span', { class: 'result-main' },
         el('strong', { class: 'result-name' }, mark(s.name)),
-        s.infoStatus === 'UNVERIFIED' ? el('span', { class: 'badge-unverified', text: '영업 정보 미확인' }) : null),
+        s.type === 'CREATOR' ? el('span', { class: 'badge-type creator', text: '로컬크리에이터' }) : null,
+        s.infoStatus === 'UNVERIFIED' ? el('span', { class: 'badge-unverified', text: s.type === 'CREATOR' ? '운영 여부 미확인' : '영업 정보 미확인' }) : null),
       el('span', { class: 'result-meta' }, s.category ? [...mark(s.category), ' · '] : null, mark(s.roadAddress ?? '')),
       s.distanceM !== null ? el('span', { class: 'result-side', text: formatDistance(s.distanceM) }) : null));
 }

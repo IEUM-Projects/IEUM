@@ -7,7 +7,7 @@ import { defaultPicks, legInfo, orderStops, walkKey } from './course-plan.js';
 
 const $ = (id) => document.getElementById(id);
 const MAX_STOPS = 6;
-const KIND_LABEL = { store: '백년가게', 12: '관광지', 14: '문화시설', 28: '레포츠', 25: '여행코스' };
+const KIND_LABEL = { store: '백년가게', creator: '로컬크리에이터', 12: '관광지', 14: '문화시설', 28: '레포츠', 25: '여행코스' };
 const state = { start: null, stores: [], spots: [], chosen: [], tab: 'store', tourAvailable: true, storeRadiusM: 1500, spotRadiusM: 2000, walk: { key: '', legs: null, enabled: false }, tourSource: '' };
 let walkPending = '';
 let kakao = null;
@@ -34,7 +34,7 @@ function toast(message) {
 }
 
 /** 가게와 관광지를 같은 모양으로 */
-const fromStore = (s) => ({ key: `s${s.id}`, kind: 'store', id: s.id, name: s.name, category: s.category, sub: s.category ?? '분류 없음', latitude: s.latitude, longitude: s.longitude, distanceM: s.distanceM, onnuri: s.onnuri });
+const fromStore = (s) => ({ key: `s${s.id}`, kind: s.type === 'CREATOR' ? 'creator' : 'store', id: s.id, name: s.name, category: s.category, sub: s.category ?? '분류 없음', latitude: s.latitude, longitude: s.longitude, distanceM: s.distanceM, onnuri: s.onnuri });
 const fromSpot = (t) => ({ key: `t${t.id}`, kind: String(t.type), type: t.type, id: t.id, name: t.title, sub: t.typeName, address: t.address, latitude: t.latitude, longitude: t.longitude, distanceM: t.distanceM, imageUrl: t.imageUrl, imageLicense: t.imageLicense });
 
 function plan() {
@@ -142,7 +142,7 @@ function stopItem(s, i, prev, leg) {
     toast(`${s.name}을(를) 뺐어요.`);
     ($('stops').querySelector('button') ?? $('candidates').querySelector('button'))?.focus();
   });
-  const title = s.kind === 'store'
+  const title = s.kind === 'store' || s.kind === 'creator'
     ? el('a', { href: `/store.html?id=${s.id}`, text: s.name })
     : el('span', { text: s.name });
   return el('li', { class: 'stop', 'data-key': s.key },
@@ -150,7 +150,7 @@ function stopItem(s, i, prev, leg) {
     el('div', { class: 'stop-body' },
       el('p', { class: 'stop-leg', text: legText(s, prev, leg) }),
       el('h3', { class: 'stop-name' }, el('span', { class: 'sr-only', text: `${i + 1}번째. ` }), title),
-      el('p', { class: 'stop-meta' }, el('span', { class: `kind kind-${s.kind}`, text: KIND_LABEL[s.kind] }), `${s.kind === 'store' ? ` ${s.sub}` : ''}${s.onnuri ? ' · 온누리상품권' : ''}${s.address ? ` · ${s.address}` : ''}`),
+      el('p', { class: 'stop-meta' }, el('span', { class: `kind kind-${s.kind}`, text: KIND_LABEL[s.kind] }), `${s.kind === 'store' || s.kind === 'creator' ? ` ${s.sub}` : ''}${s.onnuri ? ' · 온누리상품권' : ''}${s.address ? ` · ${s.address}` : ''}`),
       s.imageUrl ? el('figure', { class: 'stop-photo' },
         el('img', { src: s.imageUrl, alt: '', loading: 'lazy' }),
         el('figcaption', { text: photoCredit(s.imageLicense) })) : null,
@@ -176,9 +176,9 @@ function candidateItem(c) {
 }
 
 function renderCandidates() {
-  const list = state.tab === 'store' ? state.stores : state.spots.filter((s) => s.kind === state.tab);
+  const list = state.tab === 'store' || state.tab === 'creator' ? state.stores.filter((s) => s.kind === state.tab) : state.spots.filter((s) => s.kind === state.tab);
   if (!list.length) {
-    const msg = state.tab === 'store' ? `출발점 ${formatDistance(state.storeRadiusM)} 안에 백년가게가 없어요.`
+    const msg = state.tab === 'store' || state.tab === 'creator' ? `출발점 ${formatDistance(state.storeRadiusM)} 안에 ${KIND_LABEL[state.tab]}가 없어요.`
       : state.tourAvailable ? `출발점 ${formatDistance(state.spotRadiusM)} 안에 ${KIND_LABEL[state.tab]} 정보가 없어요.` : '관광지 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
     $('candidates').replaceChildren(el('li', { class: 'empty', text: msg }));
     return;

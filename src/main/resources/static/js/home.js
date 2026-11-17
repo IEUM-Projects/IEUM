@@ -430,7 +430,7 @@ async function loadStores(place) {
   const mine = ++storeRequest;
   $('storesStatus').textContent = '불러오는 중...';
   $('storeList').replaceChildren();
-  const where = { lat: place.lat.toFixed(6), lng: place.lng.toFixed(6), categories: storeCategory ? [storeCategory] : [] };
+  const where = { lat: place.lat.toFixed(6), lng: place.lng.toFixed(6), categories: storeCategory ? [storeCategory] : [], type: 'CENTURY' };
   try {
     let radius = 1000;
     let stores = await api.nearbyStores({ ...where, radius });

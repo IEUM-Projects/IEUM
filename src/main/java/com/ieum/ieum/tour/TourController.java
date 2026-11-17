@@ -47,7 +47,7 @@ public class TourController {
     public record Start(String kind, Long id, String name, double latitude, double longitude) {
     }
 
-    public record CourseStore(Long id, String name, String category, double latitude, double longitude, long distanceM, boolean onnuri) {
+    public record CourseStore(Long id, String type, String name, String category, double latitude, double longitude, long distanceM, boolean onnuri) {
     }
 
     public record CourseResponse(Start start, List<CourseStore> stores, List<Spot> spots, boolean tourAvailable,
@@ -82,8 +82,8 @@ public class TourController {
         } else {
             throw new BusinessException(ErrorCode.INVALID_INPUT, List.of("시장 번호나 위치(lat, lng)를 넣어 주세요."));
         }
-        List<CourseStore> stores = storeRepository.findNearby(start.latitude(), start.longitude(), STORE_RADIUS, true, List.of(""), 30)
-                .stream().map(s -> new CourseStore(s.getId(), s.getName(), s.getCategory(), s.getLatitude().doubleValue(),
+        List<CourseStore> stores = storeRepository.findNearby(start.latitude(), start.longitude(), STORE_RADIUS, true, List.of(""), "", 40)
+                .stream().map(s -> new CourseStore(s.getId(), s.getType(), s.getName(), s.getCategory(), s.getLatitude().doubleValue(),
                         s.getLongitude().doubleValue(), s.getDistanceM() == null ? 0 : s.getDistanceM().longValue(),
                         s.getOnnuri() != null && s.getOnnuri() == 1))
                 .toList();

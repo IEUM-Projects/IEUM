@@ -32,7 +32,7 @@ export function orderStops(start, stops) {
   return ordered;
 }
 
-/** 처음에 넣을 곳: 가까운 음식점 하나, 관광지 하나(없으면 레포츠), 문화시설 하나, 카페·간식 하나 (있는 것만) */
+/** 처음에 넣을 곳: 가까운 음식점 하나, 관광지 하나(없으면 레포츠), 문화시설 하나, 카페·간식 하나, 로컬크리에이터 하나 (있는 것만) */
 export function defaultPicks(stores, spots) {
   const first = (list, test) => list.filter(test).sort((a, b) => a.distanceM - b.distanceM)[0];
   return [
@@ -40,6 +40,7 @@ export function defaultPicks(stores, spots) {
     first(spots, (s) => s.type === 12) ?? first(spots, (s) => s.type === 28),
     first(spots, (s) => s.type === 14),
     first(stores, (s) => s.category === '카페·간식'),
+    first(stores, (s) => s.kind === 'creator'),
   ].filter(Boolean);
 }
 

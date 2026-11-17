@@ -74,7 +74,7 @@ function facilityBox(m) {
 }
 
 function storeItem(s) {
-  const unverified = s.infoStatus === 'UNVERIFIED';
+  const unverified = s.infoStatus === 'UNVERIFIED' && s.type !== 'CREATOR';
   return el('li', {},
     el('a', { href: `/store.html?id=${s.id}`, class: 'near-item' },
       el('span', { class: 'near-name' },
@@ -85,6 +85,9 @@ function storeItem(s) {
 }
 
 function render(m) {
+  // 근처 가게를 백년가게와 로컬크리에이터로 나눠 보여 준다 (LOC-01)
+  const centuries = m.nearbyStores.filter((s) => s.type !== 'CREATOR');
+  const creators = m.nearbyStores.filter((s) => s.type === 'CREATOR');
   document.title = `${m.name} - 이음`;
   const address = m.roadAddress ?? m.jibunAddress;
   const age = m.openedYear ? new Date().getFullYear() - m.openedYear : null;
@@ -116,10 +119,14 @@ function render(m) {
         el('a', { href: `/market.html?id=${o.id}`, class: 'near-item' }, el('strong', { text: o.name })))))) : null,
     el('section', { class: 'near', 'aria-labelledby': 'nearTitle' },
       el('h2', { id: 'nearTitle', text: `근처 백년가게 (${m.nearbyRadiusM}m 안)` }),
-      m.nearbyStores.length
-        ? el('ul', { class: 'near-list' }, ...m.nearbyStores.map(storeItem))
+      centuries.length
+        ? el('ul', { class: 'near-list' }, ...centuries.map(storeItem))
         : el('p', { class: 'empty', text: hasCoords ? `반경 ${m.nearbyRadiusM}m 안에 백년가게가 없어요.` : '시장 위치를 찾지 못해서 근처 가게를 보여 드릴 수 없어요.' }),
     ),
+    creators.length ? el('section', { class: 'near', 'aria-labelledby': 'creatorTitle' },
+      el('h2', { id: 'creatorTitle', text: `근처 로컬크리에이터 (${m.nearbyRadiusM}m 안)` }),
+      el('ul', { class: 'near-list' }, ...creators.map(storeItem)),
+      el('p', { class: 'empty', text: '로컬크리에이터 지원사업 선정 목록이라 지금 운영 중인지는 확인하지 못했어요.' })) : null,
     hasCoords ? el('section', { id: 'tourBox', class: 'near tour-box', 'aria-labelledby': 'tourTitle' },
       el('h2', { id: 'tourTitle', text: '주변 관광지 (2km 안)' }),
       el('p', { id: 'tourStatus', class: 'empty', role: 'status', text: '불러오는 중...' }),

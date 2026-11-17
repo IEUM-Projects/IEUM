@@ -179,7 +179,7 @@ public class LicenseImportService {
     List<Target> targets() {
         return jdbc.query("""
                 SELECT id, name, category, road_address, jibun_address, info_status
-                FROM stores WHERE is_visible = 1 OR info_status = 'CLOSED' ORDER BY id
+                FROM stores WHERE type = 'CENTURY' AND (is_visible = 1 OR info_status = 'CLOSED') ORDER BY id
                 """, new MapSqlParameterSource(), (rs, i) -> {
             String road = rs.getString("road_address");
             String jibun = rs.getString("jibun_address");
@@ -189,7 +189,7 @@ public class LicenseImportService {
     }
 
     public long countTargets() {
-        Long n = jdbc.queryForObject("SELECT COUNT(*) FROM stores WHERE is_visible = 1 OR info_status = 'CLOSED'",
+        Long n = jdbc.queryForObject("SELECT COUNT(*) FROM stores WHERE type = 'CENTURY' AND (is_visible = 1 OR info_status = 'CLOSED')",
                 new MapSqlParameterSource(), Long.class);
         return n == null ? 0 : n;
     }

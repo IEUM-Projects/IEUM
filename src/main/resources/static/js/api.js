@@ -16,9 +16,10 @@ async function request(url) {
 
 export const api = {
   /** 반경 검색. categories: ['음식점', '카페·간식'] 처럼 배열, 비어 있으면 전체 */
-  nearbyStores({ lat, lng, radius, categories = [] }) {
+  nearbyStores({ lat, lng, radius, categories = [], type = '' }) {
     const params = new URLSearchParams({ lat, lng, radius });
     categories.forEach((c) => params.append('category', c));
+    if (type) params.set('type', type);   // CENTURY(백년가게) / CREATOR(로컬크리에이터), 없으면 둘 다
     return request(`/api/stores?${params}`);
   },
   storeDetail(id) {

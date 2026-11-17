@@ -31,6 +31,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
      * 2) ST_Distance_Sphere              : 그 안에서 실제 거리(m)를 계산해 원 안에 있는 것만 남김
      *
      * 카테고리 필터: allCategories가 true면 전체, false면 categories 목록에 있는 것만.
+     * 종류 필터: type 이 ''이면 전체, 'CENTURY'(백년가게)나 'CREATOR'(로컬크리에이터)면 그 종류만 (LOC-01).
      */
     @Query(value = """
             SELECT s.id              AS id,
@@ -53,6 +54,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                                   AND :lng + :radius / (111320.0 * COS(RADIANS(:lat)))
               AND ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:lng, :lat)) <= :radius
               AND (:allCategories = TRUE OR s.category IN (:categories))
+              AND (:type = '' OR s.type = :type)
             ORDER BY distanceM
             LIMIT :limit
             """, nativeQuery = true)
@@ -61,5 +63,6 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                                     @Param("radius") int radius,
                                     @Param("allCategories") boolean allCategories,
                                     @Param("categories") Collection<String> categories,
+                                    @Param("type") String type,
                                     @Param("limit") int limit);
 }

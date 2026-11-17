@@ -1,6 +1,7 @@
 package com.ieum.ieum.store;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * API가 돌려주는 응답 모양 (DTO).
@@ -41,6 +42,10 @@ public final class StoreResponses {
         }
     }
 
+    /** 로컬크리에이터 연도별 선정 내용 (LOC-01, 중소벤처기업부 로컬크리에이터 리스트) */
+    public record Selection(int year, String item, List<String> fields, String organizer, java.time.LocalDate dataDate) {
+    }
+
     /** 가게 상세 화면용 (MAP-02) */
     public record Detail(
             Long id,
@@ -58,15 +63,16 @@ public final class StoreResponses {
             BigDecimal longitude,
             InfoStatus infoStatus,
             String kakaoMapUrl,
-            Onnuri onnuri
+            Onnuri onnuri,
+            List<Selection> creatorSelections
     ) {
-        static Detail from(Store s, com.ieum.ieum.onnuri.StoreOnnuri onnuri) {
+        static Detail from(Store s, com.ieum.ieum.onnuri.StoreOnnuri onnuri, List<Selection> selections) {
             String mapUrl = s.getKakaoPlaceId() == null ? null
                     : "https://place.map.kakao.com/" + s.getKakaoPlaceId();
             return new Detail(s.getId(), s.getName(), s.getType(), s.getCategory(), s.getPhone(),
                     s.getHours(), s.getHistory(), s.getCertifiedYear(), s.getSnsUrl(),
                     s.getRoadAddress(), s.getJibunAddress(), s.getLatitude(), s.getLongitude(),
-                    s.getInfoStatus(), mapUrl, Onnuri.of(onnuri));
+                    s.getInfoStatus(), mapUrl, Onnuri.of(onnuri), selections);
         }
     }
 }
