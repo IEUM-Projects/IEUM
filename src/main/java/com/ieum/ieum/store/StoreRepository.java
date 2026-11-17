@@ -42,8 +42,10 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                    s.latitude        AS latitude,
                    s.longitude       AS longitude,
                    s.info_status     AS infoStatus,
-                   ROUND(ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:lng, :lat))) AS distanceM
+                   ROUND(ST_Distance_Sphere(POINT(s.longitude, s.latitude), POINT(:lng, :lat))) AS distanceM,
+                   CASE WHEN o.store_id IS NULL THEN 0 ELSE 1 END AS onnuri
             FROM stores s
+            LEFT JOIN store_onnuri o ON o.store_id = s.id
             WHERE s.is_visible = 1
               AND s.latitude  BETWEEN :lat - :radius / 111320.0
                                   AND :lat + :radius / 111320.0

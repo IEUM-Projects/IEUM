@@ -23,12 +23,21 @@ public final class StoreResponses {
             BigDecimal latitude,
             BigDecimal longitude,
             String infoStatus,
-            int distanceM
+            int distanceM,
+            boolean onnuri
     ) {
         static Summary from(NearbyStoreRow row) {
             return new Summary(row.getId(), row.getName(), row.getType(), row.getCategory(),
                     row.getPhone(), row.getRoadAddress(), row.getLatitude(), row.getLongitude(),
-                    row.getInfoStatus(), row.getDistanceM() == null ? 0 : row.getDistanceM().intValue());
+                    row.getInfoStatus(), row.getDistanceM() == null ? 0 : row.getDistanceM().intValue(),
+                    row.getOnnuri() != null && row.getOnnuri() == 1);
+        }
+    }
+
+    /** 온누리상품권 가맹 (DATA-04). 가맹으로 확인되지 않은 가게는 null (쓸 수 없다는 뜻이 아님) */
+    public record Onnuri(boolean paper, boolean digital, String marketName, Short registeredYear, java.time.LocalDate dataDate) {
+        static Onnuri of(com.ieum.ieum.onnuri.StoreOnnuri o) {
+            return o == null ? null : new Onnuri(o.isPaper(), o.isDigital(), o.getMarketName(), o.getRegisteredYear(), o.getDataDate());
         }
     }
 
@@ -48,15 +57,16 @@ public final class StoreResponses {
             BigDecimal latitude,
             BigDecimal longitude,
             InfoStatus infoStatus,
-            String kakaoMapUrl
+            String kakaoMapUrl,
+            Onnuri onnuri
     ) {
-        static Detail from(Store s) {
+        static Detail from(Store s, com.ieum.ieum.onnuri.StoreOnnuri onnuri) {
             String mapUrl = s.getKakaoPlaceId() == null ? null
                     : "https://place.map.kakao.com/" + s.getKakaoPlaceId();
             return new Detail(s.getId(), s.getName(), s.getType(), s.getCategory(), s.getPhone(),
                     s.getHours(), s.getHistory(), s.getCertifiedYear(), s.getSnsUrl(),
                     s.getRoadAddress(), s.getJibunAddress(), s.getLatitude(), s.getLongitude(),
-                    s.getInfoStatus(), mapUrl);
+                    s.getInfoStatus(), mapUrl, Onnuri.of(onnuri));
         }
     }
 }

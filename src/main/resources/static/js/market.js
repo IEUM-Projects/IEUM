@@ -101,6 +101,7 @@ function render(m) {
       row('주소', address),
       m.roadAddress && m.jibunAddress ? row('지번', m.jibunAddress) : null,
       row('점포 수', m.storeCount ? `${m.storeCount.toLocaleString()}개` : null),
+      m.onnuri ? row('상품권', `온누리 가맹점 ${m.onnuri.merchantCount.toLocaleString()}곳 (디지털 상품권 ${m.onnuri.digitalCount.toLocaleString()}곳)`) : null,
       m.facilities ? null : row('편의시설', `주차장 ${m.hasParking ? '있음' : '없음'} · 공중화장실 ${m.hasToilet ? '있음' : '없음'}`),
       row('개설', m.openedYear ? `${m.openedYear}년${age > 0 ? ` (${age}년째)` : ''}` : null),
       m.goods.length ? row('취급품목', el('ul', { class: 'goods' }, ...m.goods.map((g) => el('li', { text: g })))) : null,
@@ -122,6 +123,7 @@ function render(m) {
     ),
     el('p', { class: 'source', text: `시장 정보: 전국전통시장표준데이터 (소상공인시장진흥공단)${m.dataDate ? ` · 기준일 ${m.dataDate}` : ''}` }),
     m.facilities ? el('p', { class: 'source', text: `편의시설: 전통시장현황 (소상공인시장진흥공단) · 기준일 ${m.facilities.dataDate}` }) : null,
+    m.onnuri ? el('p', { class: 'source', text: `온누리상품권: 전국 온누리상품권 가맹점 현황 (소상공인시장진흥공단) · 기준일 ${m.onnuri.dataDate} · 2026년 하반기 개편으로 달라질 수 있어요` }) : null,
   ].filter(Boolean));
 }
 

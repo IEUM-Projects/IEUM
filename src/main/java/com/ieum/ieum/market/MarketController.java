@@ -39,6 +39,11 @@ public class MarketController {
 
     private final MarketRepository repository;
     private final MarketFacilityRepository facilityRepository;
+    private final com.ieum.ieum.onnuri.MarketOnnuriRepository onnuriRepository;
+
+    /** 온누리상품권 가맹점 수 (DATA-04). 소속 시장 이름이 맞는 시장만, 아니면 null */
+    public record Onnuri(int merchantCount, int digitalCount, LocalDate dataDate) {
+    }
 
     public record Summary(Long id, String name, String marketType, boolean permanent, String marketDays,
                           String address, BigDecimal latitude, BigDecimal longitude, Integer storeCount,
@@ -66,7 +71,7 @@ public class MarketController {
                          String roadAddress, String jibunAddress, BigDecimal latitude, BigDecimal longitude,
                          String regionName, Integer storeCount, List<String> goods, String homepageUrl,
                          boolean hasToilet, boolean hasParking, Integer openedYear, String source, LocalDate dataDate,
-                         Facilities facilities,
+                         Facilities facilities, Onnuri onnuri,
                          int nearbyRadiusM, List<NearbyStore> nearbyStores, List<SameBuilding> sameBuilding) {
     }
 
@@ -112,6 +117,8 @@ public class MarketController {
         return new Detail(m.getId(), m.getName(), m.getMarketType(), m.isPermanent(), m.getCycleRaw(), m.getMarketDays(),
                 m.getRoadAddress(), m.getJibunAddress(), m.getLatitude(), m.getLongitude(), regionName,
                 m.getStoreCount(), goods, m.getHomepageUrl(), m.isHasToilet(), m.isHasParking(), m.getOpenedYear(),
-                m.getSource(), m.getDataDate(), facilities, NEARBY_STORE_RADIUS, stores, same);
+                m.getSource(), m.getDataDate(), facilities,
+                onnuriRepository.findById(m.getId()).map(o -> new Onnuri(o.getMerchantCount(), o.getDigitalCount(), o.getDataDate())).orElse(null),
+                NEARBY_STORE_RADIUS, stores, same);
     }
 }

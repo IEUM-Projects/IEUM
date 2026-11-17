@@ -229,3 +229,6 @@ a.fab { text-decoration: none; }
 .store-list .badge-market { margin-right: var(--space-1); }
 .store-card .market-days { margin: 0; font-size: var(--font-body-small); font-weight: var(--font-weight-bold); color: var(--color-primary-70); }
 .list-group-title { margin: var(--space-4) 0 0; font-size: var(--font-heading-small); }
+
+/* 온누리상품권 (DATA-04) */
+.badge-onnuri { display: inline-block; margin-left: var(--space-1); padding: 2px var(--space-2); border-radius: var(--radius-xsmall); background: var(--color-accent-5); color: var(--color-accent-70); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); vertical-align: middle; }
