@@ -112,6 +112,10 @@ function render(m) {
       row('개설', m.openedYear ? `${m.openedYear}년${age > 0 ? ` (${age}년째)` : ''}` : null),
       m.goods.length ? row('취급품목', el('ul', { class: 'goods' }, ...m.goods.map((g) => el('li', { text: g })))) : null,
     ),
+    // 시장 이야기 (MKT-02): 공개한 이야기·관광공사 소개글이 있을 때만 채워서 보여 준다
+    el('section', { id: 'storyBox', class: 'story-box', 'aria-labelledby': 'storyTitle', hidden: true },
+      el('h2', { id: 'storyTitle', text: '시장 이야기' }),
+      el('div', { id: 'storyContent' })),
     facilityBox(m),
     m.sameBuilding.length ? el('section', { class: 'near', 'aria-labelledby': 'sameTitle' },
       el('h2', { id: 'sameTitle', text: '같은 건물의 시장' }),
@@ -172,6 +176,46 @@ async function loadTour(m) {
   }
 }
 
+/** 빈 줄로 나눈 문단 → <p> (줄바꿈은 CSS pre-line 으로) */
+function paragraphs(text, cls) {
+  return text.split(/\n\s*\n/).map((t) => t.trim()).filter(Boolean).map((t) => el('p', { class: cls, text: t }));
+}
+
+function storyDate(iso) {
+  return iso ? iso.slice(0, 10).replaceAll('-', '.') : '';
+}
+
+/** 시장 이야기 (MKT-02): 사람이 확인한 자료로 정리한 글(출처 필수) + 한국관광공사 소개글 */
+async function loadStory(m) {
+  try {
+    const res = await fetch(`/api/markets/${m.id}/story`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const parts = [];
+    if (data.story) {
+      const s = data.story;
+      parts.push(el('div', { class: 'story-main' },
+        ...paragraphs(s.body, 'story-text'),
+        el('p', { class: 'story-meta', text: `이음이 아래 자료를 확인해 정리했어요 · ${storyDate(s.publishedAt || s.updatedAt)} 기준` }),
+        el('h3', { class: 'story-sub', text: '출처' }),
+        el('ul', { class: 'story-sources' }, ...s.sources.map((src) => el('li', {},
+          el('a', { href: src.url, target: '_blank', rel: 'noopener noreferrer' }, src.title, el('span', { class: 'sr-only', text: ' (새 창)' }))))),
+        m.openedYear ? el('p', { class: 'story-note', text: `위의 '개설 ${m.openedYear}년'은 공공데이터(전국전통시장표준데이터)에 적힌 연도라 시장의 실제 역사와 다를 수 있어요.` }) : null));
+    }
+    if (data.tour) {
+      parts.push(el('div', { class: 'story-tour' },
+        el('h3', { class: 'story-sub', text: '한국관광공사 소개' }),
+        ...paragraphs(data.tour.overview, 'story-text'),
+        el('p', { class: 'story-meta', text: `출처: ${data.tour.source} ('${data.tour.title}')` })));
+    }
+    if (!parts.length) return;
+    document.getElementById('storyContent').replaceChildren(...parts);
+    document.getElementById('storyBox').hidden = false;
+  } catch (_) {
+    // 이야기가 없거나 못 불러오면 칸을 숨긴 채로 둔다
+  }
+}
+
 /** 최근 기사 (NEWS-01): 네이버 뉴스 검색이 느릴 수 있어서 화면을 먼저 보여 주고 나중에 채운다 */
 async function loadNews(m) {
   const status = document.getElementById('newsStatus');
@@ -201,6 +245,7 @@ async function init() {
     render(m);
     if (m.latitude != null && m.longitude != null) loadTour(m);
     loadNews(m);
+    loadStory(m);
   } catch (e) {
     root.replaceChildren(el('p', { class: 'error', text: '시장 정보를 불러오지 못했어요. 지도로 돌아가 다시 선택해 주세요.' }));
   }

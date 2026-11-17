@@ -169,9 +169,14 @@ public class PublicDataClient {
 
     /** 행사 하나의 소개글·홈페이지 (관광공사 상세) */
     public Optional<TourDetail> tourDetail(String contentId) {
+        return tourDetail(contentId, false);
+    }
+
+    /** quick=true 면 화면이 기다리는 호출이라 8초까지만 기다린다 (시장 이야기, MKT-02) */
+    public Optional<TourDetail> tourDetail(String contentId, boolean quick) {
         Map<String, String> params = tourParams();
         params.put("contentId", contentId);
-        Page body = call(tourUrl + "/detailCommon2", params, "관광공사 상세");
+        Page body = call(quick ? quickHttp : http, tourUrl + "/detailCommon2", params, "관광공사 상세");
         if (body.items().isEmpty()) return Optional.empty();
         JsonNode i = body.items().getFirst();
         return Optional.of(new TourDetail(

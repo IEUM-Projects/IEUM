@@ -316,3 +316,33 @@ body.admin-page { height: auto; min-height: 100%; background: var(--surface-subt
 .import-files:empty { display: none; }
 .import-files li { overflow-wrap: anywhere; }
 .import-files li.has-error { color: var(--color-danger-70); }
+
+/* 시장 이야기 (MKT-02) */
+.story-find { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-5); padding: var(--space-4); border: 1px solid var(--border-light); border-radius: var(--radius-large); background: var(--surface); }
+.story-find h2 { margin: 0; font-size: var(--font-heading-small); }
+.find-row { display: flex; gap: var(--space-2); }
+.find-row input { flex: 1 1 auto; min-width: 0; min-height: var(--touch-min); padding: 0 var(--space-3); border: 1px solid var(--border-input); border-radius: var(--radius-medium); font: inherit; background: var(--surface); color: var(--text-body); }
+.find-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.find-item { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-top: 1px solid var(--border-light); }
+.find-item > span { display: flex; flex-direction: column; min-width: 0; }
+.find-addr { font-size: var(--font-body-small); color: var(--text-subtle); overflow-wrap: anywhere; }
+.find-item .button-secondary { flex: none; min-height: var(--touch-min); }
+.st-draft { background: var(--color-accent-5); color: var(--color-accent-70); border: 1px solid var(--color-accent-70); }
+.st-published { background: var(--color-primary-70); color: var(--text-on-primary); }
+.st-research { background: var(--surface-subtle); color: var(--text-body); }
+.story-row-meta, .story-row-preview { grid-column: 1; margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); overflow-wrap: anywhere; }
+.story-row .row-actions a { display: inline-flex; align-items: center; min-height: var(--touch-min); }
+.source-rows { margin: 0; padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2); }
+.source-row { display: grid; grid-template-columns: 1fr 1.4fr auto; gap: var(--space-2); align-items: center; }
+.source-row input { min-height: var(--touch-min); padding: 0 var(--space-3); border: 1px solid var(--border-input); border-radius: var(--radius-medium); font: inherit; background: var(--surface); color: var(--text-body); min-width: 0; }
+.source-row .src-remove { min-height: var(--touch-min); }
+.tour-ref { border: 1px solid var(--border-light); border-radius: var(--radius-medium); padding: var(--space-2) var(--space-3); background: var(--surface-subtle); }
+.tour-ref[hidden] { display: none; }
+.tour-ref summary { cursor: pointer; min-height: var(--touch-min); display: flex; align-items: center; font-weight: var(--font-weight-bold); }
+.tour-ref-text { margin: var(--space-2) 0 0; white-space: pre-line; font-size: var(--font-body-small); }
+#storyDialog .dialog-actions { grid-template-columns: 1fr 1fr 1fr; }
+#storyDialog .dialog-actions button[hidden] { display: none; }
+@media (max-width: 599px) {
+  .source-row { grid-template-columns: 1fr; }
+  #storyDialog .dialog-actions { grid-template-columns: 1fr; }
+}
