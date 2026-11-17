@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
  * 1) 전국문화축제표준데이터  api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api
  * 2) 한국관광공사 국문 관광정보 서비스  apis.data.go.kr/B551011/KorService2
  *    - /searchFestival2 (기간으로 행사 목록), /detailCommon2 (소개글·홈페이지)
+ *    - /locationBasedList2 (좌표 주변 관광지·문화시설, TOUR-01)
  *
  * 인증키(public-data.service-key)는 application-local.yml에만 둔다.
  * 인증키가 들어간 요청 주소는 로그에 남기지 않는다.
@@ -43,6 +44,8 @@ public class PublicDataClient {
     private static final DateTimeFormatter YYYYMMDD = DateTimeFormatter.BASIC_ISO_DATE;
 
     private final RestClient http;
+    /** 화면이 기다리는 호출(주변 관광지)용: 오래 기다리지 않는다 (TOUR-01) */
+    private final RestClient quickHttp;
     private final JsonMapper json = JsonMapper.builder().build();
     private final String serviceKey;
     private final String standardUrl;
@@ -60,6 +63,10 @@ public class PublicDataClient {
         factory.setConnectTimeout(Duration.ofSeconds(10));
         factory.setReadTimeout(Duration.ofSeconds(60));
         this.http = RestClient.builder().requestFactory(factory).build();
+        SimpleClientHttpRequestFactory quick = new SimpleClientHttpRequestFactory();
+        quick.setConnectTimeout(Duration.ofSeconds(5));
+        quick.setReadTimeout(Duration.ofSeconds(8));
+        this.quickHttp = RestClient.builder().requestFactory(quick).build();
     }
 
     public boolean hasKey() {
@@ -173,6 +180,44 @@ public class PublicDataClient {
                 FestivalText.cut(text(i, "tel"), 50)));
     }
 
+    /** 관광지 한 곳 (관광공사 위치 기반 조회, TOUR-01) */
+    public record TourSpotRecord(String contentId, int contentType, String title, String address,
+                                 Double latitude, Double longitude,
+                                 String imageUrl, String imageLicense) {
+    }
+
+    /**
+     * 좌표 주변 관광정보 (관광공사 /locationBasedList2, 가까운 순)
+     * contentTypeId: 12 관광지, 14 문화시설. 한 쪽 100건, 최대 maxPages쪽
+     */
+    public List<TourSpotRecord> nearbySpots(double lat, double lng, int radius, int contentTypeId, int maxPages) {
+        List<TourSpotRecord> result = new ArrayList<>();
+        for (int page = 1; page <= maxPages; page++) {
+            Map<String, String> params = tourParams();
+            params.put("mapX", String.valueOf(lng));     // 관광공사: mapX = 경도, mapY = 위도
+            params.put("mapY", String.valueOf(lat));
+            params.put("radius", String.valueOf(radius));
+            params.put("contentTypeId", String.valueOf(contentTypeId));
+            params.put("arrange", "E");                  // 거리순
+            params.put("numOfRows", "100");
+            params.put("pageNo", String.valueOf(page));
+            Page body = call(quickHttp, tourUrl + "/locationBasedList2", params, "관광공사 주변 관광정보");
+            for (JsonNode i : body.items()) {
+                Double y = FestivalText.latitude(text(i, "mapy"));
+                Double x = FestivalText.longitude(text(i, "mapx"));
+                String id = text(i, "contentid");
+                if (id == null || x == null || y == null) continue;
+                String addr = String.join(" ", java.util.stream.Stream.of(text(i, "addr1"), text(i, "addr2"))
+                        .filter(v -> v != null && !v.isBlank()).toList());
+                result.add(new TourSpotRecord(FestivalText.cut(id, 20), contentTypeId, FestivalText.cut(text(i, "title"), 200),
+                        FestivalText.cut(addr.isBlank() ? null : addr, 300), y, x,
+                        FestivalText.homepage(text(i, "firstimage")), FestivalText.cut(text(i, "cpyrhtDivCd"), 10)));
+            }
+            if (body.items().isEmpty() || page * 100 >= body.totalCount()) break;
+        }
+        return result;
+    }
+
     private Map<String, String> tourParams() {
         Map<String, String> params = new LinkedHashMap<>();
         params.put("MobileOS", "ETC");
@@ -188,6 +233,10 @@ public class PublicDataClient {
 
     /** 호출하고 응답에서 items 목록과 전체 건수를 꺼낸다. 실패하면 PublicDataException */
     private Page call(String url, Map<String, String> params, String what) {
+        return call(http, url, params, what);
+    }
+
+    private Page call(RestClient client, String url, Map<String, String> params, String what) {
         if (!hasKey()) throw new PublicDataException(what + ": application-local.yml에 public-data.service-key가 없어요.");
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url).queryParam("serviceKey", "{serviceKey}");
         params.forEach(builder::queryParam);
@@ -196,7 +245,7 @@ public class PublicDataClient {
 
         String raw;
         try {
-            raw = http.get().uri(uri).retrieve().body(String.class);
+            raw = client.get().uri(uri).retrieve().body(String.class);
         } catch (RestClientException e) {
             throw new PublicDataException(what + " 호출 실패: " + e.getClass().getSimpleName() + " " + firstLine(e.getMessage()));
         }

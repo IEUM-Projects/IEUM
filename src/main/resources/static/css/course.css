@@ -1,0 +1,45 @@
+/* 걷기 코스 (TOUR-01) (값은 tokens.css) */
+body.course-page { height: auto; min-height: 100%; background: var(--surface-subtle); }
+.site-header .back-link { flex: 1 1 0; }
+.center-logo { margin: 0; }
+.site-header .account { flex: 1 1 0; display: flex; justify-content: flex-end; }
+
+.course-main { max-width: 760px; margin: 0 auto; padding: var(--space-6) var(--screen-margin) var(--space-12); display: flex; flex-direction: column; gap: var(--space-4); }
+.course-main:focus { outline: none; }
+.course-main h1 { margin: 0; font-size: var(--font-heading-large); }
+.course-main h2 { margin: 0 0 var(--space-2); font-size: var(--font-heading-small); }
+.eyebrow { margin: 0; font-size: var(--font-body-small); font-weight: var(--font-weight-bold); color: var(--color-primary-70); }
+.summary { margin: 0; font-weight: var(--font-weight-bold); }
+.note { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+
+.course-map { position: relative; height: 320px; border-radius: var(--radius-large); overflow: hidden; background: var(--color-primary-5); border: 1px solid var(--border-light); }
+.map-error { margin: 0; padding: var(--space-4); color: var(--text-subtle); }
+
+.stops { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.stop { display: flex; gap: var(--space-3); padding: var(--space-4); background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); }
+.stop-no { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--color-accent-50); color: #fff; font-weight: var(--font-weight-bold); }
+.stop-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.stop-leg { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.stop-name { margin: 0; font-size: var(--font-body-large); overflow-wrap: anywhere; }
+.stop-name a { color: var(--text-body); }
+.stop-name a:hover { color: var(--text-link); }
+.stop-meta { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); overflow-wrap: anywhere; }
+.kind { display: inline-block; padding: 1px var(--space-2); border-radius: var(--radius-xsmall); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); }
+.kind-store { background: var(--color-primary-5); color: var(--color-primary-70); }
+.kind-12, .kind-14, .kind-28, .kind-25 { background: var(--color-accent-5); color: var(--color-accent-70); }
+.stop-photo { margin: var(--space-1) 0 0; }
+.stop-photo img { display: block; width: 100%; max-height: 200px; object-fit: contain; background: var(--surface-subtle); border-radius: var(--radius-medium); }
+.stop-photo figcaption { font-size: var(--font-body-xsmall); color: var(--text-subtle); margin-top: 2px; }
+.stop-actions { display: flex; gap: var(--space-2); }
+.button-text { display: inline-flex; align-items: center; min-height: var(--touch-min); padding: 0 var(--space-2); border: 0; background: none; color: var(--text-link); font: inherit; font-weight: var(--font-weight-bold); text-decoration: underline; cursor: pointer; }
+
+.add-box { padding: var(--space-4); background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); }
+.add-box .tabs { display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: thin; border-bottom: 1px solid var(--border-light); margin-bottom: var(--space-3); }
+.add-box [role="tab"] { flex: none; white-space: nowrap; min-height: var(--touch-min); padding: 0 var(--space-3); border: 0; border-bottom: 3px solid transparent; background: none; font: inherit; color: var(--text-subtle); }
+.add-box [role="tab"][aria-selected="true"] { border-bottom-color: var(--color-primary-70); color: var(--text-body); font-weight: var(--font-weight-bold); }
+.candidates { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.cand { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border-divider); }
+.cand:last-child { border-bottom: 0; }
+.cand-meta { font-size: var(--font-body-small); color: var(--text-subtle); }
+.button-secondary.small { flex: none; min-height: var(--touch-min); padding: 0 var(--space-3); }
+.candidates .empty, .stops .empty { margin: 0; padding: var(--space-2) 0; color: var(--text-subtle); font-size: var(--font-body-small); border: 0; background: none; }
