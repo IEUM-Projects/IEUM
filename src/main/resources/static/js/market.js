@@ -6,6 +6,7 @@ import { todayString } from './festival-format.js';
 import { digitsOf, cycleLabel, daysOfMonth, isMarketDay, nextMarketDay, dayText } from './market-days.js';
 import { facilityGroups } from './market-facilities.js';
 import { photoCredit } from './festival-format.js';
+import { NEWS_NOTE, newsItem } from './news-common.js';
 
 const root = document.getElementById('detail');
 
@@ -124,6 +125,11 @@ function render(m) {
       el('p', { id: 'tourStatus', class: 'empty', role: 'status', text: '불러오는 중...' }),
       el('ul', { id: 'tourList', class: 'near-list' }),
       el('a', { class: 'button-secondary wide course-link', href: `/course.html?market=${m.id}` }, icon('walk'), '이 시장에서 걷기 코스 만들기')) : null,
+    el('section', { id: 'newsBox', class: 'near news-box', 'aria-labelledby': 'newsTitle' },
+      el('h2', { id: 'newsTitle', text: '최근 기사' }),
+      el('p', { id: 'newsStatus', class: 'empty', role: 'status', text: '불러오는 중...' }),
+      el('ul', { id: 'newsList', class: 'news-list' }),
+      el('p', { class: 'news-note', text: `${NEWS_NOTE} 이름이 같은 다른 곳의 기사가 섞일 수 있어요.` })),
     el('div', { class: 'actions' },
       hasCoords ? el('a', { class: 'button-primary wide', href: directionsUrl(m), target: '_blank', rel: 'noopener' }, icon('directions'), '길찾기') : null,
       m.homepageUrl ? el('a', { class: 'button-secondary wide', href: m.homepageUrl, target: '_blank', rel: 'noopener noreferrer' }, icon('link'), '홈페이지') : null,
@@ -159,6 +165,22 @@ async function loadTour(m) {
   }
 }
 
+/** 최근 기사 (NEWS-01): 네이버 뉴스 검색이 느릴 수 있어서 화면을 먼저 보여 주고 나중에 채운다 */
+async function loadNews(m) {
+  const status = document.getElementById('newsStatus');
+  try {
+    const res = await fetch(`/api/news/market/${m.id}?size=5`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    document.getElementById('newsList').replaceChildren(...data.items.map(newsItem));
+    status.textContent = data.items.length
+      ? `'${data.query}' 최신 기사`
+      : data.available ? `'${data.query}' 기사가 아직 없어요.` : '지금은 기사를 불러올 수 없어요.';
+  } catch (_) {
+    status.textContent = '기사를 불러오지 못했어요.';
+  }
+}
+
 async function init() {
   mountAccount(document.getElementById('account'));
   auth.init();
@@ -171,6 +193,7 @@ async function init() {
     const m = await api.market(id);
     render(m);
     if (m.latitude != null && m.longitude != null) loadTour(m);
+    loadNews(m);
   } catch (e) {
     root.replaceChildren(el('p', { class: 'error', text: '시장 정보를 불러오지 못했어요. 지도로 돌아가 다시 선택해 주세요.' }));
   }

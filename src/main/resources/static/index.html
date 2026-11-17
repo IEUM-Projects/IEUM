@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/common.css">
   <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/news.css">
 </head>
 <body class="home-page">
   <a class="skip-link" href="#main">본문 바로가기</a>
@@ -57,6 +58,7 @@
             <ul class="sub" id="sub-market">
               <li><a href="#markets">오늘 장 서는 시장</a></li>
               <li><a href="/map.html?show=market" data-map="market">시장 지도</a></li>
+              <li><a href="/news.html">시장·로컬 소식</a></li>
             </ul>
           </li>
           <li class="nav-item">
@@ -249,6 +251,22 @@
       </div>
     </section>
 
+    <!-- ⑤-2 시장·로컬 소식 (NEWS-01) -->
+    <section class="section" id="news" aria-labelledby="newsTitle">
+      <div class="inner">
+        <div class="section-head">
+          <h2 id="newsTitle">시장·로컬 소식</h2>
+          <a class="more" id="newsMore" href="/news.html">소식 더 보기<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a>
+        </div>
+        <div class="tabs" role="tablist" aria-label="소식 주제" id="newsTabs"></div>
+        <div id="newsPanel" role="tabpanel">
+          <p id="newsStatus" class="status" role="status"></p>
+          <ul id="newsList" class="news-list news-home"></ul>
+          <p class="news-note" id="newsNote"></p>
+        </div>
+      </div>
+    </section>
+
     <!-- ⑥ 공지사항 + 제보 안내 -->
     <div class="section">
       <div class="inner info-grid">
@@ -286,7 +304,7 @@
       </div>
       <div class="footer-info">
         <p class="footer-links"><a href="/notices.html">공지사항</a></p>
-        <p><b>데이터 출처</b> 소상공인시장진흥공단 백년가게 · 전국전통시장표준데이터 · 전국문화축제표준데이터 · 한국관광공사(축제·관광 정보·사진)</p>
+        <p><b>데이터 출처</b> 소상공인시장진흥공단 백년가게 · 전국전통시장표준데이터 · 전국문화축제표준데이터 · 한국관광공사(축제·관광 정보·사진) · 네이버 뉴스 검색(기사 제목·링크)</p>
         <p>© 2026 이음</p>
       </div>
     </div>
