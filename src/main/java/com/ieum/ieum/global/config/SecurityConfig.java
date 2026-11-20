@@ -58,7 +58,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 화면 파일
                         // (mypage.html도 화면 파일은 누구나 받을 수 있고, 내용은 로그인해야 받는 API로 채운다)
-                        .requestMatchers("/", "/index.html", "/map.html", "/store.html", "/login.html", "/signup.html",
+                        .requestMatchers("/", "/index.html", "/map.html", "/store.html", "/login.html", "/signup.html", "/forgot-password.html",
                                 "/mypage.html", "/agree.html", "/terms.html", "/privacy.html", "/community.html", "/post.html", "/post-write.html", "/admin-community.html", "/festivals.html", "/festival.html", "/market.html", "/admin.html",
                                 "/notices.html", "/notice.html", "/admin-notices.html", "/admin-markets.html", "/admin-closures.html", "/admin-stories.html", "/admin-places.html", "/search.html", "/themes.html", "/theme.html", "/course.html", "/trip.html", "/news.html", "/creators.html",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error").permitAll()

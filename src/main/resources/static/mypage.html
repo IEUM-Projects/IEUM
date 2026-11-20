@@ -50,6 +50,38 @@
             <div class="settings-row"><dt>가입일</dt><dd id="createdAt"></dd></div>
             <div class="settings-row"><dt>약관 동의</dt><dd id="agreedAt"></dd></div>
           </dl>
+          <!-- 비밀번호 바꾸기 (AUTH-04): 이메일 회원만 -->
+          <div class="password-row" id="passwordRow" hidden>
+            <div class="settings-row row-head">
+              <span class="row-label" id="passwordTitle">비밀번호</span>
+              <button type="button" id="passwordToggle" class="button-secondary compact" aria-expanded="false" aria-controls="passwordForm">바꾸기</button>
+            </div>
+            <form id="passwordForm" class="settings-row row-field password-form" aria-labelledby="passwordTitle" novalidate hidden>
+              <p id="passwordAlert" class="form-alert" role="alert" tabindex="-1" hidden></p>
+              <div class="field">
+                <label for="currentPassword">지금 비밀번호</label>
+                <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" maxlength="64" required aria-describedby="currentError">
+                <p id="currentError" class="error"></p>
+              </div>
+              <div class="field">
+                <label for="newPassword">새 비밀번호</label>
+                <input id="newPassword" name="newPassword" type="password" autocomplete="new-password" maxlength="64" required aria-describedby="passwordRules newHelp newError">
+                <ul id="passwordRules" class="rules" aria-live="polite"></ul>
+                <p id="newHelp" class="help">공백·한글, 같은 글자 3번(aaa), 이어지는 글자(abc·123), 쉬운 단어(password), 이메일 아이디·닉네임, 지금 쓰는 비밀번호는 쓸 수 없어요.</p>
+                <p id="newError" class="error"></p>
+              </div>
+              <div class="field">
+                <label for="newPasswordConfirm">새 비밀번호 확인</label>
+                <input id="newPasswordConfirm" name="newPasswordConfirm" type="password" autocomplete="new-password" maxlength="64" required aria-describedby="confirmNewError">
+                <p id="confirmNewError" class="error"></p>
+              </div>
+              <div class="form-actions">
+                <button type="button" id="passwordCancel" class="button-secondary">취소</button>
+                <button type="submit" id="passwordSave" class="button-primary">비밀번호 바꾸기</button>
+              </div>
+              <p class="help">바꾸면 이 기기를 뺀 다른 기기에서는 로그아웃돼요. 지금 비밀번호가 기억나지 않으면 로그아웃한 뒤 <a href="/forgot-password.html">비밀번호 찾기</a>를 이용해 주세요.</p>
+            </form>
+          </div>
         </div>
       </section>
     </div>

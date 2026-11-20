@@ -34,6 +34,9 @@ public enum ErrorCode {
     VERIFICATION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "인증번호가 맞지 않아요."),
     VERIFICATION_EXPIRED(HttpStatus.BAD_REQUEST, "인증번호를 쓸 수 없어요. 새 번호를 받아 주세요."),
     MAIL_SEND_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "메일을 보내지 못했어요. 이메일 주소를 확인하고 잠시 뒤에 다시 시도해 주세요."),   // 문구는 NicknamePolicy 가 채움 (AUTH-01)
+    CURRENT_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "지금 비밀번호가 맞지 않아요."),
+    PASSWORD_NOT_SET(HttpStatus.BAD_REQUEST, "카카오로 가입한 계정은 비밀번호가 없어요."),
+    RESET_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "인증 시간이 지났어요. 인증번호를 다시 받아 주세요."),
     WEAK_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호 규칙을 확인해 주세요."),
     AGREEMENT_REQUIRED(HttpStatus.FORBIDDEN, "이용약관과 개인정보 처리방침에 동의한 뒤 이용할 수 있어요."),
     WITHDRAW_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 맞지 않아요."),

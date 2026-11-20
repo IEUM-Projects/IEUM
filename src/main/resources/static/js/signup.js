@@ -1,6 +1,6 @@
 // 회원가입 화면: 비밀번호 규칙을 입력하는 동안 바로 보여 주고, 가입하면 자동 로그인
 import * as auth from './auth.js';
-import { checkPassword } from './password-rules.js';
+import { renderRuleList } from './password-rules.js';
 
 const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9]{2,12}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,29 +31,8 @@ function showAlert(message) {
  * 나머지 규칙은 어겼을 때만 빨간 줄로 나타난다 (처음엔 아래 도움말 한 줄로만 알려 줌).
  */
 function renderRules() {
-  const pw = form.password.value;
-  const rules = checkPassword(pw, { email: form.email.value, nickname: form.nickname.value });
-  const shown = rules.filter((rule) => rule.main || (pw.length > 0 && !rule.ok));
-  rulesList.replaceChildren(...shown.map((rule) => {
-    const li = document.createElement('li');
-    li.className = rule.ok ? 'ok' : (touchedPassword || !rule.main ? 'bad' : '');
-    const text = document.createElement('span');
-    text.textContent = rule.label;
-    li.append(text);
-    if (rule.id === 'length' && pw.length > 0) {
-      const count = document.createElement('span');
-      count.className = 'rule-count';
-      count.textContent = `지금 ${pw.length}자`;
-      li.append(count);
-    }
-    // 화면 낭독기: 맞음/아직/틀림을 글로도 알려 줌
-    const state = document.createElement('span');
-    state.className = 'sr-only';
-    state.textContent = rule.ok ? ' (맞아요)' : (li.className === 'bad' ? ' (고쳐 주세요)' : ' (아직)');
-    li.append(state);
-    return li;
-  }));
-  return rules.every((rule) => rule.ok);
+  return renderRuleList(rulesList, form.password.value,
+    { email: form.email.value, nickname: form.nickname.value, touched: touchedPassword });
 }
 
 function validate() {

@@ -218,6 +218,16 @@ export async function updateNickname(nickname) {
   return me;
 }
 
+/** 비밀번호 바꾸기 (AUTH-04): 이 기기의 로그인은 그대로, 다른 기기는 로그아웃 */
+export async function changePassword(currentPassword, newPassword) {
+  const res = await authFetch('/api/auth/password', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+  if (!res.ok) throw await readError(res);
+}
+
 /** 이용약관·개인정보 수집·이용·만 14세 이상 동의 (POL-01) */
 export async function agree() {
   const res = await authFetch('/api/users/me/agreements', {

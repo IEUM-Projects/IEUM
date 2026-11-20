@@ -66,3 +66,33 @@ export function checkPassword(pw, { email = '', nickname = '' } = {}) {
     { id: 'personal', label: '이메일 아이디나 닉네임이 들어 있어요', ok: pw.length > 0 && !hasPersonalInfo(lower, email, nickname) },
   ];
 }
+
+/**
+ * 규칙 목록을 <ul>에 그린다 (가입·비밀번호 찾기·내 정보가 함께 씀).
+ * 늘 보이는 두 줄(섞기·길이)은 맞으면 초록 체크, touched(한 번 제출해 봄)면 아직인 줄도 빨갛게.
+ * 나머지 규칙은 어겼을 때만 빨간 줄로 나타난다. 모두 맞으면 true.
+ */
+export function renderRuleList(list, pw, { email = '', nickname = '', touched = false } = {}) {
+  const rules = checkPassword(pw, { email, nickname });
+  const shown = rules.filter((rule) => rule.main || (pw.length > 0 && !rule.ok));
+  list.replaceChildren(...shown.map((rule) => {
+    const li = document.createElement('li');
+    li.className = rule.ok ? 'ok' : (touched || !rule.main ? 'bad' : '');
+    const text = document.createElement('span');
+    text.textContent = rule.label;
+    li.append(text);
+    if (rule.id === 'length' && pw.length > 0) {
+      const count = document.createElement('span');
+      count.className = 'rule-count';
+      count.textContent = `지금 ${pw.length}자`;
+      li.append(count);
+    }
+    // 화면 낭독기: 맞음/아직/틀림을 글로도 알려 줌
+    const state = document.createElement('span');
+    state.className = 'sr-only';
+    state.textContent = rule.ok ? ' (맞아요)' : (li.className === 'bad' ? ' (고쳐 주세요)' : ' (아직)');
+    li.append(state);
+    return li;
+  }));
+  return rules.every((rule) => rule.ok);
+}
