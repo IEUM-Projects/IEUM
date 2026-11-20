@@ -43,21 +43,26 @@ function hasPersonalInfo(lower, email, nickname) {
   return (id.length >= 3 && lower.includes(id)) || (nick.length >= 3 && lower.includes(nick));
 }
 
-/** 화면에 보여 줄 규칙 목록. ok가 모두 true면 통과 */
+/**
+ * 화면에 보여 줄 규칙 목록. ok가 모두 true면 통과.
+ * main: 늘 보여 주는 두 가지(섞기, 길이). 나머지는 어겼을 때만 그 줄을 보여 준다 (UI: 목록을 짧게).
+ */
 export function checkPassword(pw, { email = '', nickname = '' } = {}) {
   const lower = pw.toLowerCase();
   const kinds = kindCount(pw);
   const minLength = kinds >= 3 ? 10 : 12;
+  const lengthLabel = pw.length > 64 ? '64자 이하로 써 주세요'
+    : (kinds >= 3 ? '10자 이상' : '12자 이상 (3가지를 섞으면 10자)');
   return [
-    { id: 'chars', label: '영문, 숫자, 표준 특수문자만 (공백·한글 불가)',
-      ok: pw.length > 0 && [...pw].every((c) => isUpper(c) || isLower(c) || isDigit(c) || isSpecial(c)) },
-    { id: 'kinds', label: '대문자·소문자·숫자·특수문자 중 2가지 이상', ok: kinds >= 2 },
-    { id: 'length', label: '3가지 이상 조합이면 10자, 2가지면 12자 이상 (최대 64자)',
+    { id: 'kinds', main: true, label: '대·소문자, 숫자, 특수문자 중 2가지 이상', ok: kinds >= 2 },
+    { id: 'length', main: true, label: lengthLabel, count: pw.length,
       ok: kinds >= 2 && pw.length >= minLength && pw.length <= 64 },
-    { id: 'repeat', label: '같은 문자 3번 연속 없음 (예: aaa, 111)', ok: pw.length > 0 && !hasRepeat(pw) },
-    { id: 'sequence', label: '연속된 문자 3개 없음, 거꾸로 포함 (예: qwe, abc, 123, 321)',
+    { id: 'chars', label: '공백이나 한글은 쓸 수 없어요',
+      ok: pw.length > 0 && [...pw].every((c) => isUpper(c) || isLower(c) || isDigit(c) || isSpecial(c)) },
+    { id: 'repeat', label: '같은 글자를 3번 연속 쓸 수 없어요 (예: aaa, 111)', ok: pw.length > 0 && !hasRepeat(pw) },
+    { id: 'sequence', label: '이어지는 글자 3개는 쓸 수 없어요 (예: abc, 123, qwe, 321)',
       ok: pw.length > 0 && !hasSequence(lower) },
-    { id: 'dictionary', label: 'password, admin 같은 쉬운 단어 없음', ok: pw.length > 0 && !hasDictionaryWord(lower) },
-    { id: 'personal', label: '이메일 아이디·닉네임 포함하지 않음', ok: pw.length > 0 && !hasPersonalInfo(lower, email, nickname) },
+    { id: 'dictionary', label: 'password, admin 같은 쉬운 단어가 들어 있어요', ok: pw.length > 0 && !hasDictionaryWord(lower) },
+    { id: 'personal', label: '이메일 아이디나 닉네임이 들어 있어요', ok: pw.length > 0 && !hasPersonalInfo(lower, email, nickname) },
   ];
 }

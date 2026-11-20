@@ -26,6 +26,7 @@ public enum ErrorCode {
     // 회원
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 가입된 이메일이에요."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임이에요."),
+    NICKNAME_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "쓸 수 없는 닉네임이에요."),   // 문구는 NicknamePolicy 가 채움 (AUTH-01)
     WEAK_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호 규칙을 확인해 주세요."),
     AGREEMENT_REQUIRED(HttpStatus.FORBIDDEN, "이용약관과 개인정보 처리방침에 동의한 뒤 이용할 수 있어요."),
     WITHDRAW_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 맞지 않아요."),

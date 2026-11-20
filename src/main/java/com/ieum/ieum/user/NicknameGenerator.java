@@ -21,9 +21,14 @@ public class NicknameGenerator {
     static final int MAX_LENGTH = 12;
 
     private final UserRepository userRepository;
+    private final NicknamePolicy nicknamePolicy;
 
     public String generate(String rawNickname) {
         String base = sanitize(rawNickname);
+        // 카카오 닉네임에 욕설·예약어가 있으면 기본 이름으로 (AUTH-01). 동의 뒤 내 정보에서 바꿀 수 있다
+        if (nicknamePolicy.check(base) != NicknamePolicy.Result.OK) {
+            base = DEFAULT_NICKNAME;
+        }
         if (!userRepository.existsByNickname(base)) {
             return base;
         }

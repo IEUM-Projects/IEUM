@@ -34,14 +34,19 @@
         </div>
         <div class="field">
           <label for="nickname">닉네임</label>
-          <input id="nickname" name="nickname" type="text" autocomplete="nickname" maxlength="12" required aria-describedby="nicknameHelp nicknameError">
-          <p id="nicknameHelp" class="help">한글, 영문, 숫자로 2~12자</p>
+          <div class="inline-form">
+            <input id="nickname" name="nickname" type="text" autocomplete="nickname" maxlength="12" required aria-describedby="nicknameHelp nicknameOk nicknameError">
+            <button type="button" id="nicknameCheck" class="button-secondary">중복 확인</button>
+          </div>
+          <p id="nicknameHelp" class="help">한글, 영문, 숫자로 2~12자. 글과 댓글에 보이는 이름이에요.</p>
+          <p id="nicknameOk" class="ok" role="status"></p>
           <p id="nicknameError" class="error"></p>
         </div>
         <div class="field">
           <label for="password">비밀번호</label>
-          <input id="password" name="password" type="password" autocomplete="new-password" maxlength="64" required aria-describedby="passwordRules passwordError">
+          <input id="password" name="password" type="password" autocomplete="new-password" maxlength="64" required aria-describedby="passwordRules passwordHelp passwordError">
           <ul id="passwordRules" class="rules" aria-live="polite"></ul>
+          <p id="passwordHelp" class="help">공백·한글, 같은 글자 3번(aaa), 이어지는 글자(abc·123), 쉬운 단어(password), 이메일 아이디·닉네임은 쓸 수 없어요.</p>
           <p id="passwordError" class="error"></p>
         </div>
         <div class="field">

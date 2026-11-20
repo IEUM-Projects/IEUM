@@ -96,7 +96,7 @@ form.addEventListener('submit', async (event) => {
     render(me);
     showNotice('닉네임을 바꿨어요.');
   } catch (e) {
-    setNicknameError(e.message);
+    setNicknameError(e.details?.[0] ?? e.message);   // 욕설·예약어는 까닭이 details 에 (AUTH-01)
   } finally {
     $('saveButton').disabled = false;
   }

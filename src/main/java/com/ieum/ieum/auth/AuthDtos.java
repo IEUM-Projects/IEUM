@@ -57,6 +57,10 @@ public final class AuthDtos {
         }
     }
 
+    /** 닉네임 중복 확인 (AUTH-01). 쓸 수 없어도 오류(4xx)가 아니라 available=false 로 알려 준다 */
+    public record NicknameCheck(String nickname, boolean available, String message) {
+    }
+
     /** 로그인·재발급 응답. Refresh Token은 본문이 아니라 HttpOnly 쿠키로 따로 내려간다 */
     public record TokenResponse(String accessToken, long expiresIn, UserSummary user) {
     }
