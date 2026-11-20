@@ -54,6 +54,7 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final NicknameGenerator nicknameGenerator;
     private final com.ieum.ieum.user.NicknamePolicy nicknamePolicy;
+    private final EmailVerificationService emailVerificationService;
     private final com.ieum.ieum.policy.Policy policy;
 
     /**
@@ -96,7 +97,11 @@ public class AuthService {
             throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
+        // AUTH-02: 30분 안에 이메일 인증번호를 맞혀야 가입된다 (인증을 끈 개발·시험 환경이면 건너뜀)
+        LocalDateTime verifiedAt = emailVerificationService.consumeForSignup(email);
+
         User user = User.createLocal(email, passwordEncoder.encode(request.password()), nickname);
+        if (verifiedAt != null) user.markEmailVerified(verifiedAt);
         user.agree(policy.version(), LocalDateTime.now());   // 가입 화면에서 세 가지 동의를 받았다 (SignupRequest 검사)
         try {
             userRepository.saveAndFlush(user);
@@ -207,7 +212,7 @@ public class AuthService {
         return new AuthDtos.LoginResult(body, refreshToken);
     }
 
-    private static String normalizeEmail(String email) {
+    static String normalizeEmail(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
     }
 

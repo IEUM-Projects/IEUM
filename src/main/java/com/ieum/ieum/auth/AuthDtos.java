@@ -57,6 +57,39 @@ public final class AuthDtos {
         }
     }
 
+    /** 이메일 인증 (AUTH-02) */
+    public record VerificationRequest(
+            @NotBlank(message = "이메일을 입력해 주세요.")
+            @Email(message = "이메일 형식이 올바르지 않아요.")
+            @Size(max = 100, message = "이메일이 너무 길어요.")
+            String email
+    ) {
+        public VerificationRequest {
+            email = email == null ? null : email.trim();
+        }
+    }
+
+    public record VerificationConfirmRequest(
+            @NotBlank(message = "이메일을 입력해 주세요.") String email,
+            @NotBlank(message = "인증번호를 입력해 주세요.") String code
+    ) {
+        public VerificationConfirmRequest {
+            email = email == null ? null : email.trim();
+        }
+    }
+
+    /** expiresIn: 번호를 쓸 수 있는 초, resendAfter: 다시 보낼 수 있을 때까지 초 */
+    public record VerificationSent(String email, int expiresIn, int resendAfter) {
+    }
+
+    /** validFor: 이 시간(초) 안에 가입해야 함 */
+    public record VerificationConfirmed(String email, int validFor) {
+    }
+
+    /** 가입 화면이 알아야 할 설정 */
+    public record SignupOptions(boolean emailVerification) {
+    }
+
     /** 닉네임 중복 확인 (AUTH-01). 쓸 수 없어도 오류(4xx)가 아니라 available=false 로 알려 준다 */
     public record NicknameCheck(String nickname, boolean available, String message) {
     }

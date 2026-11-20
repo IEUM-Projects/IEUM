@@ -26,7 +26,14 @@ public enum ErrorCode {
     // 회원
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 가입된 이메일이에요."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임이에요."),
-    NICKNAME_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "쓸 수 없는 닉네임이에요."),   // 문구는 NicknamePolicy 가 채움 (AUTH-01)
+    NICKNAME_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "쓸 수 없는 닉네임이에요."),
+    // 가입 이메일 인증 (AUTH-02)
+    EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "이메일 인증을 먼저 해 주세요."),
+    VERIFICATION_TOO_SOON(HttpStatus.TOO_MANY_REQUESTS, "인증번호는 1분에 한 번 보낼 수 있어요. 잠시 뒤에 다시 눌러 주세요."),
+    VERIFICATION_DAILY_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "인증번호를 너무 많이 받았어요. 내일 다시 시도해 주세요."),
+    VERIFICATION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "인증번호가 맞지 않아요."),
+    VERIFICATION_EXPIRED(HttpStatus.BAD_REQUEST, "인증번호를 쓸 수 없어요. 새 번호를 받아 주세요."),
+    MAIL_SEND_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "메일을 보내지 못했어요. 이메일 주소를 확인하고 잠시 뒤에 다시 시도해 주세요."),   // 문구는 NicknamePolicy 가 채움 (AUTH-01)
     WEAK_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호 규칙을 확인해 주세요."),
     AGREEMENT_REQUIRED(HttpStatus.FORBIDDEN, "이용약관과 개인정보 처리방침에 동의한 뒤 이용할 수 있어요."),
     WITHDRAW_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 맞지 않아요."),

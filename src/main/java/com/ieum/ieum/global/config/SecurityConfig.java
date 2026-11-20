@@ -72,7 +72,7 @@ public class SecurityConfig {
                                 "/api/themes", "/api/themes/**", "/api/tour/**", "/api/places/search", "/api/news", "/api/news/**", "/api/creators", "/api/creators/**").permitAll()
                         // 가입·로그인·재발급·로그아웃, 가입 화면의 닉네임 중복 확인 (AUTH-01)
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/auth/nickname-check").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/nickname-check", "/api/auth/signup-options").permitAll()
                         // 관리자 API: 토큰 권한으로 한 번 막고, AdminGuard가 DB 권한으로 한 번 더 확인
                         // (admin.html 화면 파일은 누구나 받지만, 내용은 이 API로만 채워진다)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
