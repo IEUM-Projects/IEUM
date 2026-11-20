@@ -1,5 +1,6 @@
 // 약관 동의 화면 (POL-01): 카카오로 처음 가입했거나, 약관·처리방침이 바뀐 뒤 처음 로그인한 회원
 import * as auth from './auth.js';
+import { api } from './api.js';
 
 const $ = (id) => document.getElementById(id);
 const next = auth.safeNext(new URLSearchParams(location.search).get('next') ?? '/');
@@ -62,6 +63,14 @@ async function init() {
   }
   $('lead').textContent = `${user.nickname}님, 이음을 계속 쓰려면 아래 내용에 동의해 주세요.`;
   $('card').hidden = false;
+  // 전에 동의한 적이 있으면 약관이 바뀐 것 → 무엇이 바뀌었는지 알려 준다
+  try {
+    const [me, policy] = await Promise.all([auth.fetchMe(), api.policy()]);
+    if (me.agreedAt) {
+      $('lead').textContent = `${user.nickname}님, 이용약관과 개인정보 처리방침이 제${policy.version}판으로 바뀌었어요. 다시 동의해 주세요.`;
+      $('changes').hidden = false;
+    }
+  } catch (_) { /* 안내 문구만 못 바꿀 뿐 동의는 할 수 있음 */ }
 }
 
 init();

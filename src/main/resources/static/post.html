@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>동네 이야기 - 이음</title>
+  <meta name="description" content="동네 이야기 글">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/community.css">
+</head>
+<body class="community-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/community.html" id="backLink" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>목록
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <div id="account" class="account"></div>
+  </header>
+  <main id="main" class="community-main" tabindex="-1">
+    <p id="loadStatus" class="list-status" role="status">불러오는 중...</p>
+    <article id="post" class="post-article" hidden>
+      <div class="post-head">
+        <p class="post-badges" id="postBadges"></p>
+        <h1 id="postTitle"></h1>
+        <p class="post-meta" id="postMeta"></p>
+        <p id="postPlace"></p>
+      </div>
+      <p id="hiddenNote" class="hidden-note" hidden></p>
+      <p id="recNote" class="rec-note" hidden></p>
+      <div id="postBody" class="post-body"></div>
+      <div class="post-actions">
+        <button type="button" id="likeButton" class="like-button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span>공감</span> <span id="likeCount">0</span></button>
+        <a id="editLink" class="button-secondary" hidden>고치기</a>
+        <button type="button" id="deleteButton" class="button-secondary" hidden>지우기</button>
+        <button type="button" id="reportButton" class="text-button" hidden>신고</button>
+      </div>
+    </article>
+
+    <section id="comments" class="comments" aria-labelledby="commentsTitle" hidden>
+      <h2 id="commentsTitle">댓글</h2>
+      <ul id="commentList" class="comment-list"></ul>
+      <form id="commentForm" class="comment-form" novalidate hidden>
+        <label for="commentText">댓글 쓰기</label>
+        <textarea id="commentText" maxlength="1000" rows="3" aria-describedby="commentHelp commentError"></textarea>
+        <p id="commentHelp" class="help"><span id="commentCount">0</span>/1000자 · 다른 사람의 개인정보는 쓰지 마세요.</p>
+        <p id="commentError" class="error"></p>
+        <button type="submit" id="commentButton" class="button-primary">댓글 남기기</button>
+      </form>
+      <p id="commentLogin" class="comment-login" hidden><a id="commentLoginLink" href="/login.html">로그인</a>하면 댓글을 남길 수 있어요.</p>
+    </section>
+    <p class="back-to-list"><a href="/community.html">목록으로</a></p>
+  </main>
+
+  <dialog id="reportDialog" class="community-dialog" aria-labelledby="reportTitle">
+    <form id="reportForm" novalidate>
+      <h2 id="reportTitle">신고하기</h2>
+      <p class="help" id="reportTarget"></p>
+      <fieldset aria-describedby="reportError">
+        <legend>까닭</legend>
+        <div id="reportReasons" class="radio-list"></div>
+      </fieldset>
+      <label for="reportText">설명 (선택, 300자)</label>
+      <textarea id="reportText" maxlength="300" rows="3"></textarea>
+      <p id="reportError" class="error" role="alert"></p>
+      <div class="dialog-actions">
+        <button type="button" class="button-secondary" id="reportCancel">닫기</button>
+        <button type="submit" class="button-primary" id="reportSubmit">신고하기</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog" class="community-dialog" aria-labelledby="confirmTitle">
+    <form method="dialog">
+      <h2 id="confirmTitle">지울까요?</h2>
+      <p id="confirmText" class="help">지우면 되돌릴 수 없어요.</p>
+      <div class="dialog-actions">
+        <button value="cancel" class="button-secondary">그만두기</button>
+        <button value="ok" class="button-primary" id="confirmOk">지우기</button>
+      </div>
+    </form>
+  </dialog>
+  <footer class="mini-footer"><a href="/terms.html">이용약관</a><a class="privacy-link" href="/privacy.html">개인정보 처리방침</a><a href="/notices.html">공지사항</a></footer>
+  <script type="module" src="/js/post.js"></script>
+</body>
+</html>

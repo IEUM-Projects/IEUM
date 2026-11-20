@@ -1,5 +1,6 @@
 // 내 정보 화면: 닉네임 변경, 로그아웃 (로그인 필요)
 import * as auth from './auth.js';
+import { posts as postApi, when } from './community-common.js';
 
 const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9]{2,12}$/;
 const $ = (id) => document.getElementById(id);
@@ -158,6 +159,40 @@ async function loadReports() {
   if (location.hash === '#reports') $('reports').scrollIntoView();
 }
 
+// ---------------------------------------------------------------- 내가 쓴 이야기 (COM-01)
+function myPostItem(p) {
+  const li = document.createElement('li');
+  li.className = 'report-item';
+  const top = document.createElement('p');
+  top.className = 'report-top';
+  const badge = document.createElement('span');
+  badge.className = 'report-status report-received';
+  badge.textContent = p.categoryLabel;
+  const link = document.createElement('a');
+  link.href = `/post.html?id=${p.id}`;
+  link.className = 'report-store-link';
+  link.textContent = p.title;
+  top.append(badge, link);
+  const meta = document.createElement('p');
+  meta.className = 'report-type';
+  const state = p.status === 'VISIBLE' ? '' : (p.status === 'TEMP_HIDDEN' ? ' · 임시로 가려짐' : ' · 관리자가 가림');
+  meta.textContent = `${when(p.createdAt)} · 공감 ${p.likeCount} · 댓글 ${p.commentCount}${state}${p.recommendStatusLabel ? ` · ${p.recommendStatusLabel}` : ''}`;
+  li.append(top, meta);
+  return li;
+}
+
+async function loadMyPosts() {
+  $('myPosts').hidden = false;
+  $('myPostsStatus').textContent = '불러오는 중...';
+  try {
+    const list = await postApi.mine();
+    $('myPostList').replaceChildren(...list.map(myPostItem));
+    $('myPostsStatus').textContent = list.length ? '' : '아직 쓴 이야기가 없어요.';
+  } catch (_) {
+    $('myPostsStatus').textContent = '글 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
 async function init() {
   const user = await auth.init();
   if (!user) {
@@ -167,6 +202,7 @@ async function init() {
   try {
     render(await auth.fetchMe());
     $('card').hidden = false;
+    loadMyPosts();
     loadReports();
     if (location.hash === '#withdraw') $('withdraw').scrollIntoView();
   } catch (_) {

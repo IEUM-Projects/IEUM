@@ -45,6 +45,8 @@ public class StoreReportService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
         // POL-01: 이용약관·개인정보 처리방침에 동의한 회원만 제보할 수 있다 (제보 내용·회원 번호를 저장하므로)
         if (user.needsAgreement(policy.version())) throw new BusinessException(ErrorCode.AGREEMENT_REQUIRED);
+        // COM-01: 작성 정지 회원은 제보도 보낼 수 없다
+        if (user.getStatus() == UserStatus.SUSPENDED) throw new BusinessException(ErrorCode.WRITE_SUSPENDED);
         storeRepository.findByIdAndVisibleTrue(storeId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
 

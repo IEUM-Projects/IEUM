@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>동네 이야기 - 이음</title>
+  <meta name="description" content="동네 가게·시장·축제 이야기를 나누는 곳이에요.">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/community.css">
+</head>
+<body class="community-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/" id="backLink" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>홈
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <div id="account" class="account"></div>
+  </header>
+  <main id="main" class="community-main" tabindex="-1">
+    <div class="community-head">
+      <h1>동네 이야기</h1>
+      <a id="writeLink" class="button-primary" href="/post-write.html">글쓰기</a>
+    </div>
+    <p class="lead">다녀온 가게·시장·축제 이야기, 동네에 숨은 가게 추천, 궁금한 점을 나눠요.</p>
+
+    <p id="placeFilter" class="place-filter-note" hidden></p>
+
+    <div class="cat-filter" role="group" aria-label="말머리로 보기">
+      <button type="button" data-cat="" aria-pressed="true">전체</button>
+      <button type="button" data-cat="REVIEW" aria-pressed="false">후기</button>
+      <button type="button" data-cat="RECOMMEND" aria-pressed="false">추천</button>
+      <button type="button" data-cat="QUESTION" aria-pressed="false">질문</button>
+      <button type="button" data-cat="FREE" aria-pressed="false">자유</button>
+    </div>
+
+    <form id="searchForm" class="community-search" role="search">
+      <label for="q" class="sr-only">제목이나 내용으로 찾기</label>
+      <input id="q" type="search" maxlength="40" autocomplete="off" placeholder="제목이나 내용으로 찾기">
+      <button type="submit" class="button-secondary">찾기</button>
+    </form>
+
+    <p id="listStatus" class="list-status" role="status">불러오는 중...</p>
+    <ul id="postList" class="post-list"></ul>
+    <button type="button" id="moreButton" class="button-secondary more-button" hidden>더 보기</button>
+  </main>
+  <footer class="mini-footer"><a href="/terms.html">이용약관</a><a class="privacy-link" href="/privacy.html">개인정보 처리방침</a><a href="/notices.html">공지사항</a></footer>
+  <script type="module" src="/js/community.js"></script>
+</body>
+</html>

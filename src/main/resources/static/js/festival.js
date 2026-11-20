@@ -2,6 +2,7 @@
 import { api } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
+import { appendPlaceStories } from './place-stories.js';
 import { longDate, status, photoCredit } from './festival-format.js';
 
 const root = document.getElementById('detail');
@@ -102,7 +103,9 @@ async function init() {
     return;
   }
   try {
-    render(await api.festival(id));
+    const f = await api.festival(id);
+    render(f);
+    appendPlaceStories(root, { type: 'FESTIVAL', id: f.id, name: f.name });
   } catch (e) {
     root.replaceChildren(el('p', { class: 'error', text: '축제 정보를 불러오지 못했어요. 축제 달력으로 돌아가 다시 선택해 주세요.' }));
   }
