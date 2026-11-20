@@ -3,6 +3,7 @@ import { api, formatDistance, directionsUrl } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { appendPlaceStories } from './place-stories.js';
+import { notFoundBlock } from './not-found.js';
 import { todayString } from './festival-format.js';
 import { digitsOf, cycleLabel, daysOfMonth, isMarketDay, nextMarketDay, dayText } from './market-days.js';
 import { facilityGroups } from './market-facilities.js';
@@ -233,12 +234,22 @@ async function loadNews(m) {
   }
 }
 
+function marketMissing(notFound) {
+  return notFoundBlock({
+    notFound,
+    title: '시장을 찾을 수 없어요',
+    reason: '정보가 바뀌었거나 내려간 시장일 수 있어요.',
+    failTitle: '시장 정보를 불러오지 못했어요',
+    back: { href: '/map.html', label: '지도에서 찾기' },
+  });
+}
+
 async function init() {
   mountAccount(document.getElementById('account'));
   auth.init();
   const id = new URLSearchParams(location.search).get('id');
   if (!id || !/^\d+$/.test(id)) {
-    root.replaceChildren(el('p', { class: 'error', text: '시장 주소가 올바르지 않아요.' }));
+    root.replaceChildren(marketMissing(true));
     return;
   }
   try {
@@ -249,7 +260,7 @@ async function init() {
     loadNews(m);
     loadStory(m);
   } catch (e) {
-    root.replaceChildren(el('p', { class: 'error', text: '시장 정보를 불러오지 못했어요. 지도로 돌아가 다시 선택해 주세요.' }));
+    root.replaceChildren(marketMissing(e.status === 404));
   }
 }
 

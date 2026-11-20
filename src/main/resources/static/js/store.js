@@ -4,6 +4,7 @@ import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { appendPlaceStories } from './place-stories.js';
 import { marketDaySummary } from './market-days.js';
+import { notFoundBlock } from './not-found.js';
 
 const root = document.getElementById('detail');
 
@@ -257,10 +258,20 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
+function storeMissing(notFound) {
+  return notFoundBlock({
+    notFound,
+    title: '가게를 찾을 수 없어요',
+    reason: '문을 닫았거나 정보가 내려간 가게일 수 있어요.',
+    failTitle: '가게 정보를 불러오지 못했어요',
+    back: { href: '/map.html', label: '지도에서 찾기' },
+  });
+}
+
 async function init() {
   const id = new URLSearchParams(location.search).get('id');
   if (!id || !/^\d+$/.test(id)) {
-    root.replaceChildren(el('p', { class: 'error', text: '가게 주소가 올바르지 않아요.' }));
+    root.replaceChildren(storeMissing(true));
     return;
   }
   let store;
@@ -271,7 +282,7 @@ async function init() {
     loadNearMarkets(store);
     loadLivePhone(store);
   } catch (e) {
-    root.replaceChildren(el('p', { class: 'error', text: '가게 정보를 불러오지 못했어요. 지도로 돌아가 다시 선택해 주세요.' }));
+    root.replaceChildren(storeMissing(e.status === 404));
     return;
   }
   // 로그인하고 돌아온 경우(#report): 제보 창을 바로 연다

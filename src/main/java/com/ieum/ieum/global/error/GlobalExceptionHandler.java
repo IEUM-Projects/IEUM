@@ -60,9 +60,15 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(e.getStatusCode()).body(new ErrorResponse(code, message, List.of()));
     }
 
-    /** 없는 주소 */
+    /** 없는 주소: API 는 JSON, 화면·파일은 오류 화면(ErrorPageController)으로 (ERR-01) */
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException e) {
+    public ResponseEntity<ErrorResponse> handleNoResource(NoResourceFoundException e,
+                                                          jakarta.servlet.http.HttpServletRequest request,
+                                                          jakarta.servlet.http.HttpServletResponse response) throws IOException {
+        if (!ErrorPageController.isApi(request.getRequestURI(), request.getContextPath())) {
+            response.sendError(404);
+            return null;
+        }
         return ResponseEntity.status(ErrorCode.NOT_FOUND.status()).body(ErrorResponse.of(ErrorCode.NOT_FOUND));
     }
 
@@ -80,10 +86,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.internalServerError().body(ErrorResponse.of(ErrorCode.INTERNAL_ERROR));
     }
 
+    /** 요청한 형식(Accept)으로 답할 수 없음: 서버 오류가 아니라 406 (ERR-01) */
+    @ExceptionHandler(org.springframework.web.HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<Void> handleNotAcceptable(Exception e) {
+        return ResponseEntity.status(406).build();
+    }
+
     /** 예상하지 못한 오류: 사용자에게는 일반 문구만, 자세한 내용은 서버 로그에 */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpected(Exception e) {
+    public ResponseEntity<ErrorResponse> handleUnexpected(Exception e,
+                                                          jakarta.servlet.http.HttpServletRequest request,
+                                                          jakarta.servlet.http.HttpServletResponse response) throws IOException {
         log.error("처리하지 못한 오류", e);
+        if (!ErrorPageController.isApi(request.getRequestURI(), request.getContextPath())) {
+            response.sendError(500);   // 화면 요청(첫 화면·sitemap 등)이면 오류 화면으로 (ERR-01)
+            return null;
+        }
         return ResponseEntity.internalServerError().body(ErrorResponse.of(ErrorCode.INTERNAL_ERROR));
     }
 }
