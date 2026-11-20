@@ -61,7 +61,8 @@ public class SecurityConfig {
                         .requestMatchers("/", "/index.html", "/map.html", "/store.html", "/login.html", "/signup.html", "/forgot-password.html",
                                 "/mypage.html", "/agree.html", "/terms.html", "/privacy.html", "/community.html", "/post.html", "/post-write.html", "/admin-community.html", "/festivals.html", "/festival.html", "/market.html", "/admin.html",
                                 "/notices.html", "/notice.html", "/admin-notices.html", "/admin-markets.html", "/admin-closures.html", "/admin-stories.html", "/admin-places.html", "/search.html", "/themes.html", "/theme.html", "/course.html", "/trip.html", "/news.html", "/creators.html",
-                                "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error").permitAll()
+                                "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error",
+                                "/robots.txt", "/sitemap.xml", "/manifest.webmanifest").permitAll()   // 검색·공유 (SEO-01)
                         // 카카오 로그인 시작(/oauth2/authorization/kakao)과 돌아오는 주소(/login/oauth2/code/kakao)
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         // 누구나 볼 수 있는 조회 API
