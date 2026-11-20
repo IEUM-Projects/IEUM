@@ -52,15 +52,15 @@ a:hover { color: var(--text-link-hover); }
   font-size: var(--font-body-xsmall);
   font-weight: var(--font-weight-bold);
   line-height: 1.5;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-xsmall);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-small);
   vertical-align: middle;
 }
-.badge-type { background: var(--color-primary-5); color: var(--color-primary-70); }
-.badge-type.creator { background: var(--color-accent-5); color: var(--color-accent-70); }
-.badge-category { background: var(--surface-subtle); color: var(--text-subtle); font-weight: var(--font-weight-medium); }
-.badge-unverified { background: var(--color-warning-5); color: var(--color-warning-60); }
-/* 전통시장: 진한 청록 바탕 + 흰 글자 (가게 배지와 바탕색·모양으로 구분) */
+/* UI-04: 색 바탕 배지를 회색 테두리 하나로 통일. 뜻이 있는 배지(미확인·진행 중 등)만 앞에 작은 점 색 */
+.badge-type { border: 1px solid var(--border-light); background: var(--surface); color: var(--text-body); }
+.badge-category { background: var(--surface-subtle); color: var(--text-subtle); font-weight: var(--font-weight-medium); border: 1px solid transparent; }
+.badge-unverified { border: 1px solid var(--border-light); background: var(--surface); color: var(--text-body); --dot: var(--color-warning-60); font-weight: var(--font-weight-medium); }
+/* 전통시장: 가게 배지와 같은 회색 테두리 (UI-04: 진한 청록 꽉 찬 바탕을 뺌) */
 .badge-market {
   display: inline-flex;
   align-items: center;
@@ -69,9 +69,8 @@ a:hover { color: var(--text-link-hover); }
   font-weight: var(--font-weight-bold);
   line-height: 1.5;
   padding: 2px var(--space-2);
-  border-radius: var(--radius-xsmall);
-  background: var(--color-primary-80);
-  color: var(--text-on-primary);
+  border-radius: var(--radius-small);
+  border: 1px solid var(--border-light); background: var(--surface); color: var(--text-body);
   vertical-align: middle;
 }
 
@@ -172,7 +171,6 @@ a:hover { color: var(--text-link-hover); }
   background: var(--surface);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-large);
-  box-shadow: var(--shadow-2);
   padding: var(--space-2);
   z-index: 30;
 }
@@ -217,9 +215,10 @@ a:hover { color: var(--text-link-hover); }
 }
 
 /* 로컬크리에이터 (LOC-01) */
-.badge-field { display: inline-flex; align-items: center; padding: 2px var(--space-2); border-radius: var(--radius-xsmall); background: var(--color-accent-5); color: var(--color-accent-70); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); }
-.creator-box .creator-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
-.creator-box .creator-list > li { padding: var(--space-3) var(--space-4); border: 1px solid var(--border-light); border-radius: var(--radius-medium); background: var(--surface); }
+.badge-field { display: inline-flex; align-items: center; padding: 2px var(--space-2); border-radius: var(--radius-small); border: 1px solid var(--border-light); background: var(--surface); color: var(--text-body); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-medium); }
+.creator-box .creator-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 1px solid var(--border-light); border-radius: var(--radius-large); background: var(--surface); overflow: hidden; }
+.creator-box .creator-list > li { padding: var(--space-3) var(--space-4); }
+.creator-box .creator-list > li + li { border-top: 1px solid var(--border-divider); }
 .creator-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-1); }
 .creator-item { margin: 0; overflow-wrap: anywhere; }
 .creator-meta { margin: var(--space-1) 0 0; font-size: var(--font-body-small); color: var(--text-subtle); }
@@ -236,3 +235,17 @@ a:hover { color: var(--text-link-hover); }
 .place-stories-links { margin: 0; display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
 .place-stories-links a { display: inline-flex; align-items: center; min-height: var(--touch-min); font-weight: var(--font-weight-bold); }
 .place-stories .cat-badge { display: inline-flex; flex: none; padding: 2px var(--space-2); border-radius: var(--radius-small); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); background: var(--color-primary-5); color: var(--color-primary-70); border: 1px solid var(--color-primary-10); }
+
+/* UI-04: 상태 배지 앞의 작은 점. 배지마다 --dot 으로 색만 정한다 */
+.badge-unverified::before, .status-now::before, .status-soon::before, .status-ended::before, .rec-badge::before, .state-badge::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--dot, var(--color-gray-40));
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}

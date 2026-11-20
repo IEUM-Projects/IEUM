@@ -1,10 +1,17 @@
-// 내 정보 화면: 닉네임 변경, 로그아웃 (로그인 필요)
+// 내 정보 화면: 닉네임 변경, 내가 쓴 이야기, 내 제보, 로그아웃, 회원 탈퇴 (로그인 필요)
+// UI-04 2단계: 설정 앱처럼 묶음 목록으로 보여 준다
 import * as auth from './auth.js';
 import { posts as postApi, when } from './community-common.js';
 
 const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9]{2,12}$/;
 const $ = (id) => document.getElementById(id);
 const form = $('nicknameForm');
+
+const CHEVRON = '<svg class="row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="m9 6 6 6-6 6"/></svg>';
+function addChevron(li) {
+  li.insertAdjacentHTML('beforeend', CHEVRON);
+  li.classList.add('has-link');
+}
 
 function setNicknameError(message) {
   $('nicknameError').textContent = message ?? '';
@@ -110,7 +117,7 @@ function reportItem(r) {
   const top = document.createElement('div');
   top.className = 'report-top';
   const status = document.createElement('span');
-  status.className = `report-status ${STATUS_CLASS[r.status] ?? ''}`;
+  status.className = `row-badge ${STATUS_CLASS[r.status] ?? ''}`;
   status.textContent = r.statusLabel;
   const date = document.createElement('span');
   date.className = 'report-date';
@@ -124,7 +131,7 @@ function reportItem(r) {
   const type = document.createElement('p');
   type.className = 'report-type';
   type.textContent = r.typeLabel;
-  li.append(top, store, type);
+  li.append(store, top, type);
   if (r.content) {
     const content = document.createElement('p');
     content.className = 'report-content';
@@ -143,6 +150,7 @@ function reportItem(r) {
     }
     li.append(note);
   }
+  if (r.storeVisible) addChevron(li);
   return li;
 }
 
@@ -153,6 +161,7 @@ async function loadReports() {
     const reports = await auth.fetchMyReports();
     $('reportList').replaceChildren(...reports.map(reportItem));
     $('reportsStatus').textContent = reports.length ? '' : '아직 보낸 제보가 없어요. 가게 화면의 \'영업 정보 제보\'로 보낼 수 있어요.';
+    $('reportsStatus').hidden = !!reports.length;
   } catch (_) {
     $('reportsStatus').textContent = '제보 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
@@ -163,21 +172,20 @@ async function loadReports() {
 function myPostItem(p) {
   const li = document.createElement('li');
   li.className = 'report-item';
-  const top = document.createElement('p');
-  top.className = 'report-top';
-  const badge = document.createElement('span');
-  badge.className = 'report-status report-received';
-  badge.textContent = p.categoryLabel;
   const link = document.createElement('a');
   link.href = `/post.html?id=${p.id}`;
   link.className = 'report-store-link';
   link.textContent = p.title;
-  top.append(badge, link);
   const meta = document.createElement('p');
   meta.className = 'report-type';
+  const cat = document.createElement('span');
+  cat.className = 'row-category';
+  cat.textContent = p.categoryLabel;
   const state = p.status === 'VISIBLE' ? '' : (p.status === 'TEMP_HIDDEN' ? ' · 임시로 가려짐' : ' · 관리자가 가림');
-  meta.textContent = `${when(p.createdAt)} · 공감 ${p.likeCount} · 댓글 ${p.commentCount}${state}${p.recommendStatusLabel ? ` · ${p.recommendStatusLabel}` : ''}`;
-  li.append(top, meta);
+  meta.append(cat, ` ${when(p.createdAt)} · 공감 ${p.likeCount} · 댓글 ${p.commentCount}${state}${p.recommendStatusLabel ? ` · ${p.recommendStatusLabel}` : ''}`);
+  li.append(link, meta);
+  if (p.status !== 'VISIBLE') li.classList.add('is-hidden');
+  addChevron(li);
   return li;
 }
 
@@ -188,6 +196,7 @@ async function loadMyPosts() {
     const list = await postApi.mine();
     $('myPostList').replaceChildren(...list.map(myPostItem));
     $('myPostsStatus').textContent = list.length ? '' : '아직 쓴 이야기가 없어요.';
+    $('myPostsStatus').hidden = !!list.length;
   } catch (_) {
     $('myPostsStatus').textContent = '글 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
@@ -202,6 +211,7 @@ async function init() {
   try {
     render(await auth.fetchMe());
     $('card').hidden = false;
+    $('sessionGroup').hidden = false;
     loadMyPosts();
     loadReports();
     if (location.hash === '#withdraw') $('withdraw').scrollIntoView();

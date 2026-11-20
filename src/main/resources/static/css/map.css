@@ -3,7 +3,7 @@ body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; 
 
 .topbar {
   background: var(--surface);
-  box-shadow: var(--shadow-2);
+  border-bottom: 1px solid var(--border-light);   /* UI-04: 그림자 대신 1px 선 */
   padding: var(--space-2) var(--screen-margin) var(--space-3);
   z-index: 10;
 }
@@ -106,13 +106,12 @@ body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; 
   z-index: 6;
   min-height: var(--touch-min);
   padding: 0 var(--space-5);
-  border: none;
-  border-radius: var(--radius-max);
+  border: 1px solid var(--text-body);
+  border-radius: var(--radius-medium);
   background: var(--text-body);
   color: var(--surface);
   font-size: var(--font-body-small);
   font-weight: var(--font-weight-bold);
-  box-shadow: var(--shadow-2);
 }
 
 .floating {
@@ -133,7 +132,6 @@ body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; 
   border: 1px solid var(--border-light);
   background: var(--surface);
   color: var(--text-body);
-  box-shadow: var(--shadow-2);
 }
 .fab:hover { background: var(--surface-subtle); color: var(--text-body); }
 a.fab { text-decoration: none; }
@@ -152,7 +150,6 @@ a.fab { text-decoration: none; }
   z-index: 7;
   max-width: calc(100% - 32px);
   text-align: center;
-  box-shadow: var(--shadow-2);
 }
 
 /* 아래에서 올라오는 가게 카드 */
@@ -166,8 +163,9 @@ a.fab { text-decoration: none; }
   flex-direction: column;
   gap: var(--space-2);
   background: var(--surface);
-  border-radius: var(--radius-xlarge) var(--radius-xlarge) 0 0;
-  box-shadow: var(--shadow-3);
+  border: 1px solid var(--border-light);
+  border-bottom: none;
+  border-radius: var(--radius-large) var(--radius-large) 0 0;   /* UI-04: 12px → 8px, 그림자 대신 1px 테두리 */
   padding: var(--space-5) var(--space-5) calc(var(--space-6) + env(safe-area-inset-bottom));
   max-width: 640px;
   margin: 0 auto;
@@ -198,11 +196,10 @@ a.fab { text-decoration: none; }
 
 /* 지역 선택 창 */
 .region-dialog {
-  border: none;
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-large);
   padding: 0;
   width: min(420px, calc(100% - 32px));
-  box-shadow: var(--shadow-4);
   color: var(--text-body);
 }
 .region-dialog::backdrop { background: var(--dim); }
@@ -222,7 +219,7 @@ a.fab { text-decoration: none; }
 .dialog-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-2); }
 
 @media (min-width: 900px) {
-  .store-card { left: var(--space-4); right: auto; bottom: var(--space-4); width: 400px; border-radius: var(--radius-xlarge); }
+  .store-card { left: var(--space-4); right: auto; bottom: var(--space-4); width: 400px; border-radius: var(--radius-large); border-bottom: 1px solid var(--border-light); }
 }
 
 /* 전통시장 (MKT-01) */
@@ -231,7 +228,7 @@ a.fab { text-decoration: none; }
 .list-group-title { margin: var(--space-4) 0 0; font-size: var(--font-heading-small); }
 
 /* 온누리상품권 (DATA-04) */
-.badge-onnuri { display: inline-block; margin-left: var(--space-1); padding: 2px var(--space-2); border-radius: var(--radius-xsmall); background: var(--color-accent-5); color: var(--color-accent-70); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); vertical-align: middle; }
+.badge-onnuri { display: inline-block; margin-left: var(--space-1); padding: 1px var(--space-2); border-radius: var(--radius-small); border: 1px solid var(--border-light); background: var(--surface); color: var(--text-body); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-medium); }
 
 /* 로컬크리에이터 지역별 모아 보기로 가는 링크 (LOC-01) */
 .chip-link { display: inline-flex; align-items: center; color: var(--text-link); text-decoration: underline; font-weight: var(--font-weight-bold); }
