@@ -53,7 +53,28 @@ public class AuthService {
     private final PasswordPolicy passwordPolicy;
     private final JwtProvider jwtProvider;
     private final NicknameGenerator nicknameGenerator;
+    private final com.ieum.ieum.user.NicknamePolicy nicknamePolicy;
     private final com.ieum.ieum.policy.Policy policy;
+
+    /**
+     * 가입 화면의 '중복 확인' (AUTH-01). 가입할 때도 서버가 다시 확인하므로(아래 signup) 이 결과는 안내용이다.
+     * 닉네임은 글·댓글에 공개되는 값이라 있는지 없는지 알려 줘도 새로 드러나는 정보는 없다.
+     */
+    @Transactional(readOnly = true)
+    public AuthDtos.NicknameCheck checkNickname(String raw) {
+        String nickname = raw == null ? "" : raw.trim();
+        if (!nickname.matches(AuthDtos.NICKNAME_REGEX)) {
+            return new AuthDtos.NicknameCheck(nickname, false, AuthDtos.NICKNAME_MESSAGE);
+        }
+        String problem = nicknamePolicy.problem(nickname);
+        if (problem != null) {
+            return new AuthDtos.NicknameCheck(nickname, false, problem);
+        }
+        if (userRepository.existsByNickname(nickname)) {
+            return new AuthDtos.NicknameCheck(nickname, false, ErrorCode.DUPLICATE_NICKNAME.message());
+        }
+        return new AuthDtos.NicknameCheck(nickname, true, "쓸 수 있는 닉네임이에요.");
+    }
 
     @Transactional
     public AuthDtos.UserSummary signup(AuthDtos.SignupRequest request) {
@@ -66,6 +87,10 @@ public class AuthService {
         }
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+        }
+        String problem = nicknamePolicy.problem(nickname);
+        if (problem != null) {
+            throw new BusinessException(ErrorCode.NICKNAME_NOT_ALLOWED, List.of(problem));
         }
         if (userRepository.existsByNickname(nickname)) {
             throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);

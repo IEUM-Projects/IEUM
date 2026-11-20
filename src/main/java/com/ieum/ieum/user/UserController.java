@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * GET    /api/users/me              내 정보 (로그인 필요)
@@ -44,6 +45,7 @@ public class UserController {
     static final String WITHDRAW_WORD = "탈퇴";
 
     private final UserRepository userRepository;
+    private final NicknamePolicy nicknamePolicy;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenCookie refreshTokenCookie;
     private final PasswordEncoder passwordEncoder;
@@ -76,6 +78,10 @@ public class UserController {
     public MyInfo update(@AuthenticationPrincipal AuthUser authUser, @Valid @RequestBody UpdateRequest request) {
         User user = findActiveUser(authUser);
         String nickname = request.nickname().trim();
+        String problem = nicknamePolicy.problem(nickname);
+        if (problem != null && !nickname.equals(user.getNickname())) {
+            throw new BusinessException(ErrorCode.NICKNAME_NOT_ALLOWED, List.of(problem));
+        }
         if (!nickname.equals(user.getNickname()) && userRepository.existsByNickname(nickname)) {
             throw new BusinessException(ErrorCode.DUPLICATE_NICKNAME);
         }
