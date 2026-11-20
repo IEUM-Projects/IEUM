@@ -20,6 +20,7 @@ import java.util.Map;
 
 /**
  * 가입 이메일 인증 (AUTH-02): 가입 화면에서 6자리 번호를 메일로 보내고, 맞으면 30분 안에 가입할 수 있다.
+ * 비밀번호 찾기(AUTH-03, PasswordResetService)도 issue·check·consume 을 함께 쓴다 (purpose = PASSWORD_RESET).
  *
  *   보내기   : 같은 이메일은 1분에 한 번·하루 5번, 같은 IP는 1시간에 20번까지. 이미 가입된 이메일이면 409
  *   확인     : 번호는 10분 동안만, 5번 틀리면 그 번호는 끝 (다시 받아야 함)
@@ -62,16 +63,29 @@ public class EmailVerificationService {
         return required;
     }
 
-    /** 인증번호 보내기 */
+    /** 인증번호 보내기 (가입) */
     @Transactional
     public AuthDtos.VerificationSent send(String rawEmail, String ip) {
         String email = AuthService.normalizeEmail(rawEmail);
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
+        return issue(email, PURPOSE, ip, code -> new Mail("[이음] 이메일 인증번호 " + code, mailText(code)));
+    }
+
+    /** 보낼 메일 (제목, 본문) */
+    record Mail(String subject, String text) {
+    }
+
+    /**
+     * 번호를 만들어 메일로 보내고 저장한다 (가입·비밀번호 찾기가 함께 씀).
+     * compose 가 null 이면 메일은 보내지 않고 기록만 남긴다: 비밀번호 찾기에서 가입하지 않은 이메일일 때,
+     * 가입된 이메일과 똑같이 '1분에 한 번·하루 5번'이 걸리게 하려고 (가입 여부를 알아내지 못하게).
+     */
+    AuthDtos.VerificationSent issue(String email, String purpose, String ip, java.util.function.Function<String, Mail> compose) {
         LocalDateTime now = LocalDateTime.now();
         MapSqlParameterSource p = new MapSqlParameterSource()
-                .addValue("email", email).addValue("purpose", PURPOSE).addValue("ip", ip)
+                .addValue("email", email).addValue("purpose", purpose).addValue("ip", ip)
                 .addValue("now", Timestamp.valueOf(now))
                 .addValue("minute", Timestamp.valueOf(now.minusSeconds(RESEND_SECONDS)))
                 .addValue("day", Timestamp.valueOf(now.minusDays(1)))
@@ -88,10 +102,15 @@ public class EmailVerificationService {
         }
 
         String code = String.format("%06d", random.nextInt(1_000_000));
-        try {
-            mailService.send(email, "[이음] 이메일 인증번호 " + code, mailText(code));
-        } catch (MailService.MailException e) {
-            throw new BusinessException(ErrorCode.MAIL_SEND_FAILED);
+        if (compose != null) {
+            Mail mail = compose.apply(code);
+            try {
+                mailService.send(email, mail.subject(), mail.text());
+            } catch (MailService.MailException e) {
+                throw new BusinessException(ErrorCode.MAIL_SEND_FAILED);
+            }
+        } else {
+            code = java.util.UUID.randomUUID().toString();   // 아무도 모르는 값: 이 기록으로는 확인할 수 없다
         }
         // 새 번호를 보내면 앞서 보낸 번호는 못 쓰게 (헷갈리지 않게, 마지막 번호만)
         jdbc.update("""
@@ -105,22 +124,26 @@ public class EmailVerificationService {
         return new AuthDtos.VerificationSent(email, CODE_MINUTES * 60, RESEND_SECONDS);
     }
 
-    /** 번호 확인 */
+    /** 번호 확인 (가입) */
     @Transactional(noRollbackFor = BusinessException.class)
     public AuthDtos.VerificationConfirmed confirm(String rawEmail, String rawCode) {
-        String email = AuthService.normalizeEmail(rawEmail);
+        return check(AuthService.normalizeEmail(rawEmail), PURPOSE, rawCode, VERIFIED_MINUTES);
+    }
+
+    /** 번호 확인 (가입·비밀번호 찾기가 함께 씀). 맞으면 validMinutes 안에 다음 단계를 마쳐야 한다 */
+    AuthDtos.VerificationConfirmed check(String email, String purpose, String rawCode, int validMinutes) {
         String code = rawCode == null ? "" : rawCode.replaceAll("\\s", "");
         LocalDateTime now = LocalDateTime.now();
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT id, code_hash, attempts, expires_at, verified_at FROM email_verifications
                  WHERE email = :email AND purpose = :purpose AND used_at IS NULL
                  ORDER BY id DESC LIMIT 1 FOR UPDATE""",
-                new MapSqlParameterSource("email", email).addValue("purpose", PURPOSE));
+                new MapSqlParameterSource("email", email).addValue("purpose", purpose));
         if (rows.isEmpty()) throw new BusinessException(ErrorCode.VERIFICATION_EXPIRED);
         Map<String, Object> row = rows.get(0);
         long id = ((Number) row.get("id")).longValue();
         if (row.get("verified_at") != null) {
-            return new AuthDtos.VerificationConfirmed(email, VERIFIED_MINUTES * 60);   // 이미 맞힘 (두 번 누름)
+            return new AuthDtos.VerificationConfirmed(email, validMinutes * 60);   // 이미 맞힘 (두 번 누름)
         }
         int attempts = ((Number) row.get("attempts")).intValue();
         if (toTime(row.get("expires_at")).isBefore(now) || attempts >= MAX_ATTEMPTS) {
@@ -134,7 +157,7 @@ public class EmailVerificationService {
         }
         jdbc.update("UPDATE email_verifications SET verified_at = :now WHERE id = :id",
                 new MapSqlParameterSource("id", id).addValue("now", Timestamp.valueOf(now)));
-        return new AuthDtos.VerificationConfirmed(email, VERIFIED_MINUTES * 60);
+        return new AuthDtos.VerificationConfirmed(email, validMinutes * 60);
     }
 
     /** 가입할 때: 30분 안에 맞힌 번호가 있는지 보고, 있으면 다 쓴 것으로 표시. 인증을 끈 상태면 그냥 통과 */
@@ -142,16 +165,21 @@ public class EmailVerificationService {
     public LocalDateTime consumeForSignup(String email) {
         LocalDateTime now = LocalDateTime.now();
         if (!required) return null;
+        if (!consume(email, PURPOSE, VERIFIED_MINUTES, now)) throw new BusinessException(ErrorCode.EMAIL_NOT_VERIFIED);
+        return now;
+    }
+
+    /** withinMinutes 안에 맞힌 번호 하나를 '다 씀'으로 표시. 없으면 false (한 번 쓴 번호는 다시 못 씀) */
+    boolean consume(String email, String purpose, int withinMinutes, LocalDateTime now) {
         int updated = jdbc.update("""
                 UPDATE email_verifications SET used_at = :now
                  WHERE email = :email AND purpose = :purpose AND used_at IS NULL
                    AND verified_at IS NOT NULL AND verified_at > :since
                  ORDER BY id DESC LIMIT 1""",
-                new MapSqlParameterSource("email", email).addValue("purpose", PURPOSE)
+                new MapSqlParameterSource("email", email).addValue("purpose", purpose)
                         .addValue("now", Timestamp.valueOf(now))
-                        .addValue("since", Timestamp.valueOf(now.minusMinutes(VERIFIED_MINUTES))));
-        if (updated == 0) throw new BusinessException(ErrorCode.EMAIL_NOT_VERIFIED);
-        return now;
+                        .addValue("since", Timestamp.valueOf(now.minusMinutes(withinMinutes))));
+        return updated > 0;
     }
 
     /** 하루 지난 기록 지우기 (TokenCleanupService 가 매일 새벽 부름) */

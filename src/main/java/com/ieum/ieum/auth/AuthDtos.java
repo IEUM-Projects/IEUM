@@ -79,6 +79,20 @@ public final class AuthDtos {
     }
 
     /** expiresIn: 번호를 쓸 수 있는 초, resendAfter: 다시 보낼 수 있을 때까지 초 */
+    /** 내 정보에서 비밀번호 바꾸기 (AUTH-04) */
+    public record ChangePasswordRequest(
+            @NotBlank(message = "지금 비밀번호를 입력해 주세요.") String currentPassword,
+            @NotBlank(message = "새 비밀번호를 입력해 주세요.") String newPassword
+    ) {
+    }
+
+    /** 비밀번호 찾기 마지막 단계 (AUTH-03): 번호를 맞힌 이메일 + 새 비밀번호 */
+    public record PasswordResetRequest(
+            @NotBlank(message = "이메일을 입력해 주세요.") String email,
+            @NotBlank(message = "새 비밀번호를 입력해 주세요.") String password
+    ) {
+    }
+
     public record VerificationSent(String email, int expiresIn, int resendAfter) {
     }
 

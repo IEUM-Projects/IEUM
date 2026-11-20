@@ -56,6 +56,7 @@ public class AuthService {
     private final com.ieum.ieum.user.NicknamePolicy nicknamePolicy;
     private final EmailVerificationService emailVerificationService;
     private final com.ieum.ieum.policy.Policy policy;
+    private final com.ieum.ieum.mail.MailService mailService;
 
     /**
      * 가입 화면의 '중복 확인' (AUTH-01). 가입할 때도 서버가 다시 확인하므로(아래 signup) 이 결과는 안내용이다.
@@ -193,6 +194,46 @@ public class AuthService {
                 refreshTokenRepository.delete(saved);
             }
         });
+    }
+
+    /**
+     * 내 정보에서 비밀번호 바꾸기 (AUTH-04).
+     * 지금 비밀번호가 틀리면 로그인 실패처럼 센다 (5번이면 10분 잠금): 잠깐 자리를 비운 사이 남이 바꾸려 해도 계속 시도할 수 없게.
+     * 바꾸면 지금 쓰는 로그인은 그대로 두고 다른 기기의 로그인을 끊는다. 바뀌었다는 메일도 보낸다.
+     */
+    @Transactional(noRollbackFor = BusinessException.class)
+    public void changePassword(Long userId, String currentPassword, String newPassword, String refreshToken) {
+        LocalDateTime now = LocalDateTime.now();
+        User user = userRepository.findById(userId)
+                .filter(u -> u.getStatus() != UserStatus.WITHDRAWN)
+                .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
+        if (user.getProvider() != AuthProvider.LOCAL || user.getPassword() == null) {
+            throw new BusinessException(ErrorCode.PASSWORD_NOT_SET);
+        }
+        if (user.isLocked(now)) throw new BusinessException(ErrorCode.ACCOUNT_LOCKED);
+        if (currentPassword == null || !passwordEncoder.matches(currentPassword, user.getPassword())) {
+            user.loginFailed(now);
+            throw new BusinessException(user.isLocked(now) ? ErrorCode.ACCOUNT_LOCKED : ErrorCode.CURRENT_PASSWORD_MISMATCH);
+        }
+        List<String> errors = passwordPolicy.check(newPassword, user.getEmail(), user.getNickname());
+        if (!errors.isEmpty()) throw new BusinessException(ErrorCode.WEAK_PASSWORD, errors);
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new BusinessException(ErrorCode.WEAK_PASSWORD, List.of("지금 쓰는 비밀번호와 다른 비밀번호로 정해 주세요."));
+        }
+
+        user.changePassword(passwordEncoder.encode(newPassword));
+        String family = refreshToken == null || refreshToken.isBlank() ? null
+                : refreshTokenRepository.findByTokenHash(sha256(refreshToken))
+                        .filter(t -> userId.equals(t.getUserId()))
+                        .map(RefreshToken::getFamilyId).orElse(null);
+        if (family != null) refreshTokenRepository.deleteByUserIdExceptFamily(userId, family);
+        else refreshTokenRepository.deleteByUserId(userId);   // 지금 로그인을 알 수 없으면 모두 끊는다
+
+        try {
+            mailService.send(user.getEmail(), PasswordResetService.CHANGED_SUBJECT, PasswordResetService.changedText(now, family != null));
+        } catch (com.ieum.ieum.mail.MailService.MailException e) {
+            // 알림을 못 보내도 비밀번호 변경은 그대로 둔다
+        }
     }
 
     private static String newFamily() {

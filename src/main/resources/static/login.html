@@ -27,6 +27,7 @@
       <h1>로그인</h1>
       <p class="lead">우리 동네 백년가게 이야기를 나눠 보세요.</p>
 
+      <p id="formNotice" class="form-alert success" role="status" hidden></p>
       <p id="formAlert" class="form-alert" role="alert" hidden></p>
 
       <form id="loginForm" novalidate>
@@ -38,6 +39,7 @@
           <label for="password">비밀번호</label>
           <input id="password" name="password" type="password" autocomplete="current-password" required>
         </div>
+        <p class="find-password"><a id="findLink" href="/forgot-password.html">비밀번호를 잊으셨나요?</a></p>
         <button type="submit" id="submitButton" class="button-primary wide">로그인</button>
       </form>
 

@@ -33,6 +33,11 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Query("delete from RefreshToken t where t.userId = :userId")
     int deleteByUserId(@Param("userId") Long userId);
 
+    /** 비밀번호 바꾸기 (AUTH-04): 지금 쓰는 로그인(묶음)만 남기고 그 회원의 다른 토큰을 지운다 */
+    @Modifying
+    @Query("delete from RefreshToken t where t.userId = :userId and (t.familyId is null or t.familyId <> :familyId)")
+    int deleteByUserIdExceptFamily(@Param("userId") Long userId, @Param("familyId") String familyId);
+
     /** 로그인할 때 그 회원의 만료된 토큰을 같이 정리 (테이블이 계속 쌓이지 않게) */
     @Modifying
     @Query("delete from RefreshToken t where t.userId = :userId and t.expiresAt < :now")

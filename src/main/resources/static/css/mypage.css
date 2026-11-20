@@ -115,3 +115,14 @@ body.settings-page { height: auto; min-height: 100%; background: var(--surface-s
 .withdraw-card .form-alert[hidden] { display: none; }
 
 .settings-page .mini-footer { max-width: 560px; }
+
+/* ---------- 비밀번호 바꾸기 (AUTH-04) ---------- */
+.password-row[hidden], .password-form[hidden] { display: none; }
+.row-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+.button-secondary.compact { min-height: 44px; padding: 0 var(--space-4); }
+.password-form { border-top: 1px solid var(--border-divider); gap: 0; }
+.password-form .field { margin-bottom: var(--space-4); }
+.password-form .form-alert { margin-bottom: var(--space-4); }
+.password-form .form-actions { display: flex; gap: var(--space-2); justify-content: flex-end; margin-bottom: var(--space-3); }
+.password-form .form-actions button { min-height: 48px; padding: 0 var(--space-5); }
+#passwordToggle[hidden] { display: none; }

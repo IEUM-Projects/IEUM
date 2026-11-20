@@ -1,6 +1,7 @@
 // 내 정보 화면: 닉네임 변경, 내가 쓴 이야기, 내 제보, 로그아웃, 회원 탈퇴 (로그인 필요)
 // UI-04 2단계: 설정 앱처럼 묶음 목록으로 보여 준다
 import * as auth from './auth.js';
+import { renderRuleList } from './password-rules.js';
 import { posts as postApi, when } from './community-common.js';
 
 const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9]{2,12}$/;
@@ -34,7 +35,97 @@ function render(me) {
     ? '아직 동의하지 않았어요'
     : `${me.agreedAt.slice(0, 10).replaceAll('-', '.')} 동의`;
   renderWithdraw(me);
+  renderPasswordRow(me);
 }
+
+// ---------------------------------------------------------------- 비밀번호 바꾸기 (AUTH-04)
+// '바꾸기'를 누르면 줄이 펼쳐진다. 지금 비밀번호 + 새 비밀번호(가입과 같은 규칙) + 확인.
+// 지금 비밀번호를 5번 틀리면 로그인처럼 10분 잠긴다 (서버). 바꾸면 이 기기는 그대로, 다른 기기는 로그아웃.
+
+const passwordForm = $('passwordForm');
+const passwordToggle = $('passwordToggle');
+let myAccount = { email: '', nickname: '' };
+let touchedNew = false;
+
+function renderPasswordRow(me) {
+  myAccount = { email: me.email ?? '', nickname: me.nickname };
+  $('passwordRow').hidden = me.provider !== 'LOCAL';   // 카카오 회원은 비밀번호가 없음
+}
+
+function passwordFieldError(id, input, message) {
+  $(id).textContent = message ?? '';
+  input.setAttribute('aria-invalid', message ? 'true' : 'false');
+}
+
+function renderNewRules() {
+  return renderRuleList($('passwordRules'), passwordForm.newPassword.value, { ...myAccount, touched: touchedNew });
+}
+
+function openPasswordForm(open) {
+  passwordForm.hidden = !open;
+  passwordToggle.hidden = open;
+  passwordToggle.setAttribute('aria-expanded', String(open));
+  if (open) {
+    touchedNew = false;
+    renderNewRules();
+    passwordForm.currentPassword.focus();
+  } else {
+    passwordForm.reset();
+    $('passwordAlert').hidden = true;
+    ['currentError', 'newError', 'confirmNewError'].forEach((id) => { $(id).textContent = ''; });
+    passwordForm.querySelectorAll('input').forEach((i) => i.removeAttribute('aria-invalid'));
+    passwordToggle.focus();
+  }
+}
+
+passwordToggle.addEventListener('click', () => { showNotice(''); openPasswordForm(true); });
+$('passwordCancel').addEventListener('click', () => openPasswordForm(false));
+passwordForm.addEventListener('keydown', (e) => { if (e.key === 'Escape') openPasswordForm(false); });
+passwordForm.currentPassword.addEventListener('input', () => passwordFieldError('currentError', passwordForm.currentPassword, ''));
+passwordForm.newPassword.addEventListener('input', () => { renderNewRules(); passwordFieldError('newError', passwordForm.newPassword, ''); });
+passwordForm.newPasswordConfirm.addEventListener('input', () => passwordFieldError('confirmNewError', passwordForm.newPasswordConfirm, ''));
+
+passwordForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  $('passwordAlert').hidden = true;
+  touchedNew = true;
+  const current = passwordForm.currentPassword.value;
+  const next = passwordForm.newPassword.value;
+  let ok = true;
+  if (!current) { passwordFieldError('currentError', passwordForm.currentPassword, '지금 비밀번호를 입력해 주세요.'); ok = false; }
+  else passwordFieldError('currentError', passwordForm.currentPassword, '');
+  if (!renderNewRules()) { passwordFieldError('newError', passwordForm.newPassword, '비밀번호 규칙을 확인해 주세요.'); ok = false; }
+  else if (next === current) { passwordFieldError('newError', passwordForm.newPassword, '지금 쓰는 비밀번호와 다른 비밀번호로 정해 주세요.'); ok = false; }
+  else passwordFieldError('newError', passwordForm.newPassword, '');
+  if (passwordForm.newPasswordConfirm.value !== next) { passwordFieldError('confirmNewError', passwordForm.newPasswordConfirm, '새 비밀번호가 서로 달라요.'); ok = false; }
+  else passwordFieldError('confirmNewError', passwordForm.newPasswordConfirm, '');
+  if (!ok) { passwordForm.querySelector('[aria-invalid="true"]').focus(); return; }
+
+  $('passwordSave').disabled = true;
+  try {
+    await auth.changePassword(current, next);
+    openPasswordForm(false);
+    showNotice('비밀번호를 바꿨어요. 다른 기기에서는 로그아웃됐어요.');
+    $('formAlert').scrollIntoView({ block: 'nearest' });
+  } catch (e) {
+    if (e.code === 'CURRENT_PASSWORD_MISMATCH') {
+      passwordFieldError('currentError', passwordForm.currentPassword, e.message);
+      passwordForm.currentPassword.select();
+    } else if (e.code === 'WEAK_PASSWORD') {
+      passwordFieldError('newError', passwordForm.newPassword, e.details.join(' ') || e.message);
+      passwordForm.newPassword.focus();
+    } else {
+      // 잠김(ACCOUNT_LOCKED) 등은 위쪽 알림으로
+      $('passwordAlert').textContent = e.code === 'ACCOUNT_LOCKED'
+        ? '지금 비밀번호를 5번 틀려서 10분 동안 바꿀 수 없어요. 잠시 뒤에 다시 해 주세요.'
+        : e.message;
+      $('passwordAlert').hidden = false;
+      $('passwordAlert').focus?.();
+    }
+  } finally {
+    $('passwordSave').disabled = false;
+  }
+});
 
 // ---------------------------------------------------------------- 회원 탈퇴 (POL-01)
 

@@ -161,6 +161,23 @@ public class User {
         lastLoginAt = now;
     }
 
+    /** 내 정보에서 비밀번호를 바꿨을 때 (AUTH-04): 지금 비밀번호를 맞혔으니 틀린 횟수도 0으로 */
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+        this.failedLoginCount = 0;
+    }
+
+    /**
+     * 비밀번호 찾기로 새 비밀번호를 정했을 때 (AUTH-03): 로그인 잠금도 풀고,
+     * 메일로 받은 번호를 맞혔으니 이메일도 인증된 것으로 본다.
+     */
+    public void resetPassword(String encodedPassword, LocalDateTime now) {
+        this.password = encodedPassword;
+        this.failedLoginCount = 0;
+        this.lockedUntil = null;
+        if (this.emailVerifiedAt == null) this.emailVerifiedAt = now;
+    }
+
     public void changeNickname(String nickname) {
         this.nickname = nickname;
     }
