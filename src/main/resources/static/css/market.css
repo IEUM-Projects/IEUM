@@ -109,7 +109,7 @@ body.market-page { background: var(--surface-subtle); }
 .facility-box h2 { margin: 0; font-size: var(--font-heading-small); }
 .facility-group h3 { margin: 0 0 var(--space-2); font-size: var(--font-body-small); color: var(--text-subtle); }
 .facility-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.facility-list li { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3); border-radius: var(--radius-max); background: var(--color-primary-5); color: var(--color-primary-80); font-size: var(--font-body-small); font-weight: var(--font-weight-medium); }
+.facility-list li { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3); border-radius: var(--radius-small); border: 1px solid var(--border-light); background: var(--surface); color: var(--text-body); font-size: var(--font-body-small); font-weight: var(--font-weight-medium); }
 .facility-list .icon-xsmall { color: var(--color-primary-60); }
 .facility-none { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
 .facility-note { margin: 0; font-size: var(--font-body-xsmall); color: var(--text-subtle); }
@@ -136,3 +136,10 @@ body.market-page { background: var(--surface-subtle); }
 .story-meta, .story-note { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
 .story-sources { margin: 0; padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-1); }
 .story-sources a { display: inline-flex; align-items: center; min-height: var(--touch-min); overflow-wrap: anywhere; }
+
+/* UI-04: 근처 가게·크리에이터·관광지를 따로 떨어진 카드 대신 한 상자 안의 줄 목록으로 */
+.near-list { gap: 0; background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); overflow: hidden; }
+.near-list > li + li { border-top: 1px solid var(--border-divider); }
+.near-list .near-item, .near-list .tour-item { border: 0; border-radius: 0; }
+.near-list .near-item:hover { background: var(--surface-subtle); }
+.near-list .tour-item + .tour-item { border-top: 1px solid var(--border-divider); }

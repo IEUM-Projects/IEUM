@@ -126,7 +126,7 @@
   --radius-xsmall: 2px;   /* 배지 */
   --radius-small: 4px;    /* 칩, 태그 */
   --radius-medium: 6px;   /* 버튼, 입력칸 */
-  --radius-large: 10px;   /* 카드, 창 */
+  --radius-large: 8px;    /* 카드, 창 (UI-04: 10→8, 과하게 둥글지 않게) */
   --radius-xlarge: 12px;  /* 아래에서 올라오는 시트 */
   --radius-max: 999px;    /* 완전한 원 */
 

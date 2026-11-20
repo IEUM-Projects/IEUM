@@ -81,10 +81,10 @@ button.day:hover { background: var(--surface-subtle); }
 .day .count {
   min-width: 22px;
   padding: 0 6px;
-  border-radius: var(--radius-max);
-  background: var(--color-accent-5);
-  color: var(--color-accent-70);
-  border: 1px solid var(--color-accent-50);
+  border-radius: var(--radius-small);
+  background: var(--color-primary-5);
+  color: var(--color-primary-80);
+  border: 1px solid var(--color-primary-20);
   font-size: var(--font-body-xsmall);
   font-weight: var(--font-weight-bold);
   line-height: 18px;
@@ -95,7 +95,7 @@ button.day:hover { background: var(--surface-subtle); }
 .day[aria-pressed="true"] .count { background: var(--surface); color: var(--color-primary-80); border-color: var(--surface); }
 
 .calendar-legend { margin: var(--space-3) 0 0; font-size: var(--font-body-small); color: var(--text-subtle); display: flex; align-items: center; gap: var(--space-2); }
-.legend-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--color-accent-5); border: 1px solid var(--color-accent-50); flex: none; }
+.legend-dot { width: 12px; height: 12px; border-radius: var(--radius-xsmall); background: var(--color-primary-5); border: 1px solid var(--color-primary-20); flex: none; }
 
 /* ---------- 축제 목록 ---------- */
 .list-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
@@ -135,12 +135,13 @@ button.day:hover { background: var(--surface-subtle); }
   display: inline-block;
   font-size: var(--font-body-xsmall);
   font-weight: var(--font-weight-bold);
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-xsmall);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-small);
 }
-.status-now { background: var(--color-primary-5); color: var(--color-primary-70); }
-.status-soon { background: var(--color-accent-5); color: var(--color-accent-70); }
-.status-ended { background: var(--surface-subtle); color: var(--text-subtle); }
+.status-now, .status-soon, .status-ended { border: 1px solid var(--border-light); background: var(--surface); color: var(--text-body); font-weight: var(--font-weight-medium); }
+.status-now { --dot: var(--color-success-60); }
+.status-soon { --dot: var(--color-warning-60); }
+.status-ended { --dot: var(--color-gray-40); color: var(--text-subtle); }
 
 .long-term { margin-top: var(--space-5); }
 .long-term summary {
