@@ -27,6 +27,10 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 가입된 이메일이에요."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임이에요."),
     WEAK_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호 규칙을 확인해 주세요."),
+    AGREEMENT_REQUIRED(HttpStatus.FORBIDDEN, "이용약관과 개인정보 처리방침에 동의한 뒤 이용할 수 있어요."),
+    WITHDRAW_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 맞지 않아요."),
+    WITHDRAW_CONFIRM_REQUIRED(HttpStatus.BAD_REQUEST, "확인을 위해 '탈퇴'를 입력해 주세요."),
+    ADMIN_CANNOT_WITHDRAW(HttpStatus.BAD_REQUEST, "관리자는 탈퇴할 수 없어요. 먼저 관리자 권한을 다른 회원에게 넘겨 주세요."),
 
     // 가게·제보
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "가게를 찾을 수 없어요."),

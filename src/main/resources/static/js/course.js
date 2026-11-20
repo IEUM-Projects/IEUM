@@ -222,7 +222,7 @@ async function init() {
   else if (q.get('lat') && q.get('lng')) url = `/api/tour/course?${new URLSearchParams({ lat: q.get('lat'), lng: q.get('lng'), label: q.get('label') ?? '' })}`;
   else {
     $('courseTitle').textContent = '출발점을 알 수 없어요';
-    $('summary').replaceChildren(el('a', { href: '/trip.html', text: '출발점 고르기' }), '에서 장소를 찾거나 현재 위치로 시작해 주세요.');
+    $('summary').replaceChildren(el('a', { href: '/trip.html', text: '출발점 고르기' }), '에서 장소를 찾아 시작해 주세요.');
     return;
   }
   let data;

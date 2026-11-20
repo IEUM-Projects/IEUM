@@ -1,8 +1,10 @@
 package com.ieum.ieum.auth;
 
 import com.ieum.ieum.user.User;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -27,7 +29,17 @@ public final class AuthDtos {
 
             @NotBlank(message = "닉네임을 입력해 주세요.")
             @Pattern(regexp = NICKNAME_REGEX, message = NICKNAME_MESSAGE)
-            String nickname
+            String nickname,
+
+            // POL-01: 세 가지 모두 동의해야 가입할 수 있다
+            @NotNull(message = "이용약관에 동의해 주세요.") @AssertTrue(message = "이용약관에 동의해 주세요.")
+            Boolean agreeTerms,
+
+            @NotNull(message = "개인정보 수집·이용에 동의해 주세요.") @AssertTrue(message = "개인정보 수집·이용에 동의해 주세요.")
+            Boolean agreePrivacy,
+
+            @NotNull(message = "만 14세 이상만 가입할 수 있어요.") @AssertTrue(message = "만 14세 이상만 가입할 수 있어요.")
+            Boolean over14
     ) {
         /** 형식 검사 전에 앞뒤 공백 제거 (복사·붙여넣기로 공백이 섞이는 경우가 많음). 비밀번호는 그대로 둔다 */
         public SignupRequest {
@@ -49,10 +61,24 @@ public final class AuthDtos {
     public record TokenResponse(String accessToken, long expiresIn, UserSummary user) {
     }
 
-    public record UserSummary(Long id, String nickname, String role) {
-        public static UserSummary from(User user) {
-            return new UserSummary(user.getId(), user.getNickname(), user.getRole().name());
+    /** needsAgreement: 지금 판의 이용약관·개인정보 처리방침에 아직 동의하지 않음 → 화면이 동의 화면으로 보낸다 (POL-01) */
+    public record UserSummary(Long id, String nickname, String role, boolean needsAgreement) {
+        public static UserSummary from(User user, int policyVersion) {
+            return new UserSummary(user.getId(), user.getNickname(), user.getRole().name(), user.needsAgreement(policyVersion));
         }
+    }
+
+    /** 동의 화면 (카카오로 처음 가입했거나, 약관이 바뀐 뒤 처음 로그인한 회원) */
+    public record AgreementRequest(
+            @NotNull(message = "이용약관에 동의해 주세요.") @AssertTrue(message = "이용약관에 동의해 주세요.")
+            Boolean agreeTerms,
+
+            @NotNull(message = "개인정보 수집·이용에 동의해 주세요.") @AssertTrue(message = "개인정보 수집·이용에 동의해 주세요.")
+            Boolean agreePrivacy,
+
+            @NotNull(message = "만 14세 이상만 이용할 수 있어요.") @AssertTrue(message = "만 14세 이상만 이용할 수 있어요.")
+            Boolean over14
+    ) {
     }
 
     /** 서비스 → 컨트롤러로 넘기는 값: 응답 본문 + 쿠키에 넣을 Refresh Token 원본 */

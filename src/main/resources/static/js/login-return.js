@@ -16,9 +16,14 @@ export async function handleLoginReturn(notify) {
   }
   history.replaceState(null, '', location.pathname);
   if (result === 'success') {
-    const user = await auth.init({ force: true });
+    const user = await auth.init({ force: true, agreeRedirect: false });
     const next = auth.consumeNext();
     // 로그인 전에 보던 화면이 있으면 그리로 (예: 가게 화면에서 '카카오로 시작하기')
+    // 카카오로 처음 가입했거나 약관이 바뀐 뒤면 동의 화면부터 (POL-01)
+    if (user?.needsAgreement) {
+      location.replace(auth.afterLogin(user, next));
+      return true;
+    }
     if (user && next !== '/') {
       location.replace(next);
       return true;

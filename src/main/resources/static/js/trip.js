@@ -1,4 +1,4 @@
-// 걷기 코스 출발점 고르기 (TOUR-01): 현재 위치 또는 장소 검색 → course.html 로 이동
+// 걷기 코스 출발점 고르기 (TOUR-01): 장소 검색 → course.html 로 이동 (POL-01: 현재 위치 출발은 뺌 - 위치를 서버로 보내지 않으려고)
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 
@@ -18,26 +18,6 @@ function el(tag, props = {}, ...children) {
 
 export function courseUrl(lat, lng, label, from = 'trip') {
   return `/course.html?${new URLSearchParams({ lat: Number(lat).toFixed(6), lng: Number(lng).toFixed(6), label, from })}`;
-}
-
-function useHere() {
-  const button = $('useHere');
-  $('hereError').textContent = '';
-  if (!navigator.geolocation) {
-    $('hereError').textContent = '이 브라우저는 위치 기능을 지원하지 않아요. 아래에서 장소를 찾아 주세요.';
-    return;
-  }
-  button.disabled = true;
-  button.setAttribute('aria-busy', 'true');
-  navigator.geolocation.getCurrentPosition(
-    (pos) => { location.href = courseUrl(pos.coords.latitude, pos.coords.longitude, '현재 위치'); },
-    () => {
-      button.disabled = false;
-      button.removeAttribute('aria-busy');
-      $('hereError').textContent = '위치 권한이 없어서 현재 위치를 알 수 없어요. 아래에서 장소를 찾아 주세요.';
-    },
-    { timeout: 8000, maximumAge: 300000 },
-  );
 }
 
 let request = 0;
@@ -60,7 +40,7 @@ async function search(q) {
     const data = await res.json();
     if (mine !== request) return;
     if (!data.available) {
-      $('tripStatus').textContent = '지금은 장소를 찾을 수 없어요. 잠시 후 다시 시도하거나 현재 위치로 시작해 주세요.';
+      $('tripStatus').textContent = '지금은 장소를 찾을 수 없어요. 잠시 후 다시 시도해 주세요.';
       return;
     }
     if (!data.places.length) {
@@ -82,7 +62,6 @@ async function search(q) {
 function init() {
   mountAccount($('account'));
   auth.init();
-  $('useHere').addEventListener('click', useHere);
   $('tripSearch').addEventListener('submit', (event) => {
     event.preventDefault();
     search($('tripQ').value);

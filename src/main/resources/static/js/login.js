@@ -26,8 +26,8 @@ form.addEventListener('submit', async (event) => {
   submitButton.disabled = true;
   showAlert('');
   try {
-    await auth.login(email, password);
-    location.replace(next);
+    const user = await auth.login(email, password);
+    location.replace(auth.afterLogin(user, next));
   } catch (e) {
     showAlert(e.message);
     form.password.value = '';
@@ -38,6 +38,6 @@ form.addEventListener('submit', async (event) => {
 });
 
 // 이미 로그인한 상태로 들어오면 바로 돌려보낸다
-auth.init().then((user) => {
-  if (user) location.replace(next);
+auth.init({ agreeRedirect: false }).then((user) => {
+  if (user) location.replace(auth.afterLogin(user, next));
 });

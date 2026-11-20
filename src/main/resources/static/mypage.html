@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/common.css">
   <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/policy.css">
 </head>
 <body class="auth-page">
   <a class="skip-link" href="#main">본문 바로가기</a>
@@ -27,6 +28,7 @@
         <div><dt>로그인 방법</dt><dd id="provider"></dd></div>
         <div><dt>이메일</dt><dd id="email"></dd></div>
         <div><dt>가입일</dt><dd id="createdAt"></dd></div>
+        <div><dt>약관 동의</dt><dd id="agreedAt"></dd></div>
       </dl>
 
       <p id="formAlert" class="form-alert" role="status" hidden></p>
@@ -45,6 +47,30 @@
       <button type="button" id="logoutButton" class="button-secondary wide">로그아웃</button>
     </section>
 
+    <!-- 회원 탈퇴 (POL-01) -->
+    <section class="auth-card withdraw-card" id="withdraw" aria-labelledby="withdrawTitle" hidden>
+      <h2 id="withdrawTitle">회원 탈퇴</h2>
+      <ul class="withdraw-notes">
+        <li>이메일, 비밀번호, 카카오 회원번호, 관심 지역을 바로 지우고 모든 기기에서 로그아웃돼요. 되돌릴 수 없어요.</li>
+        <li>보낸 제보는 작성자를 알 수 없는 상태로 가게 정보 수정 기록에 남아요.</li>
+        <li>같은 이메일로 다시 가입할 수 있어요.</li>
+        <li id="kakaoNote" hidden>카카오계정 설정 › 연결된 서비스 관리에서 이음 연결도 끊을 수 있어요.</li>
+      </ul>
+      <p id="withdrawAlert" class="form-alert" role="alert" tabindex="-1" hidden></p>
+      <form id="withdrawForm" novalidate>
+        <div class="field" id="passwordField" hidden>
+          <label for="withdrawPassword">비밀번호 확인</label>
+          <input id="withdrawPassword" type="password" autocomplete="current-password" maxlength="64" aria-describedby="withdrawError">
+        </div>
+        <div class="field" id="confirmField" hidden>
+          <label for="withdrawConfirm">확인을 위해 ‘탈퇴’를 입력해 주세요</label>
+          <input id="withdrawConfirm" type="text" autocomplete="off" maxlength="10" aria-describedby="withdrawError">
+        </div>
+        <p id="withdrawError" class="error"></p>
+        <button type="submit" id="withdrawButton" class="button-danger wide">탈퇴하기</button>
+      </form>
+    </section>
+
     <!-- 내 영업 정보 제보 (STO-01) -->
     <section class="auth-card reports-card" id="reports" aria-labelledby="reportsTitle" hidden>
       <h2 id="reportsTitle">내 제보</h2>
@@ -53,6 +79,7 @@
       <ul id="reportList" class="report-list"></ul>
     </section>
   </main>
+  <footer class="mini-footer"><a href="/terms.html">이용약관</a><a class="privacy-link" href="/privacy.html">개인정보 처리방침</a><a href="/notices.html">공지사항</a></footer>
   <script type="module" src="/js/mypage.js"></script>
 </body>
 </html>

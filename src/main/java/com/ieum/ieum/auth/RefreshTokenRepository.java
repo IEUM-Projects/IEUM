@@ -28,6 +28,11 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Query("delete from RefreshToken t where t.familyId = :familyId")
     int deleteByFamilyId(@Param("familyId") String familyId);
 
+    /** 회원 탈퇴: 그 회원의 토큰을 모두 지움 (모든 기기에서 로그아웃, POL-01) */
+    @Modifying
+    @Query("delete from RefreshToken t where t.userId = :userId")
+    int deleteByUserId(@Param("userId") Long userId);
+
     /** 로그인할 때 그 회원의 만료된 토큰을 같이 정리 (테이블이 계속 쌓이지 않게) */
     @Modifying
     @Query("delete from RefreshToken t where t.userId = :userId and t.expiresAt < :now")

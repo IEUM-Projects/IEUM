@@ -22,7 +22,56 @@ function render(me) {
   $('email').textContent = me.email ?? '없음 (카카오 로그인)';
   $('createdAt').textContent = me.createdAt ? me.createdAt.slice(0, 10).replaceAll('-', '.') : '';
   form.nickname.value = me.nickname;
+  $('agreedAt').textContent = me.needsAgreement || !me.agreedAt
+    ? '아직 동의하지 않았어요'
+    : `${me.agreedAt.slice(0, 10).replaceAll('-', '.')} 동의`;
+  renderWithdraw(me);
 }
+
+// ---------------------------------------------------------------- 회원 탈퇴 (POL-01)
+
+let provider = 'LOCAL';
+
+function renderWithdraw(me) {
+  provider = me.provider;
+  const kakao = me.provider !== 'LOCAL';
+  $('passwordField').hidden = kakao;
+  $('confirmField').hidden = !kakao;
+  $('kakaoNote').hidden = !kakao;
+  $('withdraw').hidden = me.role === 'ADMIN';   // 관리자는 탈퇴할 수 없음 (서버도 막음)
+}
+
+function withdrawError(message) {
+  $('withdrawError').textContent = message ?? '';
+  const input = provider === 'LOCAL' ? $('withdrawPassword') : $('withdrawConfirm');
+  input.setAttribute('aria-invalid', message ? 'true' : 'false');
+  if (message) input.focus();
+}
+
+$('withdrawForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  $('withdrawAlert').hidden = true;
+  const local = provider === 'LOCAL';
+  const password = $('withdrawPassword').value;
+  const confirm = $('withdrawConfirm').value.trim();
+  if (local && !password) { withdrawError('비밀번호를 입력해 주세요.'); return; }
+  if (!local && confirm !== '탈퇴') { withdrawError("확인을 위해 '탈퇴'를 입력해 주세요."); return; }
+  withdrawError('');
+  $('withdrawButton').disabled = true;
+  try {
+    await auth.withdraw(local ? { password } : { confirm });
+    location.replace('/?withdrawn=1');
+  } catch (e) {
+    if (e.code === 'WITHDRAW_PASSWORD_MISMATCH' || e.code === 'WITHDRAW_CONFIRM_REQUIRED') withdrawError(e.message);
+    else {
+      $('withdrawAlert').textContent = e.message;
+      $('withdrawAlert').hidden = false;
+      $('withdrawAlert').focus();
+    }
+  } finally {
+    $('withdrawButton').disabled = false;
+  }
+});
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -119,6 +168,7 @@ async function init() {
     render(await auth.fetchMe());
     $('card').hidden = false;
     loadReports();
+    if (location.hash === '#withdraw') $('withdraw').scrollIntoView();
   } catch (_) {
     location.replace(auth.loginUrl('/mypage.html'));
   }

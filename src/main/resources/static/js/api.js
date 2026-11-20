@@ -25,6 +25,10 @@ export const api = {
   storeDetail(id) {
     return request(`/api/stores/${encodeURIComponent(id)}`);
   },
+  /** 이용약관·개인정보 처리방침의 판, 시행일, 운영자 정보 (POL-01) */
+  policy() {
+    return request('/api/policy');
+  },
   regions() {
     return request('/api/regions');
   },

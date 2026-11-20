@@ -63,10 +63,41 @@ form.email.addEventListener('input', () => { renderRules(); setError('email', ''
 form.nickname.addEventListener('input', () => { renderRules(); setError('nickname', ''); });
 form.passwordConfirm.addEventListener('input', () => setError('confirm', ''));
 
+// ---------------------------------------------------------------- 약관 동의 (POL-01)
+const agreeAll = document.getElementById('agreeAll');
+const agreeBoxes = [...document.querySelectorAll('[data-agree]')];
+
+function syncAgreeAll() {
+  const checked = agreeBoxes.filter((b) => b.checked).length;
+  agreeAll.checked = checked === agreeBoxes.length;
+  agreeAll.indeterminate = checked > 0 && checked < agreeBoxes.length;
+}
+
+agreeAll.addEventListener('change', () => {
+  agreeBoxes.forEach((b) => { b.checked = agreeAll.checked; });
+  document.getElementById('agreeError').textContent = '';
+});
+agreeBoxes.forEach((b) => b.addEventListener('change', () => {
+  syncAgreeAll();
+  if (agreeBoxes.every((x) => x.checked)) document.getElementById('agreeError').textContent = '';
+}));
+
+function validateAgreements() {
+  const missing = agreeBoxes.find((b) => !b.checked);
+  document.getElementById('agreeError').textContent = missing ? '필수 항목에 모두 동의해 주세요.' : '';
+  agreeBoxes.forEach((b) => b.setAttribute('aria-invalid', b.checked ? 'false' : 'true'));
+  return !missing;
+}
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   showAlert('');
-  if (!validate()) return;
+  const formOk = validate();
+  const agreeOk = validateAgreements();
+  if (!formOk || !agreeOk) {
+    (form.querySelector('[aria-invalid="true"]') ?? agreeBoxes.find((b) => !b.checked))?.focus();
+    return;
+  }
 
   submitButton.disabled = true;
   try {
@@ -74,6 +105,9 @@ form.addEventListener('submit', async (event) => {
       email: form.email.value.trim(),
       password: form.password.value,
       nickname: form.nickname.value.trim(),
+      agreeTerms: true,
+      agreePrivacy: true,
+      over14: true,
     });
     location.replace(next);
   } catch (e) {
@@ -82,7 +116,9 @@ form.addEventListener('submit', async (event) => {
     else if (e.code === 'DUPLICATE_EMAIL') setError('email', e.message);
     else if (e.code === 'DUPLICATE_NICKNAME') setError('nickname', e.message);
     else if (e.code === 'WEAK_PASSWORD') setError('password', e.details.join(' '));
-    else if (e.code === 'INVALID_INPUT') showAlert(e.details.length ? e.details.join(' ') : e.message);
+    else if (e.code === 'INVALID_INPUT' && e.details.some((d) => d.includes('동의') || d.includes('14세'))) {
+      document.getElementById('agreeError').textContent = e.details.join(' ');
+    } else if (e.code === 'INVALID_INPUT') showAlert(e.details.length ? e.details.join(' ') : e.message);
     else showAlert(e.message);
   } finally {
     submitButton.disabled = false;
@@ -90,6 +126,6 @@ form.addEventListener('submit', async (event) => {
 });
 
 renderRules();
-auth.init().then((user) => {
-  if (user) location.replace(next);
+auth.init({ agreeRedirect: false }).then((user) => {
+  if (user) location.replace(auth.afterLogin(user, next));
 });
