@@ -9,7 +9,7 @@ async function request(url) {
       const body = await res.json();
       if (body && (body.message || body.detail)) message = body.message || body.detail;
     } catch (_) { /* 본문이 JSON이 아니면 기본 메시지 사용 */ }
-    throw new Error(message);
+    throw Object.assign(new Error(message), { status: res.status });   // status: 404 면 '없는 항목' (ERR-01)
   }
   return res.json();
 }

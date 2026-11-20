@@ -4,6 +4,7 @@ import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { appendPlaceStories } from './place-stories.js';
 import { longDate, status, photoCredit } from './festival-format.js';
+import { notFoundBlock } from './not-found.js';
 
 const root = document.getElementById('detail');
 
@@ -94,12 +95,22 @@ function render(f) {
   ].filter(Boolean));
 }
 
+function festivalMissing(notFound) {
+  return notFoundBlock({
+    notFound,
+    title: '축제를 찾을 수 없어요',
+    reason: '일정이 바뀌었거나 정보가 내려간 축제일 수 있어요.',
+    failTitle: '축제 정보를 불러오지 못했어요',
+    back: { href: '/festivals.html', label: '축제 달력 보기' },
+  });
+}
+
 async function init() {
   mountAccount(document.getElementById('account'));
   auth.init();
   const id = new URLSearchParams(location.search).get('id');
   if (!id || !/^\d+$/.test(id)) {
-    root.replaceChildren(el('p', { class: 'error', text: '축제 주소가 올바르지 않아요.' }));
+    root.replaceChildren(festivalMissing(true));
     return;
   }
   try {
@@ -107,7 +118,7 @@ async function init() {
     render(f);
     appendPlaceStories(root, { type: 'FESTIVAL', id: f.id, name: f.name });
   } catch (e) {
-    root.replaceChildren(el('p', { class: 'error', text: '축제 정보를 불러오지 못했어요. 축제 달력으로 돌아가 다시 선택해 주세요.' }));
+    root.replaceChildren(festivalMissing(e.status === 404));
   }
 }
 

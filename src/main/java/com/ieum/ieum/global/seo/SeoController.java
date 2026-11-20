@@ -39,14 +39,14 @@ public class SeoController {
      * 첫 화면 '/'. 원래는 스프링이 index.html 로 넘겨주는데(forward), 넘겨주면 응답이 그 자리에서 끝나
      * SiteUrlFilter 가 __SITE_URL__ 을 바꿀 수 없다. 그래서 index.html 을 직접 돌려준다 (바꾸기는 필터가 한다).
      */
-    @GetMapping(value = "/", produces = MediaType.TEXT_HTML_VALUE)
+    @GetMapping("/")   // produces 를 두지 않는다: Accept 가 무엇이든 HTML 로 답한다 (아래 둘도 같음)
     public ResponseEntity<byte[]> home() throws java.io.IOException {
         byte[] body = new org.springframework.core.io.ClassPathResource("static/index.html").getContentAsByteArray();
         return ResponseEntity.ok().cacheControl(CacheControl.noCache())
                 .contentType(new MediaType(MediaType.TEXT_HTML, java.nio.charset.StandardCharsets.UTF_8)).body(body);
     }
 
-    @GetMapping(value = "/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping("/robots.txt")
     public ResponseEntity<String> robots(HttpServletRequest request) {
         String body = """
                 User-agent: *
@@ -61,10 +61,11 @@ public class SeoController {
 
                 Sitemap: %s/sitemap.xml
                 """.formatted(siteUrl.of(request));
-        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePublic()).body(body);
+        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePublic())
+                .contentType(new MediaType(MediaType.TEXT_PLAIN, java.nio.charset.StandardCharsets.UTF_8)).body(body);
     }
 
-    @GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
+    @GetMapping("/sitemap.xml")
     public ResponseEntity<String> sitemap(HttpServletRequest request) {
         String base = siteUrl.of(request);
         StringBuilder xml = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
@@ -77,7 +78,8 @@ public class SeoController {
                 + LocalDate.now().minusDays(30) + "' ORDER BY id");
         details(xml, base, "/notice.html?id=", "SELECT id, updated_at FROM notices WHERE visible = 1 ORDER BY id");
         xml.append("</urlset>\n");
-        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePublic()).body(xml.toString());
+        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofHours(1)).cachePublic())
+                .contentType(new MediaType(MediaType.APPLICATION_XML, java.nio.charset.StandardCharsets.UTF_8)).body(xml.toString());
     }
 
     private void details(StringBuilder xml, String base, String path, String sql) {

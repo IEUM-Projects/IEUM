@@ -77,7 +77,11 @@ public class SecurityConfig {
                         // 관리자 API: 토큰 권한으로 한 번 막고, AdminGuard가 DB 권한으로 한 번 더 확인
                         // (admin.html 화면 파일은 누구나 받지만, 내용은 이 API로만 채워진다)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // 나머지는 로그인 필요
+                        // 화면·파일 주소(/api 가 아닌 GET)는 누구나 (ERR-01): 없는 주소면 '로그인 필요' 대신 404 화면이 나오게.
+                        // 데이터는 모두 /api 아래에 있고 위·아래 규칙으로 지킨다. 화면 목록(위)은 무엇이 공개 화면인지 보여 주려고 남겨 둔다
+                        .requestMatchers(request -> ("GET".equals(request.getMethod()) || "HEAD".equals(request.getMethod()))
+                                && !request.getRequestURI().startsWith(request.getContextPath() + "/api/")).permitAll()
+                        // 나머지(/api)는 로그인 필요
                         .anyRequest().authenticated()
                 );
         return http.build();

@@ -1,0 +1,38 @@
+/* 오류 화면 (ERR-01): 없는 주소(404)·서버 오류(500). 가운데 한 덩어리, 할 수 있는 일을 버튼으로 */
+body.error-page { min-height: 100%; display: flex; flex-direction: column; background: var(--surface); }
+.error-main {
+  flex: 1;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--screen-margin) var(--space-10);
+  word-break: keep-all;
+}
+.error-main:focus { outline: none; }
+.error-code { margin: 0 0 var(--space-2); color: var(--text-subtle); font-size: var(--font-body-small); font-weight: var(--font-weight-medium); font-variant-numeric: tabular-nums; }
+.error-main h1 { margin: 0 0 var(--space-3); font-size: var(--font-heading-xlarge); font-weight: 650; letter-spacing: -0.01em; line-height: 1.3; }
+.error-lead { margin: 0 0 var(--space-6); color: var(--text-body); line-height: 1.6; }
+.error-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.error-actions a { flex: 1 1 140px; }
+.error-search { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--border-divider); }
+.error-search label { display: block; margin-bottom: var(--space-2); font-weight: var(--font-weight-bold); font-size: var(--font-body-small); }
+.error-search .search-row { display: flex; gap: var(--space-2); }
+.error-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--control-height);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-medium);
+  font: inherit;
+  background: var(--surface);
+  color: var(--text-body);
+}
+.error-search input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 0; border-color: var(--focus-ring); }
+.error-search button { flex: none; cursor: pointer; font: inherit; font-weight: var(--font-weight-bold); }
+.mini-footer { max-width: 560px; width: 100%; margin: 0 auto; padding: var(--space-4) var(--screen-margin) var(--space-8); display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: var(--font-body-small); color: var(--text-subtle); }
+.mini-footer a { color: var(--text-body); }
+.mini-footer .privacy-link { font-weight: 700; color: var(--text-link); }
+/* 상단 바: 로고를 가운데로 (다른 화면과 같게) */
+.error-page .site-header .back-link, .error-page .site-header .header-spacer { flex: 1 1 0; }
+.error-page .center-logo { margin: 0; }
