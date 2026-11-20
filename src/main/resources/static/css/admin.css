@@ -18,7 +18,7 @@ body.admin-page { height: auto; min-height: 100%; background: var(--surface-subt
 .admin-main h1 { margin: 0 0 var(--space-5); font-size: var(--font-heading-large); }
 
 /* 관리 메뉴 (제보 처리 / 공지사항) */
-.admin-nav { display: flex; gap: var(--space-2); margin-bottom: var(--space-5); }
+.admin-nav { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-5); }
 .admin-nav a {
   display: inline-flex;
   align-items: center;
@@ -361,3 +361,11 @@ body.admin-page { height: auto; min-height: 100%; background: var(--surface-subt
 .place-part .run-row button[hidden] { display: none; }
 .place-part .find-item .small-link { font-size: var(--font-body-small); }
 #placeDialog .dialog-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: var(--touch-min); }
+
+/* 동네 이야기 관리 (COM-01) */
+.admin-card .row-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.admin-card .row-actions button { min-height: var(--touch-min); }
+.admin-card .confirm-box .field { flex: 1 1 100%; margin: 0; }
+.admin-card .confirm-box .check { flex: 1 1 100%; background: var(--surface); }
+.admin-card .confirm-box.rec-box { background: var(--surface-subtle); }
+.admin-card .card-reports { list-style: none; margin: 0; padding-left: 0; }

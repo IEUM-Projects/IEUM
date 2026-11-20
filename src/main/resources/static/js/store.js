@@ -2,6 +2,7 @@
 import { api, directionsUrl, formatDistance, loadKakaoMapSdk } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
+import { appendPlaceStories } from './place-stories.js';
 import { marketDaySummary } from './market-days.js';
 
 const root = document.getElementById('detail');
@@ -266,6 +267,7 @@ async function init() {
   try {
     store = await api.storeDetail(id);
     render(store);
+    appendPlaceStories(root, { type: 'STORE', id: store.id, name: store.name });
     loadNearMarkets(store);
     loadLivePhone(store);
   } catch (e) {

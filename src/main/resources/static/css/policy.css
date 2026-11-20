@@ -44,3 +44,7 @@
 .withdraw-card .button-danger[disabled] { opacity: .5; cursor: not-allowed; }
 .withdraw-card .field[hidden], .withdraw-card li[hidden] { display: none; }
 .kakao-note { margin: var(--space-2) 0 0; text-align: center; font-size: var(--font-body-small); color: var(--text-subtle); }
+.agree-changes { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.agree-changes[hidden] { display: none; }
+.agree-changes p, .agree-changes ul { margin: 0; }
+.agree-changes ul { padding-left: 1.2em; font-size: var(--font-body-small); }

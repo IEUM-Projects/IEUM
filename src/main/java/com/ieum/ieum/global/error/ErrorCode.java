@@ -58,7 +58,18 @@ public enum ErrorCode {
     PLACE_JOB_RUNNING(HttpStatus.CONFLICT, "좌표 찾기나 카카오맵 연결을 하고 있어요. 끝난 뒤에 다시 눌러 주세요."),
 
     // 시장 이야기 (MKT-02)
-    STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "아직 저장한 이야기가 없어요. 먼저 저장해 주세요.");
+    STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "아직 저장한 이야기가 없어요. 먼저 저장해 주세요."),
+
+    // 동네 이야기 게시판 (COM-01)
+    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "글을 찾을 수 없어요. 지워졌거나 가려진 글일 수 있어요."),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없어요."),
+    NOT_AUTHOR(HttpStatus.FORBIDDEN, "내가 쓴 글·댓글만 고치거나 지울 수 있어요."),
+    WRITE_SUSPENDED(HttpStatus.FORBIDDEN, "작성이 정지된 계정이에요. 궁금한 점은 이용약관의 문의 메일로 보내 주세요."),
+    COMMUNITY_DAILY_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "오늘은 더 쓸 수 없어요. 내일 다시 써 주세요."),
+    DUPLICATE_COMMUNITY_REPORT(HttpStatus.CONFLICT, "이미 신고했어요. 관리자가 확인할 거예요."),
+    CANNOT_REPORT_OWN(HttpStatus.BAD_REQUEST, "내가 쓴 글·댓글은 신고할 수 없어요."),
+    CANNOT_LIKE_OWN(HttpStatus.BAD_REQUEST, "내가 쓴 글에는 공감할 수 없어요."),
+    PLACE_NOT_FOUND(HttpStatus.BAD_REQUEST, "이야기를 붙일 장소를 찾을 수 없어요. 다시 골라 주세요.");
 
     private final HttpStatus status;
     private final String message;

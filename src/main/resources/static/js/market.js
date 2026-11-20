@@ -2,6 +2,7 @@
 import { api, formatDistance, directionsUrl } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
+import { appendPlaceStories } from './place-stories.js';
 import { todayString } from './festival-format.js';
 import { digitsOf, cycleLabel, daysOfMonth, isMarketDay, nextMarketDay, dayText } from './market-days.js';
 import { facilityGroups } from './market-facilities.js';
@@ -243,6 +244,7 @@ async function init() {
   try {
     const m = await api.market(id);
     render(m);
+    appendPlaceStories(root, { type: 'MARKET', id: m.id, name: m.name });
     if (m.latitude != null && m.longitude != null) loadTour(m);
     loadNews(m);
     loadStory(m);

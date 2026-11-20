@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>글쓰기 - 이음</title>
+  <meta name="description" content="동네 이야기 글쓰기">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/community.css">
+</head>
+<body class="community-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/community.html" id="backLink" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>목록
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <div id="account" class="account"></div>
+  </header>
+  <main id="main" class="community-main" tabindex="-1">
+    <h1 id="pageTitle">글쓰기</h1>
+    <p id="formAlert" class="form-alert" role="alert" tabindex="-1" hidden></p>
+    <form id="postForm" class="post-form" novalidate hidden>
+      <fieldset class="cat-pick" aria-describedby="categoryError">
+        <legend>말머리</legend>
+        <div id="categoryOptions" class="cat-options"></div>
+        <p id="categoryError" class="error"></p>
+      </fieldset>
+
+      <div id="placeBox" class="field place-box">
+        <span class="field-label" id="placeLabel">이야기를 붙일 곳 (선택)</span>
+        <p class="help" id="placeHelp">가게·시장·축제를 고르면 그곳 화면에도 이 이야기가 보여요.</p>
+        <div id="placeChosen" class="place-chosen" hidden>
+          <span id="placeChosenText"></span>
+          <button type="button" id="placeClear" class="text-button">빼기</button>
+        </div>
+        <div id="placeSearch" class="place-search">
+          <label for="placeQ" class="sr-only">가게·시장·축제 이름으로 찾기</label>
+          <input id="placeQ" type="search" maxlength="40" autocomplete="off" placeholder="가게·시장·축제 이름" aria-describedby="placeHelp">
+          <button type="button" id="placeFind" class="button-secondary">찾기</button>
+        </div>
+        <p id="placeStatus" class="list-status" role="status"></p>
+        <ul id="placeResults" class="place-results"></ul>
+      </div>
+
+      <div class="field">
+        <label for="title">제목</label>
+        <input id="title" type="text" maxlength="60" autocomplete="off" aria-describedby="titleHelp titleError">
+        <p id="titleHelp" class="help"><span id="titleCount">0</span>/60자</p>
+        <p id="titleError" class="error"></p>
+      </div>
+      <div class="field">
+        <label for="content">내용</label>
+        <textarea id="content" maxlength="3000" rows="10" aria-describedby="contentHelp contentError"></textarea>
+        <p id="contentHelp" class="help"><span id="contentCount">0</span>/3000자 · 다른 사람의 전화번호·주소 같은 개인정보는 쓰지 마세요. 가게에 대한 이야기는 직접 겪은 사실로 써 주세요.</p>
+        <p id="contentError" class="error"></p>
+      </div>
+      <div class="form-actions">
+        <a id="cancelLink" class="button-secondary" href="/community.html">그만두기</a>
+        <button type="submit" id="submitButton" class="button-primary">올리기</button>
+      </div>
+    </form>
+  </main>
+  <footer class="mini-footer"><a href="/terms.html">이용약관</a><a class="privacy-link" href="/privacy.html">개인정보 처리방침</a><a href="/notices.html">공지사항</a></footer>
+  <script type="module" src="/js/post-write.js"></script>
+</body>
+</html>
