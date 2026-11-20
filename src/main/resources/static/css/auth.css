@@ -150,6 +150,17 @@ body.auth-page { background: var(--surface-subtle); min-height: 100dvh; }
 .inline-form .button-primary, .inline-form .button-secondary { flex: none; }
 .inline-form .button-secondary { min-height: 52px; padding: 0 var(--space-4); border-color: var(--border-input); color: var(--text-body); }
 .inline-form .button-secondary:hover { background: var(--surface-subtle); }
+/* 이메일 인증번호 (AUTH-02) */
+.code-box { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); padding: var(--space-3) var(--space-4); border: 1px solid var(--border-light); border-radius: var(--radius-medium); background: var(--surface-subtle); }
+.code-box[hidden], .change-email[hidden], #sendCode[hidden] { display: none; }
+.code-box label { font-size: var(--font-body-small); font-weight: var(--font-weight-bold); }
+.code-box input { letter-spacing: 0.3em; font-variant-numeric: tabular-nums; }
+.code-box .help { margin: 0; }
+#codeTimer { font-variant-numeric: tabular-nums; font-weight: var(--font-weight-medium); color: var(--text-body); }
+.link-button { display: inline; min-height: 0; padding: 0; border: 0; background: none; color: var(--text-link); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.link-button:disabled { color: var(--text-subtle); text-decoration: none; cursor: default; }
+.change-email { align-self: flex-start; min-height: var(--touch-min); font-size: var(--font-body-small); }
+.field input[readonly] { background: var(--surface-subtle); color: var(--text-subtle); }
 /* 닉네임 중복 확인 결과 (AUTH-01): 초록 글자 + 체크 표시 (색만으로 구분하지 않게) */
 .field .ok { margin: 0; color: var(--color-success-60); font-size: var(--font-body-small); font-weight: var(--font-weight-medium); }
 .field .ok:empty { display: none; }

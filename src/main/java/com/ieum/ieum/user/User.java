@@ -37,6 +37,10 @@ public class User {
     @Column(length = 100)
     private String email;
 
+    /** 이메일을 인증한 때 (AUTH-02, 카카오 회원은 null) */
+    @Column(name = "email_verified_at")
+    private LocalDateTime emailVerifiedAt;
+
     @Column(length = 100)
     private String password;
 
@@ -104,6 +108,11 @@ public class User {
         user.providerId = providerId;
         user.status = UserStatus.ACTIVE;
         return user;
+    }
+
+    /** 가입 화면에서 이메일 인증번호를 맞힘 (AUTH-02) */
+    public void markEmailVerified(LocalDateTime when) {
+        this.emailVerifiedAt = when;
     }
 
     /** 이용약관·개인정보 수집·이용·만 14세 이상에 동의 (POL-01) */

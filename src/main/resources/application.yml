@@ -48,6 +48,14 @@ ieum:
   policy:
     version: 2   # 2판: 동네 이야기 게시판(COM-01) - 게시물 조항, 글·댓글 수집 항목
     effective-date: 2026-12-01
+  # 가입 이메일 인증 (AUTH-02): 가입 화면에서 6자리 번호를 메일로 받아야 가입된다. 운영에서는 꼭 true
+  auth:
+    email-verification: true
+  # 메일 보내기 (AUTH-02). log = 보내지 않고 서버 로그에만 남김 (개발용). 운영은 smtp 로 바꾸고
+  # host·port·security·username·password·from 을 application-local.yml 에 (비밀번호 커밋 금지)
+  mail:
+    mode: log
+    from-name: 이음
 
 # 브이월드 주소 검색 (DATA-05) - 가게·시장·축제의 좌표와 지역을 찾는다 (카카오 결과는 저장할 수 없어서)
 # 인증키 vworld.api-key 는 application-local.yml 에 (커밋 금지). 키가 없으면 좌표 채우기를 건너뛴다.

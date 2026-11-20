@@ -32,8 +32,23 @@
       <form id="signupForm" novalidate>
         <div class="field">
           <label for="email">이메일</label>
-          <input id="email" name="email" type="email" autocomplete="email" maxlength="100" required aria-describedby="emailError">
+          <div class="inline-form">
+            <input id="email" name="email" type="email" autocomplete="email" maxlength="100" required aria-describedby="emailOk emailError">
+            <button type="button" id="sendCode" class="button-secondary" hidden>인증번호 받기</button>
+          </div>
+          <p id="emailOk" class="ok" role="status"></p>
           <p id="emailError" class="error"></p>
+          <!-- 이메일 인증 (AUTH-02): 메일로 받은 6자리 번호 -->
+          <div id="codeBox" class="code-box" hidden>
+            <label for="emailCode">인증번호 6자리</label>
+            <div class="inline-form">
+              <input id="emailCode" name="emailCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" aria-describedby="codeHelp codeError">
+              <button type="button" id="confirmCode" class="button-secondary">확인</button>
+            </div>
+            <p id="codeHelp" class="help"><span id="codeTimer"></span> 메일이 안 오면 스팸함을 보거나 <button type="button" id="resendCode" class="link-button">다시 받기</button></p>
+            <p id="codeError" class="error" role="alert"></p>
+          </div>
+          <button type="button" id="changeEmail" class="link-button change-email" hidden>이메일 바꾸기</button>
         </div>
         <div class="field">
           <label for="nickname">닉네임</label>
