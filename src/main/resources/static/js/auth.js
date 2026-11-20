@@ -40,6 +40,20 @@ function hasFlag() {
   }
 }
 
+// 동의 전에도 열 수 있는 화면 (동의 화면과, 거기서 읽어 보는 약관·방침)
+// (내 정보는 동의하지 않고 탈퇴할 수 있게 열어 둔다)
+const AGREE_FREE_PAGES = ['/agree.html', '/terms.html', '/privacy.html', '/mypage.html'];
+
+/**
+ * 지금 판의 이용약관·개인정보 처리방침에 아직 동의하지 않은 회원(카카오로 처음 가입, 약관이 바뀐 뒤 첫 로그인)은
+ * 동의 화면으로 보낸다. 동의하면 원래 보던 화면으로 돌아온다 (POL-01)
+ */
+function goAgreeIfNeeded(user) {
+  if (!user?.needsAgreement || AGREE_FREE_PAGES.includes(location.pathname)) return false;
+  location.replace(`/agree.html?next=${encodeURIComponent(safeNext(location.pathname + location.search))}`);
+  return true;
+}
+
 function setSession({ accessToken: token, user }) {
   accessToken = token;
   currentUser = user;
@@ -90,11 +104,17 @@ export function refresh() {
   return refreshing;
 }
 
-/** 화면이 열릴 때 한 번 호출. 로그인 상태면 회원 정보, 아니면 null */
-export async function init({ force = false } = {}) {
-  if (currentUser) return currentUser;
-  if (!force && !hasFlag()) return null;
-  return refresh();
+/**
+ * 화면이 열릴 때 한 번 호출. 로그인 상태면 회원 정보, 아니면 null
+ * agreeRedirect: 동의가 필요한 회원이면 동의 화면으로 보냄 (로그인·가입 화면처럼 스스로 보내는 곳은 false)
+ */
+export async function init({ force = false, agreeRedirect = true } = {}) {
+  if (!currentUser) {
+    if (!force && !hasFlag()) return null;
+    await refresh();
+  }
+  if (agreeRedirect) goAgreeIfNeeded(currentUser);
+  return currentUser;
 }
 
 // ---------------------------------------------------------------- 요청
@@ -141,9 +161,9 @@ export async function login(email, password) {
   return currentUser;
 }
 
-/** 가입 후 바로 로그인 */
-export async function signupAndLogin({ email, password, nickname }) {
-  const res = await postJson('/api/auth/signup', { email, password, nickname });
+/** 가입 후 바로 로그인 (agreeTerms, agreePrivacy, over14: 가입 화면의 동의 세 가지) */
+export async function signupAndLogin({ email, password, nickname, agreeTerms, agreePrivacy, over14 }) {
+  const res = await postJson('/api/auth/signup', { email, password, nickname, agreeTerms, agreePrivacy, over14 });
   if (!res.ok) throw await readError(res);
   try {
     return await login(email, password);
@@ -198,6 +218,31 @@ export async function updateNickname(nickname) {
   return me;
 }
 
+/** 이용약관·개인정보 수집·이용·만 14세 이상 동의 (POL-01) */
+export async function agree() {
+  const res = await authFetch('/api/users/me/agreements', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ agreeTerms: true, agreePrivacy: true, over14: true }),
+  });
+  if (!res.ok) throw await readError(res);
+  const me = await res.json();
+  currentUser = { ...currentUser, needsAgreement: false };
+  listeners.forEach((fn) => fn(currentUser));
+  return me;
+}
+
+/** 회원 탈퇴. 이메일 회원은 { password }, 카카오 회원은 { confirm: '탈퇴' } (POL-01) */
+export async function withdraw({ password, confirm }) {
+  const res = await authFetch('/api/users/me', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password, confirm }),
+  });
+  if (!res.ok) throw await readError(res);
+  clearSession();
+}
+
 // ---------------------------------------------------------------- 카카오 로그인, 돌아갈 화면
 
 /**
@@ -227,6 +272,12 @@ export function consumeNext() {
   } catch (_) {
     return '/';
   }
+}
+
+/** 로그인한 뒤 갈 곳: 동의가 필요하면 동의 화면(끝나면 next로), 아니면 next (POL-01) */
+export function afterLogin(user, next = '/') {
+  const target = safeNext(next);
+  return user?.needsAgreement ? `/agree.html?next=${encodeURIComponent(target)}` : target;
 }
 
 /** 로그인 화면 주소 (지금 보던 화면으로 돌아오게) */

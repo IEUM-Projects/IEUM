@@ -3,6 +3,7 @@ package com.ieum.ieum.report;
 import com.ieum.ieum.global.error.BusinessException;
 import com.ieum.ieum.global.error.ErrorCode;
 import com.ieum.ieum.store.StoreRepository;
+import com.ieum.ieum.user.User;
 import com.ieum.ieum.user.UserRepository;
 import com.ieum.ieum.user.UserStatus;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +36,15 @@ public class StoreReportService {
     private final StoreReportRepository reportRepository;
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
+    private final com.ieum.ieum.policy.Policy policy;
 
     @Transactional
     public StoreReport create(Long userId, Long storeId, ReportType type, String content) {
-        userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .filter(u -> u.getStatus() != UserStatus.WITHDRAWN)
                 .orElseThrow(() -> new BusinessException(ErrorCode.UNAUTHORIZED));
+        // POL-01: 이용약관·개인정보 처리방침에 동의한 회원만 제보할 수 있다 (제보 내용·회원 번호를 저장하므로)
+        if (user.needsAgreement(policy.version())) throw new BusinessException(ErrorCode.AGREEMENT_REQUIRED);
         storeRepository.findByIdAndVisibleTrue(storeId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STORE_NOT_FOUND));
 

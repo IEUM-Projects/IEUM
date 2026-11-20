@@ -611,3 +611,6 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
   .trip-start .button-primary { width: 100%; justify-content: center; }
   .trip-start-form { flex-basis: 100%; max-width: none; }
 }
+/* POL-01: 바닥글 약관 링크 (개인정보 처리방침은 눈에 띄게) */
+.footer-links { display: flex; flex-wrap: wrap; gap: 0 var(--space-4); }
+.footer-links .privacy-link { color: var(--text-link); }

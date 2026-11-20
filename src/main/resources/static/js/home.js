@@ -2,6 +2,7 @@
 // 주요 소식(슬라이드), 내 주변 백년가게(분류 탭), 이번 주 근처 축제, 오늘 장 서는 시장 + 5일장 달력, 주변 관광지와 걷기 코스, 제보 안내
 // 모든 내용은 서버의 실제 데이터로만 채운다 (지어낸 숫자·문구 없음).
 import { api, formatDistance } from './api.js';
+import { nearestRegion } from './near-region.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { handleLoginReturn } from './login-return.js';
@@ -99,18 +100,14 @@ function savePlace(place) {
   } catch (_) { /* 저장이 안 되는 브라우저(사생활 보호 모드 등)는 이번에만 쓴다 */ }
 }
 
-function myLocation() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error('이 브라우저는 위치 기능을 지원하지 않아요.'));
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, label: '내 주변' }),
-      () => reject(new Error('위치 권한이 없어서 기본 위치로 보여 드려요.')),
-      { timeout: 8000, maximumAge: 300000 },
-    );
-  });
+/** 내 위치에서 가장 가까운 시·군·구 (위치는 기기 안에서만 쓰고 서버로 보내지 않음, POL-01) */
+async function myLocation() {
+  try {
+    const r = await nearestRegion();
+    return { lat: r.lat, lng: r.lng, label: r.label };
+  } catch (_) {
+    throw new Error('위치를 알 수 없어서 기본 위치로 보여 드려요.');
+  }
 }
 
 /** 지도로 가는 링크에 지금 보고 있는 위치를 넣는다 (홈에서 고른 지역 그대로 지도가 열리게) */
@@ -844,7 +841,7 @@ async function useMyLocationFromDialog() {
     $('placeDialog').close('mine');
     show(place);
   } catch (e) {
-    $('placeError').textContent = e.message.replace('기본 위치로 보여 드려요', '지역을 골라 주세요');
+    $('placeError').textContent = '위치를 알 수 없어요. 지역을 골라 주세요.';
   } finally {
     button.disabled = false;
     button.removeAttribute('aria-busy');
@@ -864,6 +861,10 @@ async function init() {
   loadNotices();   // 위치와 상관없으므로 먼저
   setupNews();
   if (await handleLoginReturn((message) => toast(message))) return;   // 카카오 로그인 후 보던 화면으로 이동
+  if (new URLSearchParams(location.search).get('withdrawn') === '1') {   // 회원 탈퇴 뒤 (POL-01)
+    history.replaceState(null, '', location.pathname);
+    toast('탈퇴했어요. 그동안 이음을 이용해 주셔서 고마워요.');
+  }
 
   $('placeButton').addEventListener('click', openPlaceDialog);
   $('sidoSelect').addEventListener('change', fillSigungu);

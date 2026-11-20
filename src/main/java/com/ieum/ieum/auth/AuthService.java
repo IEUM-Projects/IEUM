@@ -53,6 +53,7 @@ public class AuthService {
     private final PasswordPolicy passwordPolicy;
     private final JwtProvider jwtProvider;
     private final NicknameGenerator nicknameGenerator;
+    private final com.ieum.ieum.policy.Policy policy;
 
     @Transactional
     public AuthDtos.UserSummary signup(AuthDtos.SignupRequest request) {
@@ -71,13 +72,14 @@ public class AuthService {
         }
 
         User user = User.createLocal(email, passwordEncoder.encode(request.password()), nickname);
+        user.agree(policy.version(), LocalDateTime.now());   // 가입 화면에서 세 가지 동의를 받았다 (SignupRequest 검사)
         try {
             userRepository.saveAndFlush(user);
         } catch (DataIntegrityViolationException e) {
             // 거의 동시에 같은 이메일로 두 번 가입한 경우 (위 검사를 둘 다 통과한 경우)
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
-        return AuthDtos.UserSummary.from(user);
+        return AuthDtos.UserSummary.from(user, policy.version());
     }
 
     /**
@@ -176,7 +178,7 @@ public class AuthService {
         refreshTokenRepository.save(new RefreshToken(user.getId(), family, sha256(refreshToken), now.plus(REFRESH_TOKEN_TTL)));
 
         var body = new AuthDtos.TokenResponse(accessToken, JwtProvider.ACCESS_TOKEN_TTL.toSeconds(),
-                AuthDtos.UserSummary.from(user));
+                AuthDtos.UserSummary.from(user, policy.version()));
         return new AuthDtos.LoginResult(body, refreshToken);
     }
 

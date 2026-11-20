@@ -57,6 +57,13 @@ public class User {
     @Column(name = "home_sigungu_code", columnDefinition = "char(5)")
     private String homeSigunguCode;
 
+    /** 동의한 이용약관·개인정보 처리방침 판 (0 = 동의 전, POL-01) */
+    @Column(name = "agreed_policy_version", nullable = false)
+    private int agreedPolicyVersion;
+
+    @Column(name = "agreed_at")
+    private LocalDateTime agreedAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "varchar(10)")
     private UserStatus status;
@@ -97,6 +104,33 @@ public class User {
         user.providerId = providerId;
         user.status = UserStatus.ACTIVE;
         return user;
+    }
+
+    /** 이용약관·개인정보 수집·이용·만 14세 이상에 동의 (POL-01) */
+    public void agree(int policyVersion, LocalDateTime now) {
+        this.agreedPolicyVersion = policyVersion;
+        this.agreedAt = now;
+    }
+
+    /** 지금 판에 아직 동의하지 않았는지 */
+    public boolean needsAgreement(int policyVersion) {
+        return agreedPolicyVersion < policyVersion;
+    }
+
+    /**
+     * 회원 탈퇴 (POL-01): 개인정보를 바로 지운다.
+     * 행은 남기고(제보 기록이 이 회원 번호를 가리켜서) 이메일·비밀번호·카카오 회원 번호·관심 지역을 비우고,
+     * 닉네임은 다른 사람이 다시 쓸 수 있게 '탈퇴회원+번호'로 바꾼다.
+     */
+    public void withdraw() {
+        this.email = null;
+        this.password = null;
+        this.providerId = null;
+        this.homeSigunguCode = null;
+        this.nickname = "탈퇴" + Long.toString(id, 36);
+        this.status = UserStatus.WITHDRAWN;
+        this.failedLoginCount = 0;
+        this.lockedUntil = null;
     }
 
     public boolean isLocked(LocalDateTime now) {

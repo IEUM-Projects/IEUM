@@ -1,5 +1,6 @@
 // 지도 화면 (MAP-01): 현재 위치/지역 기준 반경 검색, 핀 표시, 카테고리 필터, 목록 보기, 가게 요약 카드
 import { api, loadKakaoMapSdk, formatDistance, directionsUrl } from './api.js';
+import { nearestRegion } from './near-region.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { marketDaySummary } from './market-days.js';
@@ -401,25 +402,17 @@ function hideCard() {
 
 // ---------------------------------------------------------------- 위치·지역
 
-function getCurrentPosition() {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error('이 브라우저는 위치 기능을 지원하지 않아요.'));
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => reject(new Error('위치 권한이 없어서 지역을 선택해 주세요.')),
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 },
-    );
-  });
-}
-
 async function useMyLocation({ openRegionOnFail }) {
   try {
-    const { lat, lng } = await getCurrentPosition();
-    $('regionButton').textContent = '내 주변';
-    moveTo(lat, lng);
+    // 내 위치에서 가장 가까운 시·군·구로 (위치는 기기 안에서만 쓰고 서버로 보내지 않음, POL-01)
+    let region;
+    try {
+      region = await nearestRegion({ maximumAge: 60000 });
+    } catch (_) {
+      throw new Error('위치를 알 수 없어서 지역을 선택해 주세요.');
+    }
+    $('regionButton').textContent = region.label;
+    moveTo(region.lat, region.lng);
     await search();
   } catch (e) {
     // 지역 선택 창에 같은 설명이 있으므로, 창을 열 때는 안내를 띄우지 않는다 (다른 안내를 덮어쓰지 않게)
