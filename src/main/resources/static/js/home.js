@@ -227,7 +227,7 @@ function setupMenuDialog() {
       el('p', {}, el('strong', { text: `${user.nickname}님` }), ', 반가워요.'),
       el('div', { class: 'menu-user-actions' },
         el('a', { class: 'button-secondary', href: '/mypage.html', text: '내 정보' }),
-        user.role === 'ADMIN' ? el('a', { class: 'button-secondary', href: '/admin.html', text: '관리자' }) : null,
+        user.role === 'ADMIN' ? el('a', { class: 'button-secondary', href: '/admin-home.html', text: '관리자' }) : null,
         logout));
   }
 
