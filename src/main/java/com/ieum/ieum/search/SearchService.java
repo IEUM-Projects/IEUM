@@ -4,6 +4,7 @@ import com.ieum.ieum.region.RegionRepository;
 import com.ieum.ieum.search.SearchDtos.FestivalHit;
 import com.ieum.ieum.search.SearchDtos.Group;
 import com.ieum.ieum.search.SearchDtos.MarketHit;
+import com.ieum.ieum.search.SearchDtos.PostHit;
 import com.ieum.ieum.search.SearchDtos.PageResult;
 import com.ieum.ieum.search.SearchDtos.RegionHit;
 import com.ieum.ieum.search.SearchDtos.SearchResult;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 통합 검색 (SRC-01): 백년가게, 전통시장, 축제, 지역
+ * 통합 검색 (SRC-01): 백년가게, 전통시장, 축제, 지역, 동네 이야기 글(SRCH-02)
  *
  * 데이터가 수천 건이라 LIKE 검색으로 충분하다 (전문 검색 색인은 데이터가 많아지면 검토).
  * 쿼리 모양(낱말 수만큼 조건)은 코드가 만들지만, 검색어 값은 모두 바인딩 변수로만 넣는다 (SQL 주입 방지).
@@ -56,7 +57,8 @@ public class SearchService {
         return new SearchResult(q.text(), q.words(), regions(q),
                 new Group<>(stores(q, where, PREVIEW, 0), countStores(q)),
                 new Group<>(markets(q, where, PREVIEW, 0), countMarkets(q)),
-                new Group<>(festivals(q, where, PREVIEW, 0), countFestivals(q)));
+                new Group<>(festivals(q, where, PREVIEW, 0), countFestivals(q)),
+                new Group<>(posts(q, PREVIEW, 0), countPosts(q)));
     }
 
     @Transactional(readOnly = true)
@@ -67,6 +69,7 @@ public class SearchService {
             case "stores" -> paged(stores(q, where, PAGE_SIZE + 1, offset), p, countStores(q));
             case "markets" -> paged(markets(q, where, PAGE_SIZE + 1, offset), p, countMarkets(q));
             case "festivals" -> paged(festivals(q, where, PAGE_SIZE + 1, offset), p, countFestivals(q));
+            case "posts" -> paged(posts(q, PAGE_SIZE + 1, offset), p, countPosts(q));
             default -> throw new IllegalArgumentException(type);
         };
     }
@@ -208,6 +211,70 @@ public class SearchService {
 
     private static String emptyToNull(String s) {
         return s == null || s.isBlank() ? null : s;
+    }
+
+    // ---------------------------------------------------------------- 동네 이야기 (SRCH-02): 보이는 글만
+
+    static final int SNIPPET = 90;
+
+    /** 낱말마다 제목·내용·붙인 곳 이름 중 하나에 들어 있어야 한다. 가려진·지운 글은 빼고 */
+    private String postWhere(SearchQuery q, MapSqlParameterSource params) {
+        return "p.status = 'VISIBLE' AND " + allWords(q, params, "p.title", "p.content", "COALESCE(s.name, m.name, f.name, '')");
+    }
+
+    private static final String POST_FROM = """
+             FROM posts p
+             JOIN users u ON u.id = p.user_id
+             LEFT JOIN stores s ON p.place_type = 'STORE' AND s.id = p.place_id AND s.is_visible = 1
+             LEFT JOIN markets m ON p.place_type = 'MARKET' AND m.id = p.place_id
+             LEFT JOIN festivals f ON p.place_type = 'FESTIVAL' AND f.id = p.place_id
+            """;
+
+    /** 제목이 잘 맞는 글 먼저, 그 안에서는 최근 글 먼저 */
+    private List<PostHit> posts(SearchQuery q, int limit, int offset) {
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue("limit", limit).addValue("offset", offset);
+        String sql = "SELECT p.id, p.category, p.title, p.content, p.created_at, p.like_count, p.comment_count, "
+                + "u.nickname, u.status AS user_status, COALESCE(s.name, m.name, f.name) AS place_name, "
+                + "(SELECT ph.file_key FROM post_photos ph WHERE ph.post_id = p.id ORDER BY ph.sort_order, ph.id LIMIT 1) AS thumb_key, "
+                + nameScore("p.title", q, params) + " AS score"
+                + POST_FROM + " WHERE " + postWhere(q, params)
+                + " ORDER BY score, p.id DESC LIMIT :limit OFFSET :offset";
+        return jdbc.query(sql, params, (rs, i) -> {
+            String cat = rs.getString("category");
+            boolean withdrawn = "WITHDRAWN".equals(rs.getString("user_status"));
+            return new PostHit(rs.getLong("id"), cat, com.ieum.ieum.community.CommunityDtos.CATEGORIES.get(cat), rs.getString("title"),
+                    snippet(rs.getString("content"), q.words()), withdrawn ? "탈퇴한 회원" : rs.getString("nickname"),
+                    rs.getString("place_name"), rs.getTimestamp("created_at").toLocalDateTime(),
+                    rs.getInt("like_count"), rs.getInt("comment_count"),
+                    com.ieum.ieum.community.photo.PostPhotoService.thumbUrl(rs.getString("thumb_key")));
+        });
+    }
+
+    private long countPosts(SearchQuery q) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        return count("SELECT COUNT(*)" + POST_FROM + " WHERE " + postWhere(q, params), params);
+    }
+
+    /**
+     * 내용 한 줄 보기: 검색어가 내용에 있으면 처음 나온 곳의 앞 20자부터, 없으면 맨 앞부터. 줄바꿈은 빈칸으로, 90자까지.
+     * (제목·붙인 곳에서만 찾았으면 앞부분)
+     */
+    static String snippet(String content, List<String> words) {
+        String one = content == null ? "" : content.replaceAll("\\s+", " ").strip();
+        String lower = one.toLowerCase(java.util.Locale.ROOT);
+        int at = -1;
+        for (String w : words) {
+            int i = lower.indexOf(w.toLowerCase(java.util.Locale.ROOT));
+            if (i >= 0 && (at < 0 || i < at)) at = i;
+        }
+        int start = at <= 20 ? 0 : at - 20;
+        // 낱말 가운데서 자르지 않게 빈칸 뒤부터
+        if (start > 0) {
+            int space = one.indexOf(' ', start);
+            if (space >= 0 && space < at) start = space + 1;
+        }
+        int end = Math.min(one.length(), start + SNIPPET);
+        return (start > 0 ? "…" : "") + one.substring(start, end) + (end < one.length() ? "…" : "");
     }
 
     // ---------------------------------------------------------------- 지역 (가게가 있는 시·군·구, 230여 곳이라 메모리에서 찾음)

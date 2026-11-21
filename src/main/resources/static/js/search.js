@@ -5,10 +5,11 @@ import * as auth from './auth.js';
 import { formatDistance } from './api.js';
 import { periodText, status } from './festival-format.js';
 import { marketDaySummary } from './market-days.js';
+import { when } from './community-common.js';
 import { addRecent, clearRecent, cleanQuery, highlight, recentSearches, removeRecent, SEARCH_EXAMPLES } from './search-common.js';
 
 const $ = (id) => document.getElementById(id);
-const state = { q: '', words: [], where: null, pages: { stores: 0, markets: 0, festivals: 0 } };
+const state = { q: '', words: [], where: null, pages: { stores: 0, markets: 0, festivals: 0, posts: 0 } };
 
 function el(tag, props = {}, ...children) {
   const node = document.createElement(tag);
@@ -84,8 +85,21 @@ function festivalItem(f) {
       f.distanceM !== null ? el('span', { class: 'result-side', text: formatDistance(f.distanceM) }) : null));
 }
 
-const ITEM = { stores: storeItem, markets: marketItem, festivals: festivalItem };
-const IDS = { stores: 'store', markets: 'market', festivals: 'festival' };
+/** 동네 이야기 글 (SRCH-02): 말머리·제목, 검색어가 나온 내용 한 줄, 글쓴이·날짜·공감·댓글·붙인 곳, 첫 사진 */
+function postItem(p) {
+  const meta = [p.author, when(p.createdAt), `공감 ${p.likeCount}`, `댓글 ${p.commentCount}`].join(' · ');
+  return el('li', {},
+    el('a', { href: `/post.html?id=${p.id}`, class: `result-item${p.thumbnail ? ' has-thumb' : ''}` },
+      el('span', { class: 'result-main' },
+        el('span', { class: `badge-post cat-${(p.category ?? '').toLowerCase()}`, text: p.categoryLabel ?? '이야기' }),
+        el('strong', { class: 'result-name' }, mark(p.title))),
+      p.snippet ? el('span', { class: 'result-meta snippet' }, mark(p.snippet)) : null,
+      el('span', { class: 'result-meta' }, meta, p.placeName ? [' · ', ...mark(p.placeName)] : null),
+      p.thumbnail ? el('img', { class: 'result-thumb', src: p.thumbnail, alt: '', width: '64', height: '64', loading: 'lazy', decoding: 'async' }) : null));
+}
+
+const ITEM = { stores: storeItem, markets: marketItem, festivals: festivalItem, posts: postItem };
+const IDS = { stores: 'store', markets: 'market', festivals: 'festival', posts: 'post' };
 
 function fill(type, group) {
   const id = IDS[type];
@@ -118,12 +132,12 @@ async function more(type) {
 
 async function run(q) {
   state.q = q;
-  state.pages = { stores: 0, markets: 0, festivals: 0 };
+  state.pages = { stores: 0, markets: 0, festivals: 0, posts: 0 };
   document.title = `${q} - 검색 - 이음`;
   $('start').hidden = true;
   $('results').hidden = false;
   $('summary').textContent = '찾는 중...';
-  ['region', 'store', 'market', 'festival'].forEach((id) => { $(`${id}Section`).hidden = true; });
+  ['region', 'store', 'market', 'festival', 'post'].forEach((id) => { $(`${id}Section`).hidden = true; });
   $('noResult').hidden = true;
   try {
     const data = await getJson(`/api/search?${params()}`);
@@ -136,7 +150,8 @@ async function run(q) {
     fill('stores', data.stores);
     fill('markets', data.markets);
     fill('festivals', data.festivals);
-    const total = data.stores.total + data.markets.total + data.festivals.total;
+    fill('posts', data.posts);
+    const total = data.stores.total + data.markets.total + data.festivals.total + data.posts.total;
     const where = state.where ? ` · ${state.where.label === '내 주변' ? '내 주변' : `${state.where.label} 기준`} 가까운 순` : '';
     $('summary').textContent = total || data.regions.length
       ? `‘${data.query}’ 검색 결과 ${total.toLocaleString()}건${data.regions.length ? `, 지역 ${data.regions.length}곳` : ''}${where}`
@@ -176,7 +191,7 @@ function init() {
   auth.init();
   state.where = homePlace();
   $('clearRecent').addEventListener('click', () => { clearRecent(); renderStart(); $('q').focus(); });
-  ['stores', 'markets', 'festivals'].forEach((t) => $(`${IDS[t]}More`).addEventListener('click', () => more(t)));
+  ['stores', 'markets', 'festivals', 'posts'].forEach((t) => $(`${IDS[t]}More`).addEventListener('click', () => more(t)));
   $('searchForm').addEventListener('submit', (event) => {
     const q = cleanQuery($('q').value);
     if (!q) {

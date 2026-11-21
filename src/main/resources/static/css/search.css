@@ -96,3 +96,9 @@ body.search-page { height: auto; min-height: 100%; background: var(--surface-sub
   .search-submit span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .search-submit { padding: 0 var(--space-3); }
 }
+
+/* ---------- 동네 이야기 글 (SRCH-02) ---------- */
+.badge-post { display: inline-flex; align-items: center; flex: none; padding: 1px var(--space-2); border-radius: var(--radius-small); background: var(--surface-subtle); border: 1px solid var(--border-light); color: var(--text-body); font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); }
+.result-meta.snippet { color: var(--text-body); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.result-item.has-thumb { grid-template-columns: minmax(0, 1fr) 64px; }
+.result-thumb { grid-column: 2; grid-row: 1 / span 3; align-self: start; width: 64px; height: 64px; object-fit: cover; border-radius: var(--radius-small); border: 1px solid var(--border-light); background: var(--surface-subtle); }
