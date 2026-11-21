@@ -26,7 +26,6 @@
 #   - application.yml        → 올림 (값은 ${KAKAO_REST_API_KEY} 처럼 환경변수 참조만)
 #   - application-local.yml  → 올리지 않음 (내 PC 전용 값)
 #   - application-secret.yml → 올리지 않음
-#   - application-prod.yml   → 운영 서버 값이 들어가면 올리지 않음
 **/src/main/resources/application-local.yml
 **/src/main/resources/application-local.yaml
 **/src/main/resources/application-local.properties
