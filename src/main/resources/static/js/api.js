@@ -61,6 +61,7 @@ export const api = {
 export const LOGIN_FAILURE_MESSAGES = {
   CANCELLED: '카카오 로그인을 취소했어요.',
   ACCOUNT_WITHDRAWN: '탈퇴한 계정이에요.',
+  ACCOUNT_BANNED: '이용약관 위반으로 탈퇴 처리된 계정이라 다시 가입할 수 없어요.',
   ERROR: '카카오 로그인 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
 };
 

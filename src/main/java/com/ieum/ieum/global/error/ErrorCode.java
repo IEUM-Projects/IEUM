@@ -22,6 +22,7 @@ public enum ErrorCode {
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 맞지 않아요."),
     ACCOUNT_LOCKED(HttpStatus.LOCKED, "로그인을 5번 실패해서 10분 동안 잠겼어요."),
     ACCOUNT_WITHDRAWN(HttpStatus.FORBIDDEN, "탈퇴한 계정이에요."),
+    ACCOUNT_BANNED(HttpStatus.FORBIDDEN, "이용약관 위반으로 탈퇴 처리된 계정이라 다시 가입할 수 없어요. 문의는 개인정보 처리방침의 운영자 연락처로 해 주세요."),
 
     // 회원
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 가입된 이메일이에요."),

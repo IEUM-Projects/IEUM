@@ -45,16 +45,18 @@ public class EmailVerificationService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private final UserRepository userRepository;
+    private final com.ieum.ieum.user.BanService banService;
     private final boolean required;
     private final SecureRandom random = new SecureRandom();
 
     public EmailVerificationService(NamedParameterJdbcTemplate jdbc, PasswordEncoder passwordEncoder, MailService mailService,
-                                    UserRepository userRepository,
+                                    UserRepository userRepository, com.ieum.ieum.user.BanService banService,
                                     @Value("${ieum.auth.email-verification:true}") boolean required) {
         this.jdbc = jdbc;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
         this.userRepository = userRepository;
+        this.banService = banService;
         this.required = required;
         if (!required) log.warn("가입 이메일 인증을 끈 상태예요 (ieum.auth.email-verification=false). 운영 서버에서는 켜 주세요.");
     }
@@ -69,6 +71,9 @@ public class EmailVerificationService {
         String email = AuthService.normalizeEmail(rawEmail);
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+        }
+        if (banService.isBanned(com.ieum.ieum.user.BanService.Kind.EMAIL, email)) {   // 강제 탈퇴된 이메일에는 인증번호도 보내지 않는다 (ADM-02)
+            throw new BusinessException(ErrorCode.ACCOUNT_BANNED);
         }
         return issue(email, PURPOSE, ip, code -> new Mail("[이음] 이메일 인증번호 " + code, mailText(code)));
     }
