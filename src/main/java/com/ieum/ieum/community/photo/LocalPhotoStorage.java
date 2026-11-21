@@ -16,9 +16,11 @@ import java.util.regex.Pattern;
  * 폴더: ieum.upload.dir (기본: 사용자 홈의 ieum-uploads/photos). 프로젝트 폴더 밖이라 Git에 올라가지 않는다.
  * 파일이 한 폴더에 너무 많이 쌓이지 않게 이름 앞 두 글자로 하위 폴더를 나눈다: photos/ab/ab12….jpg
  * 이 폴더는 주소로 바로 열리지 않는다. 사진은 PostPhotoController 가 글 상태를 확인한 뒤에만 보낸다.
+ * ieum.upload.storage=s3 이면 이 클래스 대신 S3PhotoStorage 를 쓴다 (DEPLOY-01).
  */
 @Slf4j
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "ieum.upload.storage", havingValue = "local", matchIfMissing = true)
 public class LocalPhotoStorage implements PhotoStorage {
 
     private static final Pattern NAME = Pattern.compile("[0-9a-f]{32}(_t)?\\.jpg");

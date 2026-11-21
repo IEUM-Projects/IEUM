@@ -63,10 +63,18 @@ ieum:
   # 동네 이야기 사진 (COM-02): 사진 파일을 둘 서버 폴더. 프로젝트 폴더 밖이라 Git에 올라가지 않는다.
   # 운영 서버에서는 백업되는 곳으로 정해 application-local.yml 에 (예: /var/lib/ieum/photos)
   upload:
+    storage: local     # local = 서버 폴더(dir), s3 = AWS S3 (DEPLOY-01, 운영은 application-prod.yml 에서 s3)
     dir: ${user.home}/ieum-uploads/photos
+  # 보안 머리말 CSP (DEPLOY-01): report-only = 막지 않고 위반만 로그로, enforce = 실제로 막음, off = 안 붙임
+  security:
+    csp: report-only
 
 # 홈 화면 추가용 앱 정보 파일(manifest.webmanifest)의 형식 (SEO-01)
 server:
+  # 앞단 Nginx 가 붙여 주는 X-Forwarded-Proto/For 를 믿는다 (DEPLOY-01).
+  # 그래야 https 로 들어온 것을 알아서 Secure 쿠키·카카오 로그인 돌아올 주소·HSTS 가 https 로 맞춰진다.
+  # 믿는 곳은 같은 서버(127.0.0.1)와 사설망 주소뿐이라, 밖에서 이 머리말을 꾸며 보내도 소용없다.
+  forward-headers-strategy: native
   mime-mappings:
     webmanifest: application/manifest+json
 
