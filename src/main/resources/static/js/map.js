@@ -1,6 +1,6 @@
 // 지도 화면 (MAP-01): 현재 위치/지역 기준 반경 검색, 핀 표시, 카테고리 필터, 목록 보기, 가게 요약 카드
 import { api, loadKakaoMapSdk, formatDistance, directionsUrl } from './api.js';
-import { nearestRegion } from './near-region.js';
+import { nearestRegion, queryAround, nearHere } from './near-region.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { marketDaySummary } from './market-days.js';
@@ -24,6 +24,9 @@ const state = {
   showStores: true,    // 가게 핀 표시. 홈의 '전통시장' 바로가기(/map.html?show=market)로 오면 꺼진 채 시작
                        // 홈의 백년가게 '지도에서 보기'(/map.html?show=store)로 오면 전통시장이 꺼진 채 시작
   view: 'map',
+  // 내 위치로 볼 때 (LOC-02): here 는 실제 위치(기기 안에서만), regionCenter 는 서버에 보내는 구 중심
+  here: null,
+  regionCenter: null,
 };
 
 let kakao = null;
@@ -31,6 +34,7 @@ let map = null;
 let markers = [];
 let marketMarkers = [];
 let radiusCircle = null;
+let hereDot = null;   // 내 위치 점 (LOC-02)
 let regionsCache = null;
 
 const $ = (id) => document.getElementById(id);
@@ -171,14 +175,17 @@ function shownMarkets() {
 async function search() {
   hideCard();
   $('researchButton').hidden = true;
-  const where = { lat: state.center.lat.toFixed(6), lng: state.center.lng.toFixed(6), radius: state.radius };
+  // 내 위치로 볼 때는 서버에 구 중심과 넓힌 반경만 보내고, 받은 뒤 기기에서 실제 위치로 다시 고른다 (LOC-02)
+  const place = state.here ? { ...state.regionCenter, here: state.here } : state.center;
+  const where = state.here ? queryAround(place, state.radius)
+    : { lat: state.center.lat.toFixed(6), lng: state.center.lng.toFixed(6), radius: state.radius };
   // 가게와 전통시장을 함께 불러온다 (한쪽이 실패해도 다른 쪽은 보여 줌)
   const [stores, markets] = await Promise.allSettled([
     state.showStores ? api.nearbyStores({ ...where, categories: state.creators ? [] : [...state.categories], type: state.creators ? 'CREATOR' : '' }) : Promise.resolve([]),
     state.showMarkets ? api.nearbyMarkets(where) : Promise.resolve([]),
   ]);
-  state.stores = stores.status === 'fulfilled' ? stores.value : [];
-  state.markets = markets.status === 'fulfilled' ? markets.value : [];
+  state.stores = stores.status === 'fulfilled' ? nearHere(stores.value, place, state.radius) : [];
+  state.markets = markets.status === 'fulfilled' ? nearHere(markets.value, place, state.radius) : [];
   const failed = [stores, markets].find((r) => r.status === 'rejected');
   if (failed) toast(failed.reason.message);
   drawMarkers();
@@ -262,6 +269,26 @@ function drawMarkers() {
     fillColor: token('--color-primary-50'),
     fillOpacity: 0.08,
   });
+}
+
+/** 내 위치 점: 지도 위에만 그린다 (좌표는 서버로 가지 않음) */
+function drawHere() {
+  if (hereDot) hereDot.setMap(null);
+  hereDot = null;
+  if (!state.here) return;
+  const dot = document.createElement('span');
+  dot.className = 'here-dot';
+  dot.setAttribute('role', 'img');
+  dot.setAttribute('aria-label', '내 위치');
+  hereDot = new kakao.maps.CustomOverlay({ position: new kakao.maps.LatLng(state.here.lat, state.here.lng), content: dot, zIndex: 3 });
+  hereDot.setMap(map);
+}
+
+/** 내 위치 모드를 끝낸다 (지역을 고르거나 지도를 옮겨 다시 찾을 때) */
+function leaveHere() {
+  state.here = null;
+  state.regionCenter = null;
+  drawHere();
 }
 
 function moveTo(lat, lng) {
@@ -402,7 +429,7 @@ function hideCard() {
 
 // ---------------------------------------------------------------- 위치·지역
 
-async function useMyLocation({ openRegionOnFail }) {
+async function useMyLocation({ openRegionOnFail, quiet = false }) {
   try {
     // 내 위치에서 가장 가까운 시·군·구로 (위치는 기기 안에서만 쓰고 서버로 보내지 않음, POL-01)
     let region;
@@ -411,12 +438,17 @@ async function useMyLocation({ openRegionOnFail }) {
     } catch (_) {
       throw new Error('위치를 알 수 없어서 지역을 선택해 주세요.');
     }
-    $('regionButton').textContent = region.label;
-    moveTo(region.lat, region.lng);
+    // 지도는 실제 내 위치로 옮기고, 서버에는 구 중심만 보낸다 (LOC-02)
+    state.here = region.here;
+    state.regionCenter = { lat: region.lat, lng: region.lng };
+    $('regionButton').textContent = '내 위치';
+    moveTo(region.here.lat, region.here.lng);
+    drawHere();
     await search();
   } catch (e) {
     // 지역 선택 창에 같은 설명이 있으므로, 창을 열 때는 안내를 띄우지 않는다 (다른 안내를 덮어쓰지 않게)
     if (openRegionOnFail) openRegionDialog();
+    else if (quiet) await search();   // 홈에서 넘어온 구 중심으로 그대로 찾는다
     else toast(e.message);
   }
 }
@@ -449,6 +481,7 @@ function onRegionChosen() {
   const sido = regionsCache[Number($('sidoSelect').value)];
   const sigungu = sido.sigungus[Number($('sigunguSelect').value)];
   $('regionButton').textContent = `${sido.sidoName} ${sigungu.name}`;
+  leaveHere();
   moveTo(sigungu.centerLat, sigungu.centerLng);
   search();
 }
@@ -511,6 +544,7 @@ async function init() {
   $('researchButton').addEventListener('click', () => {
     const c = map.getCenter();
     state.center = { lat: c.getLat(), lng: c.getLng() };
+    leaveHere();   // 직접 옮긴 지도 중심으로 찾는다 (내가 고른 곳이므로 실제 위치와 상관없음)
     $('regionButton').textContent = '지도 중심';
     search();
   });
@@ -529,7 +563,9 @@ async function init() {
     // 홈에서 고른 위치로 바로 시작 (내 위치를 다시 묻지 않음)
     $('regionButton').textContent = start.label;
     moveTo(start.lat, start.lng);
-    await search();
+    // 홈에서 '내 주변'으로 왔으면(near=1) 이 기기에서 내 위치를 다시 받아 그쪽으로 (못 받으면 구 중심 그대로)
+    if (params.get('near') === '1') await useMyLocation({ openRegionOnFail: false, quiet: true });
+    else await search();
     await ready;
     return;
   }

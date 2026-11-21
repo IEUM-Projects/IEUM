@@ -37,9 +37,9 @@ public class FestivalController {
 
     private static final int MAX_DAYS = 93;
     private static final int NEARBY_DEFAULT_RADIUS = 30_000;
-    private static final int NEARBY_MAX_RADIUS = 50_000;
+    private static final int NEARBY_MAX_RADIUS = 80_000;   // LOC-02: 30km + 군 중심에서 끝까지 거리
     private static final int NEARBY_MAX_DAYS = 31;
-    private static final int NEARBY_LIMIT = 30;
+    private static final int NEARBY_LIMIT = 150;   // LOC-02: 넓혀 받은 뒤 기기에서 실제 위치로 다시 고르므로 넉넉하게
 
     private final FestivalRepository repository;
 
@@ -51,7 +51,8 @@ public class FestivalController {
     /** imageLicense: 관광공사 사진의 공공누리 유형 (Type1 출처표시, Type3 출처표시·변경금지). 사진 아래 출처와 함께 적는다 */
     public record Nearby(Long id, String name, String place, LocalDate startDate, LocalDate endDate,
                          boolean longTerm, String regionName, long distanceM, String imageUrl,
-                         String imageLicense) {
+                         String imageLicense, java.math.BigDecimal latitude, java.math.BigDecimal longitude) {
+        // latitude·longitude (LOC-02): 홈 화면이 기기 안에서 '실제 내 위치'로 거리를 다시 재려고 쓴다
     }
 
     @GetMapping("/nearby")
@@ -74,7 +75,7 @@ public class FestivalController {
         return festivals.stream().map(f -> new Nearby(f.getId(), f.getName(), f.getPlace(), f.getStartDate(),
                 f.getEndDate(), f.isLongTerm(), regionName(f, regions),
                 Math.round(distance(lat, lng, f.getLatitude().doubleValue(), f.getLongitude().doubleValue())),
-                f.getImageUrl(), f.getImageLicense())).toList();
+                f.getImageUrl(), f.getImageLicense(), f.getLatitude(), f.getLongitude())).toList();
     }
 
     /** 두 좌표 사이 거리(m). DB의 ST_Distance_Sphere와 같은 지구 반지름 사용 */

@@ -50,6 +50,8 @@ public class UserController {
     private final RefreshTokenCookie refreshTokenCookie;
     private final PasswordEncoder passwordEncoder;
     private final Policy policy;
+    private final com.ieum.ieum.notification.NotificationService notificationService;
+    private final com.ieum.ieum.favorite.FavoriteService favoriteService;
 
     public record MyInfo(Long id, String email, String nickname, String role, String provider,
                          String homeSigunguCode, LocalDateTime createdAt, boolean needsAgreement, LocalDateTime agreedAt) {
@@ -101,7 +103,7 @@ public class UserController {
     }
 
     /**
-     * 회원 탈퇴: 개인정보(이메일·비밀번호·카카오 회원 번호·관심 지역)를 바로 지우고, 로그인을 모두 끊는다.
+     * 회원 탈퇴: 개인정보(이메일·비밀번호·카카오 회원 번호·관심 지역·찜한 곳·알림)를 바로 지우고, 로그인을 모두 끊는다.
      * 이메일 회원은 비밀번호로, 카카오 회원은 '탈퇴'를 직접 입력해서 한 번 더 확인한다.
      * 관리자는 실수로 관리자가 없어지지 않게 탈퇴할 수 없다 (먼저 DB에서 권한을 USER로 바꿈).
      */
@@ -125,6 +127,8 @@ public class UserController {
         user.withdraw();
         userRepository.flush();
         refreshTokenRepository.deleteByUserId(id);
+        favoriteService.deleteAll(id);   // 찜한 곳도 개인정보라 바로 지운다 (FAV-01)
+        notificationService.deleteAll(id);   // 알림도 (NOTI-01)
         log.info("회원 탈퇴: {}", id);
         return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, refreshTokenCookie.clear()).build();
     }

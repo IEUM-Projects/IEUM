@@ -2,7 +2,7 @@
 // 주요 소식(슬라이드), 내 주변 백년가게(분류 탭), 이번 주 근처 축제, 오늘 장 서는 시장 + 5일장 달력, 주변 관광지와 걷기 코스, 제보 안내
 // 모든 내용은 서버의 실제 데이터로만 채운다 (지어낸 숫자·문구 없음).
 import { api, formatDistance } from './api.js';
-import { nearestRegion } from './near-region.js';
+import { nearestRegion, queryAround, nearHere } from './near-region.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { handleLoginReturn } from './login-return.js';
@@ -79,6 +79,19 @@ function placeText(place = latest.place) {
   return place.label === '내 주변' ? '내 주변' : `${place.label} 기준`;
 }
 
+/**
+ * 시·군·구 중심으로만 찾는 칸(테마·관광지·걷기 코스)의 기준 문구 (LOC-02).
+ * 내 위치를 쓸 때는 '내 주변'이라 하지 않고 어느 구의 중심인지 밝힌다 (실제 위치가 아니므로)
+ */
+function centerText(place = latest.place) {
+  return place.here ? `${place.regionLabel} 중심` : placeText(place);
+}
+
+/** 테마·걷기 코스로 넘기는 위치: 내 위치를 쓸 때는 구 이름으로 (실제 좌표는 넘기지 않음) */
+function linkPlace(place) {
+  return place.here ? { lat: place.lat, lng: place.lng, label: place.regionLabel } : place;
+}
+
 // 지금 화면에 그린 데이터 (주요 소식 슬라이드를 만들 때 씀)
 const latest = { place: null, stores: [], storeRadius: 1000, festivals: [], markets: [], fair: [] };
 
@@ -104,7 +117,8 @@ function savePlace(place) {
 async function myLocation() {
   try {
     const r = await nearestRegion();
-    return { lat: r.lat, lng: r.lng, label: r.label };
+    // lat·lng 는 구 중심(서버로 보내는 값), here 는 실제 위치(기기 안에서만, LOC-02)
+    return { lat: r.lat, lng: r.lng, label: '내 주변', regionLabel: r.label, here: r.here };
   } catch (_) {
     throw new Error('위치를 알 수 없어서 기본 위치로 보여 드려요.');
   }
@@ -116,6 +130,7 @@ function updateMapLinks() {
   if (!place) return;
   document.querySelectorAll('a[data-map]').forEach((a) => {
     const params = new URLSearchParams({ lat: place.lat.toFixed(6), lng: place.lng.toFixed(6), label: place.label });
+    if (place.here) params.set('near', '1');   // 지도가 그 기기에서 내 위치를 다시 받아 쓰게 (좌표는 주소에 넣지 않음, LOC-02)
     if (a.dataset.map === 'market') params.set('show', 'market');             // 전통시장만
     if (a.dataset.map === 'store') {
       params.set('show', 'store');                                             // 백년가게만
@@ -127,7 +142,7 @@ function updateMapLinks() {
   // 테마로 걷기: 홈의 위치를 넘겨 가까운 순으로 (data-theme="" 은 목록, 값이 있으면 그 테마)
   document.querySelectorAll('a[data-theme]').forEach((a) => {
     const id = a.dataset.theme;
-    a.href = id ? `/theme.html?id=${id}&${placeLinkQuery(place)}` : `/themes.html?${placeLinkQuery(place)}`;
+    a.href = id ? `/theme.html?id=${id}&${placeLinkQuery(linkPlace(place))}` : `/themes.html?${placeLinkQuery(linkPlace(place))}`;
   });
 }
 
@@ -427,13 +442,15 @@ async function loadStores(place) {
   const mine = ++storeRequest;
   $('storesStatus').textContent = '불러오는 중...';
   $('storeList').replaceChildren();
-  const where = { lat: place.lat.toFixed(6), lng: place.lng.toFixed(6), categories: storeCategory ? [storeCategory] : [], type: 'CENTURY' };
+  const where = { categories: storeCategory ? [storeCategory] : [], type: 'CENTURY' };
+  // 내 위치를 쓰면: 서버에는 구 중심과 넓힌 반경만 보내고, 기기에서 실제 위치로 다시 고른다 (LOC-02)
+  const find = async (radius) => nearHere(await api.nearbyStores({ ...where, ...queryAround(place, radius) }), place, radius);
   try {
     let radius = 1000;
-    let stores = await api.nearbyStores({ ...where, radius });
+    let stores = await find(radius);
     if (!stores.length) {
       radius = 3000;
-      stores = await api.nearbyStores({ ...where, radius });
+      stores = await find(radius);
     }
     if (mine !== storeRequest) return;   // 기다리는 사이 다른 탭을 눌렀으면 버린다
     if (!storeCategory) { latest.stores = stores; latest.storeRadius = radius; }
@@ -527,9 +544,9 @@ async function loadFestivals(place) {
   $('festivalsStatus').textContent = '불러오는 중...';
   $('festivalList').replaceChildren();
   try {
-    const festivals = await api.festivalsNearby({
-      lat: place.lat.toFixed(6), lng: place.lng.toFixed(6), from: days[0], to: days[6], radius: FESTIVAL_RADIUS,
-    });
+    const q = queryAround(place, FESTIVAL_RADIUS);   // LOC-02
+    const festivals = nearHere(await api.festivalsNearby({ lat: q.lat, lng: q.lng, from: days[0], to: days[6], radius: q.radius }),
+      place, FESTIVAL_RADIUS, (a, b) => a.startDate.localeCompare(b.startDate) || a.distanceM - b.distanceM);   // 서버와 같이: 시작일, 그다음 가까운 순
     // 짧은 축제 먼저, 몇 달씩 이어지는 행사는 뒤로
     const sorted = [...festivals.filter((f) => !f.longTerm), ...festivals.filter((f) => f.longTerm)];
     latest.festivals = sorted;
@@ -615,7 +632,7 @@ async function loadMarkets(place) {
   $('marketsStatus').textContent = '불러오는 중...';
   $('marketList').replaceChildren();
   try {
-    const markets = await api.nearbyMarkets({ lat: place.lat.toFixed(6), lng: place.lng.toFixed(6), radius: MARKET_RADIUS });
+    const markets = nearHere(await api.nearbyMarkets(queryAround(place, MARKET_RADIUS)), place, MARKET_RADIUS);   // LOC-02
     const today = todayString();
     // 오늘 정기장이 서는 시장을 먼저, 나머지는 가까운 순
     const fairs = markets.filter((m) => isMarketDay(digitsOf(m.marketDays), today));
@@ -657,12 +674,12 @@ async function loadThemes(place) {
     if (!res.ok) throw new Error();
     const themes = await res.json();
     $('themeCards').replaceChildren(...themes.map((t, i) => el('li', { class: i === 0 ? 'theme-big' : 'theme-small' },
-      el('a', { class: 'theme-tile', href: `/theme.html?id=${t.id}&${placeLinkQuery(place)}`, 'data-theme': t.id },
+      el('a', { class: 'theme-tile', href: `/theme.html?id=${t.id}&${placeLinkQuery(linkPlace(place))}`, 'data-theme': t.id },
         el('span', { class: 'theme-tile-icon' }, icon(THEME_ICONS[t.id])),
         el('span', { class: 'theme-tile-title', text: t.title }),
         el('span', { class: 'theme-tile-desc', text: t.description }),
         el('span', { class: 'theme-tile-count', text: themeCount(t) })))));
-    $('themesStatus').textContent = `${placeText(place)} 30km 안의 수예요.`;
+    $('themesStatus').textContent = `${centerText(place)} 30km 안의 수예요.`;
   } catch (_) {
     $('themeCards').replaceChildren();
     $('themesStatus').textContent = '테마를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
@@ -695,8 +712,9 @@ function tourCard(t) {
 
 async function loadTour(place) {
   const mine = ++tourRequest;
-  $('tourCourseLink').href = courseLink(place.lat, place.lng, place.label);
-  $('tourCourseText').textContent = `${place.label === '내 주변' ? '내 위치' : place.label}에서 코스 만들기`;
+  const start = linkPlace(place);   // 걷기 코스 출발점도 구 중심 (실제 위치는 보내지 않음, LOC-02)
+  $('tourCourseLink').href = courseLink(start.lat, start.lng, start.label);
+  $('tourCourseText').textContent = `${place.here ? `${place.regionLabel} 중심` : place.label}에서 코스 만들기`;
   $('tourStatus').textContent = '불러오는 중...';
   $('tourList').replaceChildren();
   $('tourList').hidden = true;
@@ -709,9 +727,9 @@ async function loadTour(place) {
     $('tourList').replaceChildren(...spots.map(tourCard));
     $('tourList').hidden = !spots.length;
     $('tourStatus').textContent = spots.length
-      ? `${placeText(place)} 2km 안 · ${data.source}`
+      ? `${centerText(place)} 2km 안 · ${data.source}`
       : data.available
-        ? `${placeText(place)} 2km 안에 관광공사에 등록된 관광지가 없어요. 출발할 장소를 찾아 보세요.`
+        ? `${centerText(place)} 2km 안에 관광공사에 등록된 관광지가 없어요. 출발할 장소를 찾아 보세요.`
         : '관광지 정보를 지금 불러오지 못했어요. 장소를 찾아 코스를 만들 수는 있어요.';
   } catch (_) {
     if (mine === tourRequest) $('tourStatus').textContent = '관광지 정보를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';

@@ -38,7 +38,15 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     @Query("delete from RefreshToken t where t.userId = :userId and (t.familyId is null or t.familyId <> :familyId)")
     int deleteByUserIdExceptFamily(@Param("userId") Long userId, @Param("familyId") String familyId);
 
-    /** 로그인할 때 그 회원의 만료된 토큰을 같이 정리 (테이블이 계속 쌓이지 않게) */
+    /**
+     * 로그인할 때 정리할 그 회원의 만료된 토큰 번호.
+     * 잠그지 않고 읽은 뒤 번호(PK)로만 지운다: 'user_id 범위로 지우기'는 빈 구간까지 잠가서(gap lock),
+     * 여러 사람이 동시에 로그인하면 토큰을 넣다가 서로 기다리는 교착(deadlock)이 생겼다 (NOTI-01 시험 중 발견)
+     */
+    @Query("select t.id from RefreshToken t where t.userId = :userId and t.expiresAt < :now")
+    java.util.List<Long> findExpiredIds(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+
+    /** (예전 방식, 쓰지 않음) 로그인할 때 그 회원의 만료된 토큰을 같이 정리 */
     @Modifying
     @Query("delete from RefreshToken t where t.userId = :userId and t.expiresAt < :now")
     int deleteExpiredByUserId(@Param("userId") Long userId, @Param("now") LocalDateTime now);

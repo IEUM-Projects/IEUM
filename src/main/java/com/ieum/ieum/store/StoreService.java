@@ -22,8 +22,10 @@ import java.util.List;
 public class StoreService {
 
     static final int DEFAULT_RADIUS = 1000;   // 기획안: 기본 반경 1km
-    static final int MAX_RADIUS = 5000;
-    static final int MAX_RESULTS = 200;
+    // LOC-02: '내 주변'은 서버에 시·군·구 중심만 보내고 반경을 넓혀 받은 뒤 기기에서 실제 위치로 다시 고른다.
+    // 그래서 반경·개수 한도가 넉넉해야 한다 (지도에서 고르는 반경은 여전히 5km까지)
+    static final int MAX_RADIUS = 40000;   // 군 단위는 중심에서 끝까지 20~30km라 넉넉하게
+    static final int MAX_RESULTS = 500;
 
     private final StoreRepository storeRepository;
     private final com.ieum.ieum.onnuri.StoreOnnuriRepository onnuriRepository;

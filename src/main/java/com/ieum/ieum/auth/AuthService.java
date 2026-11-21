@@ -135,7 +135,7 @@ public class AuthService {
         }
 
         user.loginSucceeded(now);
-        refreshTokenRepository.deleteExpiredByUserId(user.getId(), now);
+        removeExpiredTokens(user.getId(), now);
         return issueTokens(user, newFamily(), now);
     }
 
@@ -154,7 +154,7 @@ public class AuthService {
             throw new BusinessException(ErrorCode.ACCOUNT_WITHDRAWN);
         }
         user.loginSucceeded(now);
-        refreshTokenRepository.deleteExpiredByUserId(user.getId(), now);
+        removeExpiredTokens(user.getId(), now);
         return issueTokens(user, newFamily(), now);
     }
 
@@ -234,6 +234,12 @@ public class AuthService {
         } catch (com.ieum.ieum.mail.MailService.MailException e) {
             // 알림을 못 보내도 비밀번호 변경은 그대로 둔다
         }
+    }
+
+    /** 그 회원의 만료된 토큰을 번호로 지운다 (동시 로그인 교착을 피하려고, RefreshTokenRepository.findExpiredIds 참고) */
+    private void removeExpiredTokens(Long userId, LocalDateTime now) {
+        List<Long> expired = refreshTokenRepository.findExpiredIds(userId, now);
+        if (!expired.isEmpty()) refreshTokenRepository.deleteAllByIdInBatch(expired);
     }
 
     private static String newFamily() {

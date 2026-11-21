@@ -28,6 +28,12 @@
   <link rel="stylesheet" href="/css/auth.css">
   <link rel="stylesheet" href="/css/policy.css">
   <link rel="stylesheet" href="/css/mypage.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
 </head>
 <body class="auth-page settings-page">
   <a class="skip-link" href="#main">본문 바로가기</a>
@@ -36,7 +42,8 @@
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>지도
     </a>
     <a class="logo" href="/">이음</a>
-    <span class="header-spacer"></span>
+    <!-- 알림 종 (NOTI-01): 내 정보 화면은 닉네임 메뉴가 없어서 종만 둔다 -->
+    <span class="header-spacer header-end"><a class="noti-link" id="notiLink" href="/notifications.html" aria-label="알림" hidden><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/></svg><span class="noti-badge" aria-hidden="true" hidden></span></a></span>
   </header>
   <main id="main" class="settings-main" tabindex="-1">
     <!-- 설정 앱처럼: 회색 바탕 위 흰 묶음, 줄은 1px 선으로 나눔 (UI-04 2단계) -->
@@ -101,6 +108,16 @@
       </section>
     </div>
 
+    <!-- 찜한 곳 (FAV-01) -->
+    <section class="settings-group" id="favorites" aria-labelledby="favoritesTitle" hidden>
+      <h2 class="group-title" id="favoritesTitle" tabindex="-1">찜한 곳</h2>
+      <div class="group-box">
+        <p id="favoritesStatus" class="settings-row row-status" role="status"></p>
+        <ul id="favoriteList" class="settings-list"></ul>
+      </div>
+      <p class="group-note">가게·시장 화면에서 ‘찜하기’를 누른 곳이에요. 최근에 찜한 순이에요.</p>
+    </section>
+
     <!-- 내가 쓴 동네 이야기 (COM-01) -->
     <section class="settings-group" id="myPosts" aria-labelledby="myPostsTitle" hidden>
       <h2 class="group-title" id="myPostsTitle">내가 쓴 이야기</h2>
@@ -121,6 +138,18 @@
       <p class="group-note">보낸 영업 정보 제보와 처리 상태예요.</p>
     </section>
 
+    <!-- 홈 화면 앱처럼 쓰기 (PWA-01): 설치할 수 있는 브라우저에서만 보인다 -->
+    <section class="settings-group" id="appGroup" aria-labelledby="appTitle" hidden>
+      <h2 class="group-title" id="appTitle">앱처럼 쓰기</h2>
+      <div class="group-box">
+        <div class="settings-row row-head app-row">
+          <span>홈 화면에 이음 아이콘을 두고 앱처럼 바로 열 수 있어요.</span>
+          <button type="button" id="installButton" class="button-secondary compact" hidden>홈 화면에 추가</button>
+        </div>
+        <p id="iosGuide" class="settings-row app-guide" hidden>사파리 아래쪽의 <strong>공유 버튼</strong>(네모에 위쪽 화살표)을 누른 뒤 <strong>‘홈 화면에 추가’</strong>를 골라 주세요.</p>
+      </div>
+    </section>
+
     <section class="settings-group" id="sessionGroup" aria-label="로그아웃" hidden>
       <div class="group-box">
         <button type="button" id="logoutButton" class="settings-row row-button">로그아웃</button>
@@ -132,7 +161,7 @@
       <h2 class="group-title" id="withdrawTitle">회원 탈퇴</h2>
       <div class="group-box">
         <ul class="settings-row withdraw-notes">
-          <li>이메일, 비밀번호, 카카오 회원번호, 관심 지역을 바로 지우고 모든 기기에서 로그아웃돼요. 되돌릴 수 없어요.</li>
+          <li>이메일, 비밀번호, 카카오 회원번호, 관심 지역, 찜한 곳, 알림을 바로 지우고 모든 기기에서 로그아웃돼요. 되돌릴 수 없어요.</li>
           <li>보낸 제보는 작성자를 알 수 없는 상태로 가게 정보 수정 기록에 남아요.</li>
           <li>동네 이야기에 쓴 글·댓글은 지워지지 않고 글쓴이가 ‘탈퇴한 회원’으로 바뀌어 남아요. 남기고 싶지 않은 글은 탈퇴 전에 지워 주세요.</li>
           <li>같은 이메일로 다시 가입할 수 있어요.</li>

@@ -126,3 +126,32 @@ body.settings-page { height: auto; min-height: 100%; background: var(--surface-s
 .password-form .form-actions { display: flex; gap: var(--space-2); justify-content: flex-end; margin-bottom: var(--space-3); }
 .password-form .form-actions button { min-height: 48px; padding: 0 var(--space-5); }
 #passwordToggle[hidden] { display: none; }
+
+/* ---------- 찜한 곳 (FAV-01) ---------- */
+.settings-list > li.fav-item { flex-direction: row; align-items: center; gap: var(--space-3); }
+.fav-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fav-text .report-type { overflow-wrap: anywhere; }
+.settings-list .is-gone { color: var(--text-subtle); font-weight: var(--font-weight-medium); }
+.fav-remove {
+  position: relative;
+  z-index: 1;   /* 줄 전체를 덮는 링크(::after) 위로 */
+  flex: none;
+  min-height: var(--touch-min);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-small, 6px);
+  background: var(--surface);
+  color: var(--text-body);
+  font: inherit;
+  font-size: var(--font-body-small);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+.fav-remove:hover { background: var(--surface-subtle); }
+#favoritesTitle:focus { outline: none; }
+
+/* ---------- 앱처럼 쓰기 (PWA-01) ---------- */
+.app-row span { color: var(--text-body); }
+.app-guide { color: var(--text-body); font-size: var(--font-body-small); line-height: 1.6; }
+.app-guide[hidden], #installButton[hidden] { display: none; }
+.app-row #installButton { flex: none; white-space: nowrap; }

@@ -55,6 +55,7 @@ public class CommunityService {
 
     private final NamedParameterJdbcTemplate jdbc;
     private final Policy policy;
+    private final com.ieum.ieum.notification.NotificationService notifications;
 
     // ================================================================ 보기
 
@@ -223,7 +224,19 @@ public class CommunityService {
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("pid", postId).addValue("uid", uid).addValue("c", text);
         jdbc.update("INSERT INTO post_comments (post_id, user_id, content) VALUES (:pid, :uid, :c)", params);
         recountComments(postId);
+        notifyComment(postId, uid);
         return detail(postId, viewer);
+    }
+
+    /** 내 글에 다른 사람이 댓글을 달면 글쓴이에게 알림 (NOTI-01). 안 읽은 동안은 한 줄로 묶어 '새 댓글 N개' */
+    private void notifyComment(long postId, long commenterId) {
+        Map<String, Object> post = jdbc.queryForMap("SELECT user_id, title FROM posts WHERE id = :pid", new MapSqlParameterSource("pid", postId));
+        long author = ((Number) post.get("user_id")).longValue();
+        if (author == commenterId) return;   // 내 글에 내가 단 댓글
+        String title = com.ieum.ieum.notification.NotificationService.cut((String) post.get("title"), 40);
+        notifications.sendGrouped(author, "POST_COMMENT:" + postId, "COMMENT", "내 글에 댓글이 달렸어요",
+                n -> n == 1 ? "‘" + title + "’에 새 댓글이 달렸어요." : "‘" + title + "’에 새 댓글 " + n + "개",
+                "/post.html?id=" + postId + "#comments");
     }
 
     @Transactional
@@ -281,6 +294,21 @@ public class CommunityService {
         if (changed > 0 && "COMMENT".equals(type)) {
             Long postId = jdbc.queryForObject("SELECT post_id FROM post_comments WHERE id = :tid", params, Long.class);
             if (postId != null) recountComments(postId);
+        }
+        if (changed > 0) {   // 글쓴이에게 알림 (NOTI-01)
+            long postId = "POST".equals(type) ? req.targetId()
+                    : jdbc.queryForObject("SELECT post_id FROM post_comments WHERE id = :tid", params, Long.class);
+            notifyHidden(((Number) rows.getFirst().get("user_id")).longValue(), type, postId, AUTO_HIDE_REASON, false);
+        }
+    }
+
+    /** 내 글·댓글이 가려졌을 때 / 다시 보일 때 글쓴이에게 알림 (NOTI-01). 관리자 화면(CommunityAdminService)도 쓴다 */
+    void notifyHidden(long authorId, String type, long postId, String reason, boolean restored) {
+        String what = "POST".equals(type) ? "글" : "댓글";
+        if (restored) {
+            notifications.send(authorId, "RESTORED", "내 " + what + "이 다시 보여요", "관리자가 확인하고 다시 보이게 했어요.", "/post.html?id=" + postId);
+        } else {
+            notifications.send(authorId, "HIDDEN", "내 " + what + "이 가려졌어요", reason, "/post.html?id=" + postId);
         }
     }
 

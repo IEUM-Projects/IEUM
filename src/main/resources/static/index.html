@@ -28,6 +28,12 @@
   <link rel="stylesheet" href="/css/common.css">
   <link rel="stylesheet" href="/css/home.css">
   <link rel="stylesheet" href="/css/news.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
 </head>
 <body class="home-page">
   <a class="skip-link" href="#main">본문 바로가기</a>
@@ -414,7 +420,7 @@
       <h2 id="placeDialogTitle">어느 동네를 볼까요?</h2>
       <button type="button" id="useMyLocation" class="button-secondary wide">
         <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-        내 위치와 가까운 지역
+        내 위치로 보기
       </button>
       <p class="or">또는 지역 고르기</p>
       <label>시·도

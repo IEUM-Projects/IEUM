@@ -4,6 +4,7 @@ import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { appendPlaceStories } from './place-stories.js';
 import { notFoundBlock } from './not-found.js';
+import { favoriteButton } from './favorite.js';
 import { todayString } from './festival-format.js';
 import { digitsOf, cycleLabel, daysOfMonth, isMarketDay, nextMarketDay, dayText } from './market-days.js';
 import { facilityGroups } from './market-facilities.js';
@@ -103,6 +104,7 @@ function render(m) {
         m.regionName ? el('span', { class: 'badge-category', text: m.regionName }) : null,
       ),
       el('h1', { text: m.name }),
+      favoriteButton({ type: 'market', id: m.id, name: m.name }),   // 찜하기 (FAV-01)
     ),
     marketDayBox(m),
     el('dl', { class: 'info' },

@@ -5,6 +5,7 @@ import { mountAccount } from './header.js';
 import { appendPlaceStories } from './place-stories.js';
 import { marketDaySummary } from './market-days.js';
 import { notFoundBlock } from './not-found.js';
+import { favoriteButton } from './favorite.js';
 
 const root = document.getElementById('detail');
 
@@ -71,6 +72,7 @@ function render(store) {
         store.onnuri ? el('span', { class: 'badge-onnuri', text: '온누리상품권' }) : null,
       ),
       el('h1', { text: store.name }),
+      favoriteButton({ type: 'store', id: store.id, name: store.name }),   // 찜하기 (FAV-01)
     ),
     unverified
       ? el('div', { class: 'warning', role: 'note' },

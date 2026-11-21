@@ -40,6 +40,7 @@ public class CommunityAdminService {
 
     private final NamedParameterJdbcTemplate jdbc;
     private final CommunityService community;
+    private final com.ieum.ieum.notification.NotificationService notifications;
 
     public record Target(String type, long id, Long postId, String category, String title, String content,
                          String author, Long authorId, String authorStatus, String status, String hiddenReason,
@@ -152,6 +153,9 @@ public class CommunityAdminService {
             community.recountComments(before.postId());
         }
         jdbc.update("UPDATE community_reports SET status = 'HIDDEN', reviewed_by = :admin, reviewed_at = NOW() WHERE target_type = :type AND target_id = :id AND status = 'RECEIVED'", p);
+        if (before.authorId() != null && "VISIBLE".equals(before.status())) {   // 알림 (NOTI-01): 보이던 것을 가렸을 때만
+            community.notifyHidden(before.authorId(), t, before.postId(), temp ? "권리 침해 신고로 30일 동안 임시로 가렸어요. " + why : why, false);
+        }
         log.info("게시판 {} {} 가림 (관리자 {}, {})", t, id, adminId, temp ? "임시" : "신고");
         return target(t, id);
     }
@@ -170,6 +174,9 @@ public class CommunityAdminService {
             community.recountComments(before.postId());
         }
         jdbc.update("UPDATE community_reports SET status = 'DISMISSED', reviewed_by = :admin, reviewed_at = NOW() WHERE target_type = :type AND target_id = :id AND status = 'RECEIVED'", p);
+        if (before.authorId() != null && !"VISIBLE".equals(before.status())) {   // 가려졌던 것을 다시 보이게 했을 때만 (NOTI-01)
+            community.notifyHidden(before.authorId(), t, before.postId(), null, true);
+        }
         return target(t, id);
     }
 
@@ -181,9 +188,16 @@ public class CommunityAdminService {
         }
         String memo = note == null || note.isBlank() ? null : note.strip();
         if (memo != null && memo.length() > 300) throw new BusinessException(ErrorCode.INVALID_INPUT, List.of("메모는 300자까지 쓸 수 있어요."));
+        List<Map<String, Object>> was = jdbc.queryForList("SELECT user_id, recommend_status FROM posts WHERE id = :id AND category = 'RECOMMEND'",
+                new MapSqlParameterSource("id", id));
         int n = jdbc.update("UPDATE posts SET recommend_status = :st, recommend_note = :memo WHERE id = :id AND category = 'RECOMMEND' AND status <> 'DELETED'",
                 new MapSqlParameterSource().addValue("id", id).addValue("st", st).addValue("memo", memo));
         if (n == 0) throw new BusinessException(ErrorCode.POST_NOT_FOUND);
+        // 확인 결과가 새로 정해지면 글쓴이에게 알림 (NOTI-01). '확인 전'으로 되돌릴 때는 알리지 않는다
+        if (!"PENDING".equals(st) && !st.equals(was.getFirst().get("recommend_status"))) {
+            notifications.send(((Number) was.getFirst().get("user_id")).longValue(), "RECOMMEND", "추천한 곳을 확인했어요",
+                    CommunityDtos.RECOMMEND_STATUS.get(st) + (memo == null ? "" : " · " + memo), "/post.html?id=" + id);
+        }
         return target("POST", id);
     }
 
