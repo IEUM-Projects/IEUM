@@ -68,6 +68,7 @@ public class AdminUserService {
     private final FavoriteService favoriteService;
     private final NotificationService notificationService;
     private final MailService mailService;
+    private final com.ieum.ieum.auth.oauth.KakaoUnlinkService kakaoUnlink;
     private final Policy policy;
 
     private static final String ROW = """
@@ -189,6 +190,8 @@ public class AdminUserService {
         banService.ban(BanService.Kind.EMAIL, email, id, reason, adminId);
         if (user.getProvider() == com.ieum.ieum.user.AuthProvider.KAKAO) {
             banService.ban(BanService.Kind.KAKAO, user.getProviderId(), id, reason, adminId);
+            // 카카오 연결도 끊는다 (KAKAO-UNLINK). 다시 로그인해도 같은 카카오 회원번호라 재가입 막기는 그대로 걸린다
+            kakaoUnlink.unlinkAfterCommit(user.getProviderId(), id);
         }
 
         // 3. 스스로 탈퇴할 때와 같은 개인정보 삭제

@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * 통합 검색 (누구나)
  * GET /api/search?q=전주 국밥&lat=37.5&lng=127.0        지역 + 종류마다 앞의 5개와 전체 수
- * GET /api/search/stores?q=...&page=0                   백년가게 더 보기 (20개씩). markets, festivals 도 같음
+ * GET /api/search/stores?q=...&page=0                   백년가게 더 보기 (20개씩). markets, festivals, posts(동네 이야기) 도 같음
  * lat, lng(기준 위치)는 선택: 보내면 같은 순위 안에서 가까운 순, 거리도 함께
  */
 @RestController
@@ -24,7 +24,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class SearchController {
 
-    private static final Set<String> TYPES = Set.of("stores", "markets", "festivals");
+    private static final Set<String> TYPES = Set.of("stores", "markets", "festivals", "posts");
 
     private final SearchService service;
 

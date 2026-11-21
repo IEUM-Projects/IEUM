@@ -52,6 +52,7 @@ public class UserController {
     private final Policy policy;
     private final com.ieum.ieum.notification.NotificationService notificationService;
     private final com.ieum.ieum.favorite.FavoriteService favoriteService;
+    private final com.ieum.ieum.auth.oauth.KakaoUnlinkService kakaoUnlink;
 
     public record MyInfo(Long id, String email, String nickname, String role, String provider,
                          String homeSigunguCode, LocalDateTime createdAt, boolean needsAgreement, LocalDateTime agreedAt) {
@@ -124,6 +125,8 @@ public class UserController {
             if (!WITHDRAW_WORD.equals(confirm)) throw new BusinessException(ErrorCode.WITHDRAW_CONFIRM_REQUIRED);
         }
         Long id = user.getId();
+        // 카카오 회원이면 커밋 뒤 카카오 연결 끊기 (KAKAO-UNLINK). 번호는 withdraw() 가 지우기 전에 꺼낸다
+        if (user.getProvider() == AuthProvider.KAKAO) kakaoUnlink.unlinkAfterCommit(user.getProviderId(), id);
         user.withdraw();
         userRepository.flush();
         refreshTokenRepository.deleteByUserId(id);

@@ -22,6 +22,14 @@ public final class SearchDtos {
                               String regionName, Long distanceM) {
     }
 
+    /**
+     * 동네 이야기 글 (SRCH-02). snippet: 내용에서 검색어가 처음 나온 곳 앞뒤 (내용에서 찾았을 때), 아니면 앞부분.
+     * author: 탈퇴한 회원은 '탈퇴한 회원'. thumbnail: 첫 사진 작은 주소 (없으면 null)
+     */
+    public record PostHit(Long id, String category, String categoryLabel, String title, String snippet, String author,
+                          String placeName, java.time.LocalDateTime createdAt, int likeCount, int commentCount, String thumbnail) {
+    }
+
     /** 지역: 누르면 그 지역 지도로 */
     public record RegionHit(String code, String label, double centerLat, double centerLng, long storeCount) {
     }
@@ -31,7 +39,8 @@ public final class SearchDtos {
 
     /** 한 번에 모두: 종류마다 앞의 5개와 전체 수 */
     public record SearchResult(String query, List<String> words, List<RegionHit> regions,
-                               Group<StoreHit> stores, Group<MarketHit> markets, Group<FestivalHit> festivals) {
+                               Group<StoreHit> stores, Group<MarketHit> markets, Group<FestivalHit> festivals,
+                               Group<PostHit> posts) {
     }
 
     /** 종류 하나 더 보기 (20개씩) */
