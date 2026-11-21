@@ -199,3 +199,13 @@ a.place-chip:hover { text-decoration: underline; }
   .photo-thumb { width: 72px; height: 72px; }
 }
 .field > label.photo-add { font-size: var(--font-body-medium); }
+
+/* ---------- 댓글 고치기 (COM-04) ---------- */
+.comment-edited { color: var(--text-subtle); }
+.comment-body[hidden], .comment-actions[hidden] { display: none; }
+.comment-edit-form { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-1); }
+.comment-edit-form > label { font-size: var(--font-body-small); font-weight: var(--font-weight-bold); }
+.comment-edit-form textarea { min-height: 4.5em; }
+.comment-edit-form .help, .comment-edit-form .error { margin: 0; }
+.comment-edit-form .error:empty { display: none; }
+.edit-actions { display: flex; justify-content: flex-end; gap: var(--space-2); flex-wrap: wrap; }

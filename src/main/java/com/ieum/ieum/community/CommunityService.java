@@ -125,7 +125,7 @@ public class CommunityService {
             throw new BusinessException(ErrorCode.POST_NOT_FOUND);
         }
         List<CommentView> comments = jdbc.query("""
-                SELECT c.id, c.user_id, c.content, c.status, c.created_at, u.nickname, u.status AS user_status
+                SELECT c.id, c.user_id, c.content, c.status, c.created_at, c.edited_at, u.nickname, u.status AS user_status
                 FROM post_comments c JOIN users u ON u.id = c.user_id
                 WHERE c.post_id = :id ORDER BY c.id
                 """, new MapSqlParameterSource("id", id), (rs, i) -> {
@@ -134,7 +134,7 @@ public class CommunityService {
             boolean show = "VISIBLE".equals(st) || (admin && !"DELETED".equals(st));
             return new CommentView(rs.getLong("id"), show ? rs.getString("content") : null,
                     "VISIBLE".equals(st) ? "VISIBLE" : st, author(rs.getString("nickname"), rs.getString("user_status"), own),
-                    time(rs, "created_at"));
+                    time(rs, "created_at"), show ? time(rs, "edited_at") : null);
         });
         boolean liked = viewerId != null && Boolean.TRUE.equals(jdbc.queryForObject(
                 "SELECT COUNT(*) > 0 FROM post_likes WHERE post_id = :id AND user_id = :uid",
@@ -261,6 +261,36 @@ public class CommunityService {
         long postId = ((Number) c.get("post_id")).longValue();
         jdbc.update("UPDATE post_comments SET status = 'DELETED', content = '', hidden_reason = NULL WHERE id = :id", new MapSqlParameterSource("id", commentId));
         recountComments(postId);
+        return detail(postId, viewer);
+    }
+
+    /**
+     * 댓글 고치기 (COM-04): 글쓴이만, 보이는 댓글만, 글도 보이는 글일 때만. 관리자도 남의 댓글은 고칠 수 없다 (지우기·가리기만).
+     * 고친 때를 남겨 화면에 '수정됨'을 붙인다. 내용이 같으면 바꾸지 않는다. 글쓴이에게 새 댓글 알림을 다시 보내지 않는다.
+     */
+    @Transactional
+    public PostDetail editComment(AuthUser viewer, long commentId, String content) {
+        long uid = requireWriter(viewer);
+        List<Map<String, Object>> rows = jdbc.queryForList("SELECT post_id, user_id, status, content FROM post_comments WHERE id = :id FOR UPDATE",
+                new MapSqlParameterSource("id", commentId));
+        if (rows.isEmpty() || "DELETED".equals(rows.getFirst().get("status"))) throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
+        Map<String, Object> c = rows.getFirst();
+        if (((Number) c.get("user_id")).longValue() != uid) throw new BusinessException(ErrorCode.NOT_AUTHOR);
+        if (!"VISIBLE".equals(c.get("status"))) throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);   // 가려진 댓글은 고쳐서 되살릴 수 없게
+        long postId = ((Number) c.get("post_id")).longValue();
+        visiblePost(postId);
+        Long pending = jdbc.queryForObject("SELECT COUNT(*) FROM community_reports WHERE target_type = 'COMMENT' AND target_id = :id AND status = 'RECEIVED'",
+                new MapSqlParameterSource("id", commentId), Long.class);
+        if (pending != null && pending > 0) throw new BusinessException(ErrorCode.COMMENT_UNDER_REVIEW);
+        String text = content == null ? "" : content.strip();
+        if (text.isEmpty() || text.length() > 1000) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT, List.of("댓글은 1~1000자로 써 주세요."));
+        }
+        profanity.check("댓글", text);   // 욕설·비속어 (COM-03)
+        if (!text.equals(c.get("content"))) {
+            jdbc.update("UPDATE post_comments SET content = :c, edited_at = NOW() WHERE id = :id",
+                    new MapSqlParameterSource("id", commentId).addValue("c", text));
+        }
         return detail(postId, viewer);
     }
 
