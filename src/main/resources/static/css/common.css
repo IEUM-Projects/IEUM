@@ -269,3 +269,69 @@ a:hover { color: var(--text-link-hover); }
 .not-found-block .not-found-lead { margin: 0 0 var(--space-6); color: var(--text-body); line-height: 1.6; }
 .not-found-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .not-found-actions > * { flex: 1 1 140px; cursor: pointer; font: inherit; font-weight: var(--font-weight-bold); }
+
+/* 찜하기 버튼 (FAV-01, favorite.js): 가게·시장 제목 아래 */
+.favorite { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
+.favorite-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-input);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-body);
+  font: inherit;
+  font-size: var(--font-body-small);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+.favorite-button:hover { background: var(--surface-subtle); }
+.favorite-button.saved { border-color: var(--color-primary-60); color: var(--color-primary-70); background: var(--color-primary-5, #eef7f4); }
+.favorite-button:disabled { cursor: progress; }
+.favorite-status { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.favorite-status:empty { display: none; }
+.favorite-status.error { color: var(--color-danger-70); }
+
+/* 알림 종 (NOTI-01, header.js): 닉네임 버튼 왼쪽 */
+.account { display: inline-flex; align-items: center; gap: var(--space-1); }
+.noti-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-radius: 999px;
+  color: var(--text-body);
+}
+.noti-link:hover { background: var(--surface-subtle); }
+.noti-link .icon { width: 24px; height: 24px; }
+.noti-badge {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--color-danger-70);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.noti-badge[hidden] { display: none; }
+.noti-link[hidden] { display: none; }
+.header-end { display: flex; justify-content: flex-end; }
+/* 안 읽은 알림 점 (닉네임 버튼). 종이 보일 때는 감춘다 */
+.account-button.has-unread { position: relative; }
+.account-button.has-unread::after { content: ''; display: none; position: absolute; top: 4px; right: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--color-danger-70); border: 2px solid var(--surface); }
+/* 지도 위쪽 바는 칸이 많아 좁은 화면에서는 종을 감추고 닉네임 버튼의 점·메뉴로 알린다 */
+@media (max-width: 400px) {
+  .topbar .noti-link { display: none; }
+  .topbar .account-button.has-unread::after { display: block; }
+}

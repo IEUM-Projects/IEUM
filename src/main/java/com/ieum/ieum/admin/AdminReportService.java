@@ -71,6 +71,7 @@ public class AdminReportService {
     private final UserRepository userRepository;
     private final RegionRepository regionRepository;
     private final GeoService geo;
+    private final com.ieum.ieum.notification.NotificationService notifications;
     private final TransactionTemplate transaction;
 
     // ---------------------------------------------------------------- 조회
@@ -227,6 +228,14 @@ public class AdminReportService {
             }
         }
         reports.forEach(r -> r.review(decision, note, admin.getId(), now));
+        // 제보한 회원에게 처리 결과 알림 (NOTI-01)
+        if (decision != null) {
+            boolean applied = decision == ReportStatus.APPLIED;
+            String memo = note == null || note.isBlank() ? "" : " · " + note.strip();
+            reports.forEach(r -> notifications.send(r.getUserId(), applied ? "REPORT_APPLIED" : "REPORT_REJECTED",
+                    applied ? "제보가 반영됐어요" : "제보를 반려했어요",
+                    "‘" + store.getName() + "’ " + r.getType().label() + memo, "/mypage.html#reports"));
+        }
         if (decision != ReportStatus.REJECTED && changed.isEmpty() && warning == null) {
             warning = decision == null ? "지금 정보와 같아서 바뀐 것이 없어요."
                     : "가게 정보는 바뀌지 않았어요. 제보만 '반영됨'으로 처리했어요.";

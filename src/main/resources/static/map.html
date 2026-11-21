@@ -27,6 +27,12 @@
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/common.css">
   <link rel="stylesheet" href="/css/map.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">본문 바로가기</a>
@@ -59,7 +65,7 @@
 
     <button type="button" id="researchButton" class="research-button" hidden>이 지역에서 다시 검색</button>
     <div class="floating">
-      <button type="button" id="locateButton" class="fab" aria-label="내 위치와 가까운 지역으로 이동">
+      <button type="button" id="locateButton" class="fab" aria-label="내 위치로 이동">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
       </button>
       <a href="/festivals.html" class="fab fab-wide">축제 달력</a>

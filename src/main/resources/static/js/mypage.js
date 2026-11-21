@@ -2,6 +2,8 @@
 // UI-04 2단계: 설정 앱처럼 묶음 목록으로 보여 준다
 import * as auth from './auth.js';
 import { renderRuleList } from './password-rules.js';
+import { isStandalone, isIos, canPromptInstall, promptInstall } from './pwa.js';
+import { unreadCount, paintBell } from './header.js';
 import { posts as postApi, when } from './community-common.js';
 
 const NICKNAME_PATTERN = /^[가-힣a-zA-Z0-9]{2,12}$/;
@@ -280,6 +282,89 @@ function myPostItem(p) {
   return li;
 }
 
+// ---------------------------------------------------------------- 찜한 곳 (FAV-01)
+const FAVORITE_LINK = { STORE: '/store.html?id=', MARKET: '/market.html?id=' };
+const FAVORITE_KIND = { STORE: '가게', MARKET: '시장' };
+
+function favoriteItem(f) {
+  const li = document.createElement('li');
+  li.className = 'report-item fav-item';
+  const text = document.createElement('div');
+  text.className = 'fav-text';
+  let label;
+  if (f.available) {
+    label = document.createElement('a');
+    label.href = FAVORITE_LINK[f.type] + f.id;
+    label.className = 'report-store-link';
+    label.textContent = f.name;
+  } else {
+    label = document.createElement('span');
+    label.className = 'report-store-name is-gone';
+    label.textContent = `지금은 볼 수 없는 ${FAVORITE_KIND[f.type]}예요`;
+  }
+  const meta = document.createElement('p');
+  meta.className = 'report-type';
+  const kind = document.createElement('span');
+  kind.className = 'row-category';
+  kind.textContent = FAVORITE_KIND[f.type];
+  meta.append(kind, ` ${[f.label, f.address].filter(Boolean).join(' · ') || '정보가 내려갔어요'}`);
+  text.append(label, meta);
+  const remove = document.createElement('button');
+  remove.type = 'button';
+  remove.className = 'fav-remove';
+  remove.textContent = '찜 풀기';
+  remove.setAttribute('aria-label', `${f.available ? f.name : FAVORITE_KIND[f.type]} 찜 풀기`);
+  remove.addEventListener('click', () => removeFavorite(f, li, remove));
+  li.append(text, remove);
+  return li;
+}
+
+function renderFavoriteCount() {
+  const n = $('favoriteList').children.length;
+  $('favoritesTitle').textContent = n ? `찜한 곳 ${n}` : '찜한 곳';
+  if (!n) {
+    $('favoritesStatus').hidden = false;
+    $('favoritesStatus').textContent = '아직 찜한 곳이 없어요. 가게·시장 화면에서 ‘찜하기’를 눌러 모아 보세요.';
+  }
+}
+
+async function removeFavorite(f, li, button) {
+  button.disabled = true;
+  try {
+    const res = await auth.authFetch(`/api/favorites/${f.type.toLowerCase()}/${f.id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error();
+    // 지운 줄 다음 줄(없으면 이전 줄)의 버튼으로 초점을 옮겨, 이어서 지우거나 둘러보기 쉽게
+    const next = li.nextElementSibling ?? li.previousElementSibling;
+    li.remove();
+    renderFavoriteCount();
+    showNotice(`${f.available ? f.name : FAVORITE_KIND[f.type]} 찜을 풀었어요.`);
+    (next?.querySelector('.fav-remove') ?? $('favoritesTitle')).focus?.();
+  } catch (_) {
+    button.disabled = false;
+    showNotice('');
+    $('favoritesStatus').hidden = false;
+    $('favoritesStatus').textContent = '찜을 풀지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
+async function loadFavorites() {
+  $('favorites').hidden = false;
+  $('favoritesStatus').hidden = false;
+  $('favoritesStatus').textContent = '불러오는 중...';
+  try {
+    const res = await auth.authFetch('/api/users/me/favorites');
+    if (!res.ok) throw new Error();
+    const list = await res.json();
+    $('favoriteList').replaceChildren(...list.map(favoriteItem));
+    $('favoritesStatus').hidden = !!list.length;
+    $('favoritesStatus').textContent = '';
+    renderFavoriteCount();
+    if (location.hash === '#favorites') $('favorites').scrollIntoView();   // 홈 화면 바로가기 (찜한 곳)
+  } catch (_) {
+    $('favoritesStatus').textContent = '찜한 곳을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+  }
+}
+
 async function loadMyPosts() {
   $('myPosts').hidden = false;
   $('myPostsStatus').textContent = '불러오는 중...';
@@ -293,6 +378,22 @@ async function loadMyPosts() {
   }
 }
 
+// ---------------------------------------------------------------- 앱처럼 쓰기 (PWA-01)
+function renderAppGroup() {
+  if (isStandalone()) { $('appGroup').hidden = true; return; }   // 이미 홈 화면 앱으로 연 경우
+  const prompt = canPromptInstall();
+  const ios = isIos();
+  $('installButton').hidden = !prompt;
+  $('iosGuide').hidden = prompt || !ios;
+  $('appGroup').hidden = !prompt && !ios;   // 설치할 수 없는 브라우저면 감춘다
+}
+window.addEventListener('ieum-installable', renderAppGroup);
+window.addEventListener('ieum-installed', () => { $('appGroup').hidden = true; showNotice('홈 화면에 이음을 추가했어요.'); });
+$('installButton').addEventListener('click', async () => {
+  if (await promptInstall()) { $('appGroup').hidden = true; showNotice('홈 화면에 이음을 추가했어요.'); }
+  else renderAppGroup();
+});
+
 async function init() {
   const user = await auth.init();
   if (!user) {
@@ -303,6 +404,10 @@ async function init() {
     render(await auth.fetchMe());
     $('card').hidden = false;
     $('sessionGroup').hidden = false;
+    renderAppGroup();
+    $('notiLink').hidden = false;   // 알림 종 (NOTI-01)
+    unreadCount().then((n) => paintBell($('notiLink'), n));
+    loadFavorites();
     loadMyPosts();
     loadReports();
     if (location.hash === '#withdraw') $('withdraw').scrollIntoView();

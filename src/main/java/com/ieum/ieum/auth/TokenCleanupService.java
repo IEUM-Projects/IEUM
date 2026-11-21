@@ -26,6 +26,7 @@ public class TokenCleanupService {
     private final RefreshTokenRepository repository;
     private final TransactionTemplate transaction;
     private final EmailVerificationService emailVerificationService;
+    private final com.ieum.ieum.notification.NotificationService notificationService;
 
     @Scheduled(cron = "${auth.token-cleanup.cron:0 20 4 * * *}", zone = "Asia/Seoul")
     public void scheduled() {
@@ -33,6 +34,7 @@ public class TokenCleanupService {
         if (deleted > 0) log.info("만료된 로그인 유지 토큰 {}개를 지웠어요", deleted);
         // 가입 이메일 인증번호 기록도 하루가 지나면 지운다 (AUTH-02, 개인정보 처리방침 2번)
         int codes = emailVerificationService.cleanup(LocalDateTime.now());
+        notificationService.cleanup(LocalDateTime.now());   // 90일 지난 알림 (NOTI-01)
         if (codes > 0) log.info("하루 지난 이메일 인증번호 기록 {}개를 지웠어요", codes);
     }
 

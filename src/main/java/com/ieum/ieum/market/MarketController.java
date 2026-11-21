@@ -33,8 +33,8 @@ import java.util.List;
 public class MarketController {
 
     static final int DEFAULT_RADIUS = 1000;
-    static final int MAX_RADIUS = 5000;
-    static final int MAX_RESULTS = 100;
+    static final int MAX_RADIUS = 40000;   // LOC-02: StoreService 와 같은 까닭으로 넉넉하게
+    static final int MAX_RESULTS = 300;
     static final int NEARBY_STORE_RADIUS = 300;
 
     private final MarketRepository repository;

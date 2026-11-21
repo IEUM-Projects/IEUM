@@ -44,6 +44,7 @@ public enum ErrorCode {
     ADMIN_CANNOT_WITHDRAW(HttpStatus.BAD_REQUEST, "관리자는 탈퇴할 수 없어요. 먼저 관리자 권한을 다른 회원에게 넘겨 주세요."),
 
     // 가게·제보
+    FAVORITE_LIMIT(HttpStatus.BAD_REQUEST, "찜은 300곳까지 할 수 있어요. 내 정보에서 안 쓰는 찜을 풀어 주세요."),
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "가게를 찾을 수 없어요."),
     MARKET_NOT_FOUND(HttpStatus.NOT_FOUND, "시장을 찾을 수 없어요."),
     DUPLICATE_REPORT(HttpStatus.CONFLICT, "오늘 이미 같은 내용으로 제보했어요. 내일 다시 보낼 수 있어요."),

@@ -30,6 +30,8 @@
 | 24 | `24_schema_policy.sql` | 회원의 이용약관·개인정보 처리방침 동의 기록 칸 (`users.agreed_policy_version`, `agreed_at`). 실행 전에 가입한 회원은 다음 로그인 때 동의 화면이 나와요 |
 | 25 | `25_schema_community.sql` | 동네 이야기 게시판 표 4개: 글(`posts`), 댓글(`post_comments`), 공감(`post_likes`), 신고(`community_reports`). 다른 표는 건드리지 않아요 |
 | 26 | `26_schema_email_verification.sql` | 가입 이메일 인증 표(`email_verifications`)와 `users.email_verified_at` 칸. 이미 가입한 이메일 회원은 가입한 때로 '인증됨' 표시 |
+| 27 | `27_schema_favorites.sql` | 찜한 곳 표(`favorites`): 회원이 찜한 가게·시장. 회원 줄을 지우면 함께 지워짐 |
+| 28 | `28_schema_notifications.sql` | 알림 표(`notifications`): 댓글·제보 처리·가림·추천 확인 알림. 90일 보관, 회원 줄을 지우면 함께 지워짐 |
 | - | `report_queries.sql` | 제보 확인 쿼리, **관리자 지정·해제**, 수정 기록 보기 (필요할 때 골라서 실행) |
 
 ## 실행 방법 (MySQL Workbench)
@@ -37,7 +39,7 @@
 1. **File → Open SQL Script**로 파일을 엽니다.
    (File → Run SQL Script는 한글 파일에서 cp949 오류가 날 수 있어요.)
 2. 번개 모양(⚡) 버튼으로 실행합니다.
-3. 01부터 26까지 차례로 반복합니다.
+3. 01부터 28까지 차례로 반복합니다.
 
 ## 다시 실행해도 괜찮아요
 
@@ -56,6 +58,6 @@
   `DROP DATABASE ieum;`을 실행한 뒤 01부터 다시 실행하세요. 회원·제보·축제 데이터가 모두 사라지니 신중하게!
 - 이미 있는 표에 칸을 더할 때도(09처럼) 이미 있으면 건너뛰게 만들어서 여러 번 실행해도 안전해요.
 - 23번은 지우기를 `ieum_data_fixes` 표에 기록해 두고 **한 번만** 해요. 다시 실행해도 서버가 새로 찾은 좌표는 지우지 않아요.
-- 새 표가 생기면 `27_...sql`처럼 다음 번호로 추가해요.
+- 새 표가 생기면 `29_...sql`처럼 다음 번호로 추가해요.
 - 25번 표들은 `users`를 참조해요. 시험 등으로 회원 줄을 직접 지울 때는 그 회원의 글·댓글·공감·신고를 먼저 지워야 해요 (탈퇴는 회원 줄을 지우지 않아서 상관없어요).
 - DB 비밀번호 같은 설정은 이 폴더가 아니라 `application-local.yml`에 있어요 (커밋하지 않음).
