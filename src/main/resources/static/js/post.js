@@ -156,6 +156,7 @@ $('commentForm').addEventListener('submit', async (e) => {
     $('commentList').lastElementChild?.scrollIntoView({ block: 'nearest' });
   } catch (err) {
     $('commentError').textContent = err.details?.length ? err.details.join(' ') : err.message;
+    $('commentText').focus();
   } finally {
     $('commentButton').disabled = false;
   }

@@ -226,6 +226,19 @@ async function submit(e) {
   } catch (err) {
     $('submitButton').disabled = false;
     if (err.status === 401) { location.href = auth.loginUrl(); return; }
+    // 욕설·비속어 (COM-03): 걸린 칸 아래에 알려 주고 그 칸으로
+    if (err.code === 'PROFANITY') {
+      const msg = err.details?.[0] ?? err.message;
+      if (msg.startsWith('제목')) { setError('title', msg); $('title').focus(); return; }
+      if (msg.startsWith('내용')) { setError('content', msg); $('content').focus(); return; }
+      if (msg.startsWith('사진 설명')) {
+        $('photoError').textContent = msg;
+        const word = (msg.match(/‘(.+?)’/) ?? [])[1] ?? '';
+        const inputs = [...$('photoList').querySelectorAll('input')];
+        (inputs.find((i) => i.value.toLowerCase().replace(/[^\p{L}]/gu, '').includes(word)) ?? inputs[0])?.focus();
+        return;
+      }
+    }
     showAlert(err.details?.length ? err.details.join(' ') : err.message);
   }
 }

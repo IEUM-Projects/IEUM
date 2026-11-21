@@ -59,13 +59,15 @@ public class PostPhotoService {
 
     private final NamedParameterJdbcTemplate jdbc;
     private final PhotoStorage storage;
+    private final com.ieum.ieum.community.ProfanityFilter profanity;
     private final byte[] signKey;
     private final SecureRandom random = new SecureRandom();
 
-    public PostPhotoService(NamedParameterJdbcTemplate jdbc, PhotoStorage storage,
+    public PostPhotoService(NamedParameterJdbcTemplate jdbc, PhotoStorage storage, com.ieum.ieum.community.ProfanityFilter profanity,
                             @Value("${ieum.upload.sign-key:${jwt.secret:}}") String key) {
         this.jdbc = jdbc;
         this.storage = storage;
+        this.profanity = profanity;
         if (key == null || key.isBlank()) throw new IllegalStateException("사진 주소 서명 키(ieum.upload.sign-key 또는 jwt.secret)가 없어요.");
         this.signKey = ("photo:" + key).getBytes(StandardCharsets.UTF_8);
     }
@@ -125,6 +127,7 @@ public class PostPhotoService {
             if (ref.alt() != null && ref.alt().strip().length() > ALT_MAX) {
                 throw new BusinessException(ErrorCode.INVALID_INPUT, List.of("사진 설명은 " + ALT_MAX + "자까지 쓸 수 있어요."));
             }
+            profanity.check("사진 설명", ref.alt());   // 화면 낭독기가 읽는 공개 글이라 같이 거름 (COM-03)
         }
         MapSqlParameterSource p = new MapSqlParameterSource("uid", uid).addValue("post", postId);
         if (!ids.isEmpty()) {

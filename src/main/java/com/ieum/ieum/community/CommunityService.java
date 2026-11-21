@@ -57,6 +57,7 @@ public class CommunityService {
     private final Policy policy;
     private final com.ieum.ieum.notification.NotificationService notifications;
     private final com.ieum.ieum.community.photo.PostPhotoService photos;
+    private final ProfanityFilter profanity;
 
     // ================================================================ 보기
 
@@ -227,6 +228,7 @@ public class CommunityService {
         if (text.isEmpty() || text.length() > 1000) {
             throw new BusinessException(ErrorCode.INVALID_INPUT, List.of("댓글은 1~1000자로 써 주세요."));
         }
+        profanity.check("댓글", text);   // 욕설·비속어 (COM-03)
         dailyLimit("SELECT COUNT(*) FROM post_comments WHERE user_id = :uid AND created_at >= CURDATE()", uid, DAILY_COMMENTS);
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("pid", postId).addValue("uid", uid).addValue("c", text);
         jdbc.update("INSERT INTO post_comments (post_id, user_id, content) VALUES (:pid, :uid, :c)", params);
@@ -335,6 +337,8 @@ public class CommunityService {
         String pType = req == null || req.placeType() == null || req.placeType().isBlank() ? null : req.placeType().strip().toUpperCase();
         Long pId = pType == null ? null : req.placeId();
         if (!errors.isEmpty()) throw new BusinessException(ErrorCode.INVALID_INPUT, errors);
+        profanity.check("제목", title);     // 욕설·비속어 (COM-03)
+        profanity.check("내용", content);
         if ("RECOMMEND".equals(category)) {   // 추천은 아직 이음에 없는 곳이라 붙이지 않는다
             pType = null;
             pId = null;
