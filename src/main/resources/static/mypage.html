@@ -60,11 +60,13 @@
           <form id="nicknameForm" class="settings-row row-field field" novalidate>
             <label for="nickname" class="row-label">닉네임</label>
             <div class="inline-form">
-              <input id="nickname" name="nickname" type="text" maxlength="12" required aria-describedby="nicknameHelp nicknameError">
+              <input id="nickname" name="nickname" type="text" maxlength="12" required aria-describedby="nicknameHelp nicknameOk nicknameError">
+              <button type="button" id="nicknameCheck" class="button-secondary">중복 확인</button>
               <button type="submit" id="saveButton" class="button-secondary">변경</button>
             </div>
             <p id="nicknameHelp" class="help">한글, 영문, 숫자로 2~12자</p>
-            <p id="nicknameError" class="error"></p>
+            <p id="nicknameOk" class="ok" role="status"></p>
+            <p id="nicknameError" class="error" role="alert"></p>
           </form>
           <dl class="settings-dl">
             <div class="settings-row"><dt>로그인 방법</dt><dd id="provider"></dd></div>

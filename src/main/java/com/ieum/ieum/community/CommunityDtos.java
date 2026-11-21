@@ -28,7 +28,8 @@ public final class CommunityDtos {
     public record PostSummary(long id, String category, String categoryLabel, String title, String excerpt,
                               Author author, Place place, int likeCount, int commentCount,
                               LocalDateTime createdAt, boolean edited, String status,
-                              String recommendStatus, String recommendStatusLabel) {
+                              String recommendStatus, String recommendStatusLabel,
+                              String thumbnail, int photoCount) {
     }
 
     public record PostPage(List<PostSummary> items, int page, boolean hasNext, long total) {
@@ -42,10 +43,13 @@ public final class CommunityDtos {
                              Author author, Place place, int likeCount, int commentCount,
                              LocalDateTime createdAt, LocalDateTime editedAt, String status, String hiddenReason,
                              String recommendStatus, String recommendStatusLabel, String recommendNote,
-                             boolean likedByMe, boolean canEdit, List<CommentView> comments) {
+                             boolean likedByMe, boolean canEdit, List<CommentView> comments,
+                             List<com.ieum.ieum.community.photo.PostPhotoService.PhotoView> photos) {
     }
 
-    public record PostRequest(String category, String title, String content, String placeType, Long placeId) {
+    /** photos: 붙일 사진 번호와 설명, 순서대로 (COM-02). 고칠 때 null 이면 사진은 그대로 */
+    public record PostRequest(String category, String title, String content, String placeType, Long placeId,
+                              List<com.ieum.ieum.community.photo.PostPhotoService.PhotoRef> photos) {
     }
 
     public record CommentRequest(String content) {

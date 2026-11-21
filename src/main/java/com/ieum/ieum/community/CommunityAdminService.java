@@ -41,11 +41,13 @@ public class CommunityAdminService {
     private final NamedParameterJdbcTemplate jdbc;
     private final CommunityService community;
     private final com.ieum.ieum.notification.NotificationService notifications;
+    private final com.ieum.ieum.community.photo.PostPhotoService photos;
 
     public record Target(String type, long id, Long postId, String category, String title, String content,
                          String author, Long authorId, String authorStatus, String status, String hiddenReason,
                          LocalDate hiddenUntil, boolean tempExpired, int reportCount, Map<String, Long> reasons,
-                         List<String> reportNotes, LocalDateTime createdAt, String recommendStatus, String recommendNote) {
+                         List<String> reportNotes, LocalDateTime createdAt, String recommendStatus, String recommendNote,
+                         List<com.ieum.ieum.community.photo.PostPhotoService.PhotoView> photos) {
     }
 
     public record TargetPage(List<Target> items, Map<String, Long> counts) {
@@ -120,7 +122,9 @@ public class CommunityAdminService {
                 ((Number) r.get("author_id")).longValue(), (String) r.get("user_status"), status, (String) r.get("hidden_reason"),
                 until, "TEMP_HIDDEN".equals(status) && until != null && !until.isAfter(LocalDate.now()),
                 ((Number) r.get("report_count")).intValue(), reasons, notes, (LocalDateTime) r.get("created_at"),
-                (String) r.get("recommend_status"), (String) r.get("recommend_note"));
+                (String) r.get("recommend_status"), (String) r.get("recommend_note"),
+                // 글의 사진 (COM-02). 가려진 글은 서명 붙은 주소라 관리자 화면에서도 보인다
+                "POST".equals(type) && !"DELETED".equals(status) ? photos.photosOf(id, "VISIBLE".equals(status)) : List.of());
     }
 
     private Map<String, Object> one(String sql, MapSqlParameterSource p) {

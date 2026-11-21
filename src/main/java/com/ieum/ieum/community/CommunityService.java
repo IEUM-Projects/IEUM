@@ -56,6 +56,7 @@ public class CommunityService {
     private final NamedParameterJdbcTemplate jdbc;
     private final Policy policy;
     private final com.ieum.ieum.notification.NotificationService notifications;
+    private final com.ieum.ieum.community.photo.PostPhotoService photos;
 
     // ================================================================ 보기
 
@@ -63,7 +64,9 @@ public class CommunityService {
             SELECT p.id, p.user_id, p.category, p.title, p.content, p.place_type, p.place_id, p.status,
                    p.recommend_status, p.recommend_note, p.hidden_reason, p.like_count, p.comment_count,
                    p.created_at, p.edited_at, u.nickname, u.status AS user_status,
-                   COALESCE(s.name, m.name, f.name) AS place_name
+                   COALESCE(s.name, m.name, f.name) AS place_name,
+                   (SELECT ph.file_key FROM post_photos ph WHERE ph.post_id = p.id ORDER BY ph.sort_order, ph.id LIMIT 1) AS thumb_key,
+                   (SELECT COUNT(*) FROM post_photos ph WHERE ph.post_id = p.id) AS photo_count
             FROM posts p
             JOIN users u ON u.id = p.user_id
             LEFT JOIN stores s ON p.place_type = 'STORE' AND s.id = p.place_id
@@ -144,7 +147,7 @@ public class CommunityService {
                 (LocalDateTime) row.get("created_at"), (LocalDateTime) row.get("edited_at"), status,
                 "VISIBLE".equals(status) ? null : (String) row.get("hidden_reason"),
                 rs, rs == null ? null : CommunityDtos.RECOMMEND_STATUS.get(rs), (String) row.get("recommend_note"),
-                liked, mine && "VISIBLE".equals(status), comments);
+                liked, mine && "VISIBLE".equals(status), comments, photos.photosOf(id, "VISIBLE".equals(status)));
     }
 
     // ================================================================ 쓰기
@@ -162,7 +165,9 @@ public class CommunityService {
                 INSERT INTO posts (user_id, category, title, content, place_type, place_id, recommend_status)
                 VALUES (:uid, :cat, :title, :content, :pType, :pId, :rs)
                 """, params, key, new String[]{"id"});
-        return detail(key.getKey().longValue(), viewer);
+        long id = key.getKey().longValue();
+        photos.attach(uid, id, req == null || req.photos() == null ? List.of() : req.photos());   // COM-02
+        return detail(id, viewer);
     }
 
     @Transactional
@@ -181,6 +186,7 @@ public class CommunityService {
                 WHERE id = :id
                 """, new MapSqlParameterSource().addValue("id", id).addValue("cat", v.category).addValue("title", v.title)
                 .addValue("content", v.content).addValue("pType", v.placeType).addValue("pId", v.placeId).addValue("rs", rs));
+        photos.attach(uid, id, req == null ? null : req.photos());   // null 이면 사진 그대로 (COM-02)
         return detail(id, viewer);
     }
 
@@ -197,6 +203,7 @@ public class CommunityService {
         MapSqlParameterSource p = new MapSqlParameterSource("id", id);
         jdbc.update("UPDATE posts SET status = 'DELETED', title = '(지운 글)', content = '', hidden_reason = NULL WHERE id = :id", p);
         jdbc.update("DELETE FROM post_likes WHERE post_id = :id", p);
+        photos.deleteForPost(id);   // 사진도 줄과 파일을 바로 지운다 (COM-02)
     }
 
     @Transactional
@@ -438,6 +445,8 @@ public class CommunityService {
                 excerpt(rs.getString("content")), author(rs.getString("nickname"), rs.getString("user_status"), mine),
                 place(rs.getString("place_type"), rs.wasNull() ? null : pid, rs.getString("place_name")),
                 rs.getInt("like_count"), rs.getInt("comment_count"), time(rs, "created_at"), rs.getTimestamp("edited_at") != null,
-                rs.getString("status"), rs2, rs2 == null ? null : CommunityDtos.RECOMMEND_STATUS.get(rs2));
+                rs.getString("status"), rs2, rs2 == null ? null : CommunityDtos.RECOMMEND_STATUS.get(rs2),
+                "VISIBLE".equals(rs.getString("status")) ? com.ieum.ieum.community.photo.PostPhotoService.thumbUrl(rs.getString("thumb_key")) : null,
+                rs.getInt("photo_count"));
     }
 }

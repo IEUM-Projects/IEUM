@@ -80,6 +80,18 @@
         <p id="contentHelp" class="help"><span id="contentCount">0</span>/3000자 · 다른 사람의 전화번호·주소 같은 개인정보는 쓰지 마세요. 가게에 대한 이야기는 직접 겪은 사실로 써 주세요.</p>
         <p id="contentError" class="error"></p>
       </div>
+      <div class="field photo-field">
+        <span class="field-label" id="photoLabel">사진 (선택, 4장까지)</span>
+        <p class="help" id="photoHelp">한 장에 10MB까지예요. 올릴 때 사진 속 촬영 위치·기기 정보는 지워요. 다른 사람의 얼굴이나 차 번호판이 알아보이지 않게 해 주세요.</p>
+        <ul id="photoList" class="photo-list" aria-labelledby="photoLabel"></ul>
+        <label class="button-secondary photo-add" id="photoAdd">
+          <input type="file" id="photoInput" accept="image/jpeg,image/png,image/heic,image/heif,image/webp,image/*" multiple class="sr-only" aria-describedby="photoHelp photoError">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
+          <span id="photoAddText">사진 고르기</span>
+        </label>
+        <p id="photoStatus" class="help" role="status"></p>
+        <p id="photoError" class="error" role="alert"></p>
+      </div>
       <div class="form-actions">
         <a id="cancelLink" class="button-secondary" href="/community.html">그만두기</a>
         <button type="submit" id="submitButton" class="button-primary">올리기</button>

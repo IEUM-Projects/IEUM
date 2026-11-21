@@ -19,7 +19,44 @@ function addChevron(li) {
 function setNicknameError(message) {
   $('nicknameError').textContent = message ?? '';
   form.nickname.setAttribute('aria-invalid', message ? 'true' : 'false');
+  if (message) $('nicknameOk').textContent = '';
 }
+
+// ---------------------------------------------------------------- 닉네임 중복 확인 (가입 화면과 같은 API)
+let currentNickname = '';
+async function checkNickname() {
+  const nickname = form.nickname.value.trim();
+  $('nicknameOk').textContent = '';
+  if (!NICKNAME_PATTERN.test(nickname)) {
+    setNicknameError('닉네임은 한글, 영문, 숫자로 2~12자예요.');
+    form.nickname.focus();
+    return;
+  }
+  if (nickname === currentNickname) {
+    setNicknameError('');
+    $('nicknameOk').textContent = '지금 쓰고 있는 닉네임이에요.';
+    return;
+  }
+  setNicknameError('');
+  $('nicknameCheck').disabled = true;
+  try {
+    const res = await fetch(`/api/auth/nickname-check?${new URLSearchParams({ nickname })}`);
+    const body = await res.json();
+    if (!res.ok) throw new Error();
+    if (form.nickname.value.trim() !== nickname) return;   // 확인하는 사이에 글자를 바꿈
+    if (body.available) $('nicknameOk').textContent = `${body.message} ‘변경’을 누르면 바뀌어요.`;
+    else { setNicknameError(body.message); form.nickname.focus(); }
+  } catch (_) {
+    setNicknameError('중복 확인을 하지 못했어요. 잠시 후 다시 눌러 주세요.');
+  } finally {
+    $('nicknameCheck').disabled = false;
+  }
+}
+$('nicknameCheck').addEventListener('click', checkNickname);
+form.nickname.addEventListener('input', () => {
+  $('nicknameOk').textContent = '';
+  if ($('nicknameError').textContent) setNicknameError('');
+});
 
 function showNotice(message) {
   $('formAlert').textContent = message ?? '';
@@ -33,6 +70,7 @@ function render(me) {
   $('email').textContent = me.email ?? '없음 (카카오 로그인)';
   $('createdAt').textContent = me.createdAt ? me.createdAt.slice(0, 10).replaceAll('-', '.') : '';
   form.nickname.value = me.nickname;
+  currentNickname = me.nickname;
   $('agreedAt').textContent = me.needsAgreement || !me.agreedAt
     ? '아직 동의하지 않았어요'
     : `${me.agreedAt.slice(0, 10).replaceAll('-', '.')} 동의`;
@@ -183,10 +221,15 @@ form.addEventListener('submit', async (event) => {
     return;
   }
   setNicknameError('');
+  if (nickname === currentNickname) {   // 바꾼 게 없으면 서버에 보내지 않음
+    $('nicknameOk').textContent = '지금 쓰고 있는 닉네임이에요.';
+    return;
+  }
   $('saveButton').disabled = true;
   try {
     const me = await auth.updateNickname(nickname);
     render(me);
+    $('nicknameOk').textContent = '';
     showNotice('닉네임을 바꿨어요.');
   } catch (e) {
     setNicknameError(e.details?.[0] ?? e.message);   // 욕설·예약어는 까닭이 details 에 (AUTH-01)

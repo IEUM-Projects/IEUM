@@ -11,6 +11,103 @@ const params = new URLSearchParams(location.search);
 const editId = /^\d+$/.test(params.get('id') ?? '') ? params.get('id') : null;
 let place = null;   // { type, id, name }
 
+// ---------------------------------------------------------------- 사진 (COM-02)
+// 고르면 바로 한 장씩 올리고(번호를 받음), 글을 올릴 때 번호와 설명을 함께 보낸다.
+const MAX_PHOTOS = 4;
+const MAX_SIDE = 1600;
+let photos = [];   // { key, id, src, alt, state: 'uploading' | 'done' | 'error', message, local }
+let photoSeq = 0;
+
+/** 기기 안에서 긴 변 1600px JPG로 줄인다. 휴대폰 사진의 방향도 바로잡힌다. 못 그리면(브라우저가 모르는 형식) 원본 그대로 */
+async function shrink(file) {
+  let bmp;
+  try {
+    bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch (_) {
+    return file;
+  }
+  const scale = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(bmp.width * scale));
+  canvas.height = Math.max(1, Math.round(bmp.height * scale));
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
+  bmp.close?.();
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+  return blob ?? file;
+}
+
+function photoStatus(message) {
+  $('photoStatus').textContent = message ?? '';
+}
+
+function renderPhotos() {
+  const n = photos.length;
+  $('photoList').replaceChildren(...photos.map((ph, i) => {
+    const altId = `photoAlt-${ph.key}`;
+    const alt = el('input', { id: altId, type: 'text', maxlength: '100', value: ph.alt ?? '', autocomplete: 'off', placeholder: '예: 시장 입구 간판' });
+    alt.addEventListener('input', () => { ph.alt = alt.value; });
+    const remove = el('button', { type: 'button', class: 'text-button', text: '빼기', 'aria-label': `사진 ${i + 1} 빼기` });
+    remove.addEventListener('click', () => removePhoto(ph.key, i));
+    const state = ph.state === 'uploading' ? '올리는 중…' : ph.state === 'error' ? ph.message : null;
+    return el('li', { class: `photo-item${ph.state === 'error' ? ' has-error' : ''}`, 'data-key': String(ph.key) },
+      el('img', { src: ph.src, alt: `고른 사진 ${i + 1}`, class: 'photo-thumb' }),
+      el('div', { class: 'photo-item-body' },
+        el('p', { class: 'photo-item-head' }, el('strong', { text: `사진 ${i + 1}/${n}` }), state ? el('span', { class: 'photo-state', text: ` · ${state}` }) : null, remove),
+        ph.state === 'error' ? null : el('div', { class: 'photo-alt' },
+          el('label', { for: altId, text: '사진 설명 (선택, 화면 낭독기가 읽어요)' }), alt)));
+  }));
+  const left = MAX_PHOTOS - photos.length;
+  $('photoAdd').hidden = left <= 0;
+  $('photoAddText').textContent = photos.length ? `사진 더 고르기 (${left}장 더)` : '사진 고르기';
+}
+
+function removePhoto(key, index) {
+  const ph = photos.find((x) => x.key === key);
+  if (ph?.local) URL.revokeObjectURL(ph.src);
+  photos = photos.filter((x) => x.key !== key);
+  renderPhotos();
+  photoStatus(`사진 ${index + 1}을 뺐어요.`);
+  // 다음 사진의 '빼기'로, 없으면 '사진 고르기'로 초점
+  const next = $('photoList').querySelectorAll('.photo-item .text-button')[Math.min(index, photos.length - 1)];
+  (next ?? $('photoInput')).focus();
+}
+
+async function addFiles(fileList) {
+  $('photoError').textContent = '';
+  const files = [...fileList];
+  const left = MAX_PHOTOS - photos.length;
+  if (files.length > left) $('photoError').textContent = `사진은 ${MAX_PHOTOS}장까지라 앞의 ${left}장만 골랐어요.`;
+  const picked = files.slice(0, Math.max(0, left)).map((file) => {
+    const ph = { key: ++photoSeq, id: null, src: URL.createObjectURL(file), local: true, alt: '', state: 'uploading', file };
+    photos.push(ph);
+    return ph;
+  });
+  if (!picked.length) return;
+  renderPhotos();
+  photoStatus(`사진 ${picked.length}장을 올리는 중이에요…`);
+  await Promise.all(picked.map(async (ph) => {
+    try {
+      const blob = await shrink(ph.file);
+      if (blob.size > 10 * 1024 * 1024) throw new Error('사진 한 장은 10MB까지 올릴 수 있어요.');
+      const res = await posts.uploadPhoto(blob);
+      ph.id = res.id;
+      ph.state = 'done';
+    } catch (err) {
+      if (err.status === 401) { location.href = auth.loginUrl(); return; }
+      ph.state = 'error';
+      ph.message = err.message || '올리지 못했어요.';
+    }
+    delete ph.file;
+    if (photos.includes(ph)) renderPhotos();
+  }));
+  const failed = picked.filter((ph) => ph.state === 'error' && photos.includes(ph)).length;
+  photoStatus(failed ? `${picked.length - failed}장을 올렸고, ${failed}장은 올리지 못했어요. 못 올린 사진은 빼고 다시 골라 주세요.`
+    : `사진 ${picked.length}장을 올렸어요. 글을 올리면 함께 보여요.`);
+}
+
 function showAlert(message) {
   $('formAlert').textContent = message;
   $('formAlert').hidden = false;
@@ -95,9 +192,17 @@ function validate() {
   let first = null;
   const fail = (id, msg, focus) => { setError(id, msg); first ??= focus; };
   setError('category'); setError('title'); setError('content');
+  $('photoError').textContent = '';
   if (!category()) fail('category', '말머리를 골라 주세요.', $('categoryOptions').querySelector('input'));
   if (title.length < 2) fail('title', '제목을 2자 이상 써 주세요.', $('title'));
   if (content.length < 5) fail('content', '내용을 5자 이상 써 주세요.', $('content'));
+  if (photos.some((ph) => ph.state === 'uploading')) {
+    $('photoError').textContent = '사진을 올리는 중이에요. 다 올라간 뒤에 다시 눌러 주세요.';
+    first ??= $('photoInput');
+  } else if (photos.some((ph) => ph.state === 'error')) {
+    $('photoError').textContent = '올리지 못한 사진이 있어요. 그 사진을 빼고 다시 눌러 주세요.';
+    first ??= $('photoList').querySelector('.has-error .text-button');
+  }
   first?.focus();
   return !first;
 }
@@ -112,6 +217,7 @@ async function submit(e) {
     content: $('content').value.trim(),
     placeType: place?.type ?? null,
     placeId: place?.id ?? null,
+    photos: photos.map((ph) => ({ id: ph.id, alt: (ph.alt ?? '').trim() || null })),
   };
   $('submitButton').disabled = true;
   try {
@@ -143,6 +249,7 @@ async function init() {
       $('title').value = p.title;
       $('content').value = p.content;
       if (p.place) setPlace({ type: p.place.type, id: p.place.id, name: p.place.name });
+      photos = (p.photos ?? []).map((x) => ({ key: ++photoSeq, id: x.id, src: x.thumbUrl, alt: x.alt ?? '', state: 'done' }));
     } catch (err) {
       showAlert(err.message);
       return;
@@ -160,6 +267,12 @@ async function init() {
   $('placeFind').addEventListener('click', findPlaces);
   $('placeQ').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); findPlaces(); } });
   $('postForm').addEventListener('submit', submit);
+  $('photoInput').addEventListener('change', () => {
+    const files = $('photoInput').files;
+    if (files?.length) addFiles(files);
+    $('photoInput').value = '';   // 같은 사진을 다시 고를 수 있게
+  });
+  renderPhotos();
   $('postForm').hidden = false;
 }
 
