@@ -472,3 +472,33 @@ ul.card-reports { list-style: none; }
 
 /* 빈 목록: 상자 안에 안내 (흰 바탕에 글자 한 줄만 남지 않게) */
 .list-status:has(+ .admin-list:empty) { margin: 0; padding: var(--space-8) var(--space-4); border: 1px solid var(--admin-line); border-radius: var(--radius-large); background: var(--surface); text-align: center; }
+
+/* ---------- 회원 관리 (ADM-02) ---------- */
+.member-list .member-row { padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.member-main { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); }
+.member-open {
+  min-height: var(--touch-min); padding: 0; border: none; background: none;
+  color: var(--text-link, var(--color-primary-70)); font: inherit; font-weight: var(--font-weight-bold);
+  text-align: left; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; overflow-wrap: anywhere;
+}
+.member-open:hover { color: var(--color-primary-80); }
+.member-badges { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); }
+#searchForm input[type="search"] { flex: 1 1 240px; min-width: 0; }
+.member-info { margin: 0; display: grid; gap: var(--space-1); font-size: var(--font-body-small); }
+.member-info div { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: var(--space-2); }
+.member-info dt { color: var(--text-subtle); }
+.member-info dd { margin: 0; overflow-wrap: anywhere; white-space: pre-line; }
+.member-posts h3, .member-action h3 { margin: 0 0 var(--space-2); font-size: var(--font-body-medium); }
+.member-posts ul { margin: 0; padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--font-body-small); }
+.member-posts a { overflow-wrap: anywhere; }
+.member-action { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; padding-top: var(--space-4); border-top: 1px solid var(--border-divider); }
+.member-action[hidden] { display: none; }
+.member-action .field, .member-action .check { align-self: stretch; }
+.danger-zone { padding: var(--space-4); border: 1px solid var(--color-danger-10); border-radius: var(--radius-medium); background: var(--color-danger-5); }
+.danger-zone h3 { color: var(--color-danger-70); }
+.danger-zone .check { background: var(--surface); }
+.help-list { margin: 0; padding-left: var(--space-5); font-size: var(--font-body-small); display: flex; flex-direction: column; gap: var(--space-1); }
+.member-action .error { margin: 0; color: var(--color-danger-70); font-size: var(--font-body-small); font-weight: var(--font-weight-medium); }
+.member-action .error:empty { display: none; }
+.field textarea[aria-invalid="true"] { border-color: var(--color-danger-70); }
+.dialog-actions.single { grid-template-columns: 1fr; }

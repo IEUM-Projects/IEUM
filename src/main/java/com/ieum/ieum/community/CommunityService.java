@@ -395,7 +395,7 @@ public class CommunityService {
         return row;
     }
 
-    void recountComments(long postId) {
+    public void recountComments(long postId) {
         jdbc.update("UPDATE posts SET comment_count = (SELECT COUNT(*) FROM post_comments WHERE post_id = :id AND status = 'VISIBLE') WHERE id = :id",
                 new MapSqlParameterSource("id", postId));
     }

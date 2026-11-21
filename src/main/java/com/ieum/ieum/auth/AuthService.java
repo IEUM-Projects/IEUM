@@ -57,6 +57,7 @@ public class AuthService {
     private final EmailVerificationService emailVerificationService;
     private final com.ieum.ieum.policy.Policy policy;
     private final com.ieum.ieum.mail.MailService mailService;
+    private final com.ieum.ieum.user.BanService banService;
 
     /**
      * 가입 화면의 '중복 확인' (AUTH-01). 가입할 때도 서버가 다시 확인하므로(아래 signup) 이 결과는 안내용이다.
@@ -89,6 +90,9 @@ public class AuthService {
         }
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
+        }
+        if (banService.isBanned(com.ieum.ieum.user.BanService.Kind.EMAIL, email)) {   // 강제 탈퇴된 이메일 (ADM-02)
+            throw new BusinessException(ErrorCode.ACCOUNT_BANNED);
         }
         String problem = nicknamePolicy.problem(nickname);
         if (problem != null) {
@@ -148,8 +152,13 @@ public class AuthService {
     public AuthDtos.LoginResult loginWithSocial(AuthProvider provider, String providerId, String rawNickname) {
         LocalDateTime now = LocalDateTime.now();
         User user = userRepository.findByProviderAndProviderId(provider, providerId)
-                .orElseGet(() -> userRepository.save(
-                        User.createSocial(provider, providerId, nicknameGenerator.generate(rawNickname))));
+                .orElseGet(() -> {
+                    // 강제 탈퇴된 카카오 계정은 새로 가입시키지 않는다 (ADM-02)
+                    if (provider == AuthProvider.KAKAO && banService.isBanned(com.ieum.ieum.user.BanService.Kind.KAKAO, providerId)) {
+                        throw new BusinessException(ErrorCode.ACCOUNT_BANNED);
+                    }
+                    return userRepository.save(User.createSocial(provider, providerId, nicknameGenerator.generate(rawNickname)));
+                });
         if (user.getStatus() == UserStatus.WITHDRAWN) {
             throw new BusinessException(ErrorCode.ACCOUNT_WITHDRAWN);
         }
