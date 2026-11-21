@@ -89,7 +89,9 @@ public enum ErrorCode {
     PHOTO_TOO_MANY(HttpStatus.BAD_REQUEST, "사진은 글 하나에 4장까지 붙일 수 있어요."),
     PHOTO_NOT_FOUND(HttpStatus.BAD_REQUEST, "붙일 수 없는 사진이 있어요. 그 사진을 빼고 다시 올려 주세요."),
     PHOTO_PENDING_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "글에 붙이지 않은 사진이 많아요. 쓰던 글을 먼저 올리거나, 내일 다시 올려 주세요."),
-    PHOTO_DAILY_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "오늘은 사진을 더 올릴 수 없어요. 내일 다시 올려 주세요.");
+    PHOTO_DAILY_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "오늘은 사진을 더 올릴 수 없어요. 내일 다시 올려 주세요."),
+    // 동네 이야기 욕설·비속어 (COM-03). 어느 칸의 어떤 말인지는 details 에
+    PROFANITY(HttpStatus.BAD_REQUEST, "욕설이나 비속어가 들어 있어 올릴 수 없어요. 고쳐서 다시 올려 주세요.");
 
     private final HttpStatus status;
     private final String message;
