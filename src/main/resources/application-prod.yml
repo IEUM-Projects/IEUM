@@ -1,0 +1,41 @@
+# 운영 서버 설정 (DEPLOY-01)
+# 서버에서 --spring.profiles.active=prod 로 켜면 application.yml 위에 덮어 쓴다.
+# 비밀 값(DB 비밀번호, 카카오·JWT·공공데이터 키, 메일 비밀번호 등)은 여기 넣지 않는다.
+#   → 서버의 /etc/ieum/application-prod.yml (Git 밖, 권한 600) 에 넣고 --spring.config.additional-location=file:/etc/ieum/ 로 읽는다.
+#   → 두 파일의 이름이 같아도 서버 쪽 파일이 나중에 읽혀 같은 칸은 서버 쪽 값이 이긴다.
+
+server:
+  # Nginx 만 앱에 들어올 수 있게 같은 서버 안(127.0.0.1)에서만 듣는다. 밖에서 8080 으로 바로 들어올 수 없다
+  address: 127.0.0.1
+  port: 8080
+  shutdown: graceful          # 배포 때 처리 중인 요청을 마치고 끈다
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  jpa:
+    show-sql: false
+
+ieum:
+  site:
+    base-url: https://ieum.me.kr
+  auth:
+    email-verification: true
+  mail:
+    mode: smtp                # host·port·username·password·from 은 서버의 /etc/ieum/application-prod.yml 에
+  upload:
+    storage: s3
+    s3:
+      region: ap-northeast-2
+      prefix: photos/
+      # bucket 은 서버 쪽 파일에
+  security:
+    csp: report-only          # 한동안 로그('CSP 위반')를 보고 문제가 없으면 enforce 로
+
+logging:
+  file:
+    name: /var/log/ieum/ieum.log
+  logback:
+    rollingpolicy:
+      max-file-size: 20MB
+      max-history: 30
