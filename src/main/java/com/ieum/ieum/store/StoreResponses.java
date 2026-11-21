@@ -1,6 +1,7 @@
 package com.ieum.ieum.store;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * API가 돌려주는 응답 모양 (DTO).
@@ -23,13 +24,26 @@ public final class StoreResponses {
             BigDecimal latitude,
             BigDecimal longitude,
             String infoStatus,
-            int distanceM
+            int distanceM,
+            boolean onnuri
     ) {
         static Summary from(NearbyStoreRow row) {
             return new Summary(row.getId(), row.getName(), row.getType(), row.getCategory(),
                     row.getPhone(), row.getRoadAddress(), row.getLatitude(), row.getLongitude(),
-                    row.getInfoStatus(), row.getDistanceM() == null ? 0 : row.getDistanceM().intValue());
+                    row.getInfoStatus(), row.getDistanceM() == null ? 0 : row.getDistanceM().intValue(),
+                    row.getOnnuri() != null && row.getOnnuri() == 1);
         }
+    }
+
+    /** 온누리상품권 가맹 (DATA-04). 가맹으로 확인되지 않은 가게는 null (쓸 수 없다는 뜻이 아님) */
+    public record Onnuri(boolean paper, boolean digital, String marketName, Short registeredYear, java.time.LocalDate dataDate) {
+        static Onnuri of(com.ieum.ieum.onnuri.StoreOnnuri o) {
+            return o == null ? null : new Onnuri(o.isPaper(), o.isDigital(), o.getMarketName(), o.getRegisteredYear(), o.getDataDate());
+        }
+    }
+
+    /** 로컬크리에이터 연도별 선정 내용 (LOC-01, 중소벤처기업부 로컬크리에이터 리스트) */
+    public record Selection(int year, String item, List<String> fields, String organizer, java.time.LocalDate dataDate) {
     }
 
     /** 가게 상세 화면용 (MAP-02) */
@@ -48,15 +62,18 @@ public final class StoreResponses {
             BigDecimal latitude,
             BigDecimal longitude,
             InfoStatus infoStatus,
-            String kakaoMapUrl
+            String kakaoMapUrl,
+            String kakaoPlaceId,     // 가게 화면이 카카오맵에서 전화번호를 그때그때 불러올 때 씀 (DATA-05)
+            Onnuri onnuri,
+            List<Selection> creatorSelections
     ) {
-        static Detail from(Store s) {
+        static Detail from(Store s, com.ieum.ieum.onnuri.StoreOnnuri onnuri, List<Selection> selections) {
             String mapUrl = s.getKakaoPlaceId() == null ? null
                     : "https://place.map.kakao.com/" + s.getKakaoPlaceId();
             return new Detail(s.getId(), s.getName(), s.getType(), s.getCategory(), s.getPhone(),
                     s.getHours(), s.getHistory(), s.getCertifiedYear(), s.getSnsUrl(),
                     s.getRoadAddress(), s.getJibunAddress(), s.getLatitude(), s.getLongitude(),
-                    s.getInfoStatus(), mapUrl);
+                    s.getInfoStatus(), mapUrl, s.getKakaoPlaceId(), Onnuri.of(onnuri), selections);
         }
     }
 }

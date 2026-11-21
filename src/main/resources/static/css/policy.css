@@ -1,0 +1,50 @@
+/* 이용약관·개인정보 처리방침·동의 화면 (POL-01) */
+.policy-main { max-width: 800px; margin: 0 auto; padding: var(--space-6) var(--screen-margin) var(--space-12); display: flex; flex-direction: column; gap: var(--space-5); }
+.policy-main:focus { outline: none; }
+.policy-main > h1 { margin: 0; font-size: var(--font-heading-xlarge); }
+.policy-meta { margin: 0; color: var(--text-subtle); }
+.policy-toc { border: 1px solid var(--border-light); border-radius: var(--radius-large); padding: var(--space-4); background: var(--surface-subtle); }
+.policy-toc h2 { margin: 0 0 var(--space-2); font-size: var(--font-body-medium); }
+.policy-toc ol { margin: 0; padding-left: 1.4em; display: grid; gap: var(--space-1); }
+.policy-main section { display: flex; flex-direction: column; gap: var(--space-2); scroll-margin-top: var(--space-6); }
+.policy-main section h2 { margin: var(--space-2) 0 0; font-size: var(--font-heading-small); }
+.policy-main p, .policy-main li { line-height: 1.7; }
+.policy-main ul, .policy-main ol { margin: 0; padding-left: 1.4em; }
+.policy-table-wrap { overflow-x: auto; }
+.policy-table { width: 100%; border-collapse: collapse; font-size: var(--font-body-small); }
+.policy-table caption { text-align: left; font-weight: 700; padding-bottom: var(--space-2); }
+.policy-table th, .policy-table td { border: 1px solid var(--border-light); padding: var(--space-2) var(--space-3); text-align: left; vertical-align: top; line-height: 1.6; }
+.policy-table th { background: var(--surface-subtle); }
+.policy-note { margin: 0; padding: var(--space-3) var(--space-4); border-left: 4px solid var(--color-primary-50); background: var(--color-primary-5); border-radius: var(--radius-medium); }
+.policy-missing { color: var(--color-danger-70); font-weight: 700; }
+.policy-links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); }
+.policy-links a { font-weight: 700; }
+
+/* 동의 체크 (가입 화면, 동의 화면) */
+.agree-box { border: 1px solid var(--border-input); border-radius: var(--radius-large); padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); margin: var(--space-2) 0 var(--space-4); }
+.agree-box legend { font-weight: 700; padding: 0 var(--space-1); }
+.agree-all { border-bottom: 1px solid var(--border-divider); padding-bottom: var(--space-2); font-weight: 700; }
+.agree-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-height: var(--touch-min); }
+.agree-row label, .agree-all label { display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; min-height: var(--touch-min); }
+.agree-row input, .agree-all input { width: 22px; height: 22px; accent-color: var(--action-primary); flex: none; }
+.agree-row a { font-size: var(--font-body-small); white-space: nowrap; }
+.agree-summary { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.agree-summary summary { cursor: pointer; min-height: var(--touch-min); display: flex; align-items: center; color: var(--text-body); }
+.agree-summary table { margin-top: var(--space-2); }
+
+/* 짧은 바닥글 (로그인·가입·내 정보·약관 화면) */
+.mini-footer { max-width: 800px; margin: 0 auto; padding: var(--space-4) var(--screen-margin) var(--space-8); display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); font-size: var(--font-body-small); color: var(--text-subtle); }
+.mini-footer a { color: var(--text-body); }
+.mini-footer .privacy-link { font-weight: 700; color: var(--text-link); }
+
+/* 회원 탈퇴 (내 정보) */
+.withdraw-card h2 { margin: 0; font-size: var(--font-heading-small); }
+.withdraw-card .button-danger { min-height: var(--touch-min); border: 1px solid var(--color-danger-70); color: var(--color-danger-70); background: var(--surface); border-radius: var(--radius-medium); font: inherit; font-weight: 700; padding: 0 var(--space-4); cursor: pointer; }
+.withdraw-card .button-danger:hover { background: var(--color-danger-5); }
+.withdraw-card .button-danger[disabled] { opacity: .5; cursor: not-allowed; }
+.withdraw-card .field[hidden], .withdraw-card li[hidden] { display: none; }
+.kakao-note { margin: var(--space-2) 0 0; text-align: center; font-size: var(--font-body-small); color: var(--text-subtle); }
+.agree-changes { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
+.agree-changes[hidden] { display: none; }
+.agree-changes p, .agree-changes ul { margin: 0; }
+.agree-changes ul { padding-left: 1.2em; font-size: var(--font-body-small); }

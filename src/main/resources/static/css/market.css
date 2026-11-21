@@ -1,0 +1,145 @@
+/* 전통시장 상세 화면 (MKT-01) (값은 tokens.css) */
+body.market-page { background: var(--surface-subtle); }
+
+.site-header .back-link { flex: 1 1 0; }
+.center-logo { margin: 0; }
+.site-header .account { flex: 1 1 0; display: flex; justify-content: flex-end; }
+
+.market-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--screen-margin) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.market-main:focus { outline: none; }
+.icon-xsmall { width: 14px; height: 14px; flex: none; }
+
+.title-block { display: flex; flex-direction: column; gap: var(--space-2); }
+.badges { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+.market-main h1 { font-size: var(--font-heading-xlarge); margin: 0; }
+
+/* 장날 상자 */
+.day-box {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-left-width: 1px;
+  border-radius: var(--radius-large);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.day-box h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-body-small);
+  color: var(--text-subtle);
+}
+.day-main { margin: 0; font-size: var(--font-body-large); font-weight: var(--font-weight-bold); }
+.day-status { margin: 0; font-weight: var(--font-weight-bold); color: var(--text-link); }
+.day-status:empty { display: none; }
+.day-status.today {
+  align-self: flex-start;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-small);
+  background: var(--color-primary-5);
+}
+.day-sub { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+
+/* 기본 정보 */
+.info {
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-large);
+  padding: 0 var(--space-4);
+}
+.info div {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-divider);
+}
+.info div:last-child { border-bottom: none; }
+.info dt { color: var(--text-subtle); font-size: var(--font-body-small); }
+.info dd { margin: 0; }
+.goods { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.goods li {
+  font-size: var(--font-body-small);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-small);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-light);
+}
+
+/* 근처 백년가게, 같은 건물의 시장 */
+.near h2 { font-size: var(--font-heading-small); margin: 0 0 var(--space-2); }
+.near-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.near-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: var(--touch-min);
+  justify-content: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-large);
+  color: var(--text-body);
+  text-decoration: none;
+}
+.near-item:hover { border-color: var(--action-primary); color: var(--text-body); }
+.near-item:hover strong { color: var(--text-link); text-decoration: underline; }
+.near-name { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.near-meta { font-size: var(--font-body-small); color: var(--text-subtle); }
+.near .empty { margin: 0; color: var(--text-subtle); font-size: var(--font-body-small); }
+
+.actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.actions .wide { grid-column: 1 / -1; min-height: 52px; }
+.source { margin: 0; font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+.loading, .error { color: var(--text-subtle); margin: 0; }
+
+/* 편의시설 (DATA-01) */
+.facility-box { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); padding: var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--space-4); }
+.facility-box h2 { margin: 0; font-size: var(--font-heading-small); }
+.facility-group h3 { margin: 0 0 var(--space-2); font-size: var(--font-body-small); color: var(--text-subtle); }
+.facility-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.facility-list li { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3); border-radius: var(--radius-small); border: 1px solid var(--border-light); background: var(--surface); color: var(--text-body); font-size: var(--font-body-small); font-weight: var(--font-weight-medium); }
+.facility-list .icon-xsmall { color: var(--color-primary-60); }
+.facility-none { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.facility-note { margin: 0; font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+
+/* 주변 관광지 (TOUR-01) */
+.tour-box .course-link { margin-top: var(--space-3); display: flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 52px; }
+.tour-source { margin: 0 0 var(--space-2); font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+.tour-item { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3); background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-medium); }
+.tour-photo { flex: none; width: 96px; margin: 0; }
+.tour-photo img { display: block; width: 96px; height: 72px; object-fit: contain; background: var(--surface-subtle); border-radius: var(--radius-small); }
+.tour-photo figcaption { font-size: var(--font-body-xsmall); line-height: 1.3; color: var(--text-subtle); margin-top: 2px; }
+.tour-item strong { overflow-wrap: anywhere; }
+
+/* 시장 이야기 (MKT-02) */
+.story-box[hidden] { display: none; }
+.story-box { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); }
+.story-box h2 { margin: 0; }
+#storyContent { display: flex; flex-direction: column; gap: var(--space-5); }
+.story-main, .story-tour { display: flex; flex-direction: column; gap: var(--space-2); }
+.story-tour { padding-top: var(--space-4); border-top: 1px solid var(--border-light); }
+.story-text { margin: 0; white-space: pre-line; line-height: 1.7; overflow-wrap: anywhere; word-break: keep-all; }
+.story-sub { margin: var(--space-2) 0 0; font-size: var(--font-body-medium); }
+.story-tour .story-sub { margin-top: 0; }
+.story-meta, .story-note { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.story-sources { margin: 0; padding-left: var(--space-5); display: flex; flex-direction: column; gap: var(--space-1); }
+.story-sources a { display: inline-flex; align-items: center; min-height: var(--touch-min); overflow-wrap: anywhere; }
+
+/* UI-04: 근처 가게·크리에이터·관광지를 따로 떨어진 카드 대신 한 상자 안의 줄 목록으로 */
+.near-list { gap: 0; background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); overflow: hidden; }
+.near-list > li + li { border-top: 1px solid var(--border-divider); }
+.near-list .near-item, .near-list .tour-item { border: 0; border-radius: 0; }
+.near-list .near-item:hover { background: var(--surface-subtle); }
+.near-list .tour-item + .tour-item { border-top: 1px solid var(--border-divider); }

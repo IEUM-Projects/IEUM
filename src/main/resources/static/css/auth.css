@@ -1,0 +1,193 @@
+/* 로그인·회원가입·내 정보 화면 (값은 tokens.css) */
+body.auth-page { background: var(--surface-subtle); min-height: 100dvh; }
+
+.auth-page .site-header .back-link { flex: 1 1 0; }
+.auth-page .site-header .logo { margin: 0; }
+.auth-page .site-header .header-spacer { flex: 1 1 0; }
+
+.auth-main { max-width: 440px; margin: 0 auto; padding: var(--space-6) var(--screen-margin) var(--space-12); }
+.auth-main:focus { outline: none; }
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-large);
+  padding: var(--space-8) var(--space-5);
+}
+.auth-card h1 { font-size: var(--font-heading-xlarge); margin: 0 0 var(--space-1); }
+.auth-card .lead { color: var(--text-subtle); margin: 0 0 var(--space-6); }
+
+/* ---------- 입력칸 ---------- */
+.field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-5); }
+.field label { font-size: var(--font-body-small); font-weight: var(--font-weight-bold); }
+.field input {
+  min-height: 52px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-input);
+  border-radius: var(--radius-medium);
+  background: var(--surface);
+  font-size: var(--font-body-medium);
+}
+.field input:hover { border-color: var(--color-gray-70); }
+.field input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 0; border-color: var(--focus-ring); }
+/* 오류: 빨간 테두리를 2px로 두껍게 해서 색을 구분하기 어려운 사람도 알아보게 */
+.field input[aria-invalid="true"] { border: 2px solid var(--color-danger-50); padding: 0 calc(var(--space-4) - 1px); }
+.field .error {
+  display: flex;
+  gap: var(--space-1);
+  align-items: flex-start;
+  margin: 0;
+  color: var(--color-danger-70);
+  font-size: var(--font-body-small);
+}
+.field .error::before {
+  content: "";
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7.5v5.5M12 16v.5'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7.5v5.5M12 16v.5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.field .error:empty { display: none; }
+.field .help { color: var(--text-subtle); font-size: var(--font-body-small); margin: 0; }
+
+/* ---------- 화면 위쪽 안내 상자 (오류 / 완료) ---------- */
+.form-alert {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin: 0 0 var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-medium);
+  background: var(--color-danger-5);
+  border: 1px solid var(--color-danger-10);
+  color: var(--color-danger-70);
+  font-size: var(--font-body-small);
+}
+.form-alert[hidden] { display: none; }
+.form-alert::before {
+  content: "";
+  flex: none;
+  width: 22px;
+  height: 22px;
+  background: var(--color-danger-50);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7.5v5.5M12 16v.5'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7.5v5.5M12 16v.5'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.form-alert.success { background: var(--color-success-5); border-color: var(--color-success-10); color: var(--color-success-60); }
+.form-alert.success::before {
+  background: var(--color-success-60);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M8 12.5l2.7 2.7L16 9.8'/%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M8 12.5l2.7 2.7L16 9.8'/%3E%3C/svg%3E");
+}
+
+.auth-card .button-primary, .auth-card .button-secondary { min-height: 52px; }
+
+.divider { display: flex; align-items: center; gap: var(--space-3); color: var(--text-subtle); font-size: var(--font-body-small); margin: var(--space-6) 0; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border-light); }
+
+/* 카카오 버튼: 카카오 디자인 가이드의 색을 그대로 쓴다 */
+.kakao-button {
+  width: 100%;
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-medium);
+  background: #fee500;
+  color: rgba(0, 0, 0, 0.85);
+  font-size: var(--font-body-medium);
+  font-weight: var(--font-weight-bold);
+}
+.kakao-button:hover { background: #f5dc00; }
+.kakao-button svg { width: 20px; height: 20px; }
+
+.switch-link { text-align: center; font-size: var(--font-body-small); color: var(--text-subtle); margin: var(--space-6) 0 0; }
+.switch-link a { font-weight: var(--font-weight-bold); }
+
+/* ---------- 비밀번호 규칙 체크 목록 (색 + 기호 + 글자로 상태 표시) ---------- */
+/* 비밀번호 규칙: 늘 보이는 두 줄 + 어긴 규칙만 빨간 줄 (AUTH-01에서 정리) */
+.rules { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); font-size: var(--font-body-small); }
+.rules li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-2); padding-left: 26px; position: relative; color: var(--text-subtle); line-height: 1.5; }
+.rules li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--color-gray-40);
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 13px;
+  text-align: center;
+  font-weight: var(--font-weight-bold);
+}
+.rules li.ok { color: var(--text-body); }
+.rules li.ok::before { content: "✓"; border-color: var(--color-success-60); background: var(--color-success-60); color: var(--surface); }
+.rules li.bad { color: var(--color-danger-70); }
+.rules li.bad::before { content: "!"; border-color: var(--color-danger-50); background: var(--color-danger-50); color: var(--surface); }
+.rules .rule-count { color: var(--text-subtle); font-size: var(--font-body-xsmall); font-variant-numeric: tabular-nums; }
+.rules + .help { margin: var(--space-1) 0 0; font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+
+/* ---------- 내 정보 ---------- */
+.info-list { margin: 0 0 var(--space-6); border-top: 1px solid var(--border-divider); }
+.info-list div {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-divider);
+}
+.info-list dt { color: var(--text-subtle); font-size: var(--font-body-small); }
+.info-list dd { margin: 0; overflow-wrap: anywhere; }
+.inline-form { display: flex; gap: var(--space-2); }
+.inline-form input { flex: 1; min-width: 0; }
+.inline-form .button-primary, .inline-form .button-secondary { flex: none; }
+.inline-form .button-secondary { min-height: 52px; padding: 0 var(--space-4); border-color: var(--border-input); color: var(--text-body); }
+.inline-form .button-secondary:hover { background: var(--surface-subtle); }
+/* 이메일 인증번호 (AUTH-02) */
+.code-box { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); padding: var(--space-3) var(--space-4); border: 1px solid var(--border-light); border-radius: var(--radius-medium); background: var(--surface-subtle); }
+.code-box[hidden], .change-email[hidden], #sendCode[hidden] { display: none; }
+.code-box label { font-size: var(--font-body-small); font-weight: var(--font-weight-bold); }
+.code-box input { letter-spacing: 0.3em; font-variant-numeric: tabular-nums; }
+.code-box .help { margin: 0; }
+#codeTimer { font-variant-numeric: tabular-nums; font-weight: var(--font-weight-medium); color: var(--text-body); }
+.link-button { display: inline; min-height: 0; padding: 0; border: 0; background: none; color: var(--text-link); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.link-button:disabled { color: var(--text-subtle); text-decoration: none; cursor: default; }
+.change-email { align-self: flex-start; min-height: var(--touch-min); font-size: var(--font-body-small); }
+.field input[readonly] { background: var(--surface-subtle); color: var(--text-subtle); }
+/* 닉네임 중복 확인 결과 (AUTH-01): 초록 글자 + 체크 표시 (색만으로 구분하지 않게) */
+.field .ok { margin: 0; color: var(--color-success-60); font-size: var(--font-body-small); font-weight: var(--font-weight-medium); }
+.field .ok:empty { display: none; }
+.field .ok::before { content: "✓ "; font-weight: var(--font-weight-bold); }
+
+/* ---------- 내 제보 (STO-01) ---------- */
+.reports-card { margin-top: var(--space-5); }
+.reports-card h2 { font-size: var(--font-heading-medium); margin: 0 0 var(--space-1); }
+.reports-status { margin: 0; color: var(--text-subtle); font-size: var(--font-body-small); }
+.reports-status:empty { display: none; }
+.report-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.report-item { display: flex; flex-direction: column; gap: 2px; padding: var(--space-4) 0; border-top: 1px solid var(--border-divider); }
+.report-item:first-child { border-top: none; padding-top: 0; }
+.report-top { display: flex; align-items: center; gap: var(--space-2); }
+.report-status { font-size: var(--font-body-xsmall); font-weight: var(--font-weight-bold); padding: 2px var(--space-2); border-radius: var(--radius-xsmall); }
+.report-received { background: var(--surface-subtle); color: var(--text-subtle); }
+.report-applied { background: var(--color-success-5); color: var(--color-success-60); }
+.report-rejected { background: var(--color-danger-5); color: var(--color-danger-70); }
+.report-date { font-size: var(--font-body-xsmall); color: var(--text-subtle); }
+.report-store-link { align-self: flex-start; display: inline-flex; align-items: center; min-height: var(--touch-min); font-weight: var(--font-weight-bold); }
+.report-store-name { display: inline-flex; align-items: center; min-height: var(--touch-min); }
+.report-note-date { color: var(--text-subtle); }
+.report-type, .report-content, .report-note { margin: 0; font-size: var(--font-body-small); }
+.report-content { color: var(--text-subtle); white-space: pre-line; overflow-wrap: anywhere; }
+.report-note { color: var(--text-body); background: var(--surface-subtle); padding: var(--space-2) var(--space-3); border-radius: var(--radius-small); margin-top: var(--space-1); }
+
+/* 로그인 화면의 '비밀번호를 잊으셨나요?' (AUTH-03) */
+.find-password { margin: calc(var(--space-2) * -1) 0 var(--space-4); text-align: right; font-size: var(--font-body-small); }
+.find-password a { display: inline-block; padding: var(--space-1) 0; color: var(--text-subtle); }
+.find-password a:hover { color: var(--text-link-hover); }

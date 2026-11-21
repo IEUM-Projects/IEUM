@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <title>알림 - 이음</title>
+  <meta name="description" content="내 글에 달린 댓글, 제보 처리 결과 같은 이음 알림이에요.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#11473d">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 링크 미리보기 (SEO-01): __SITE_URL__ 은 서버가 사이트 주소로 바꿔서 보낸다 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="이음">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="알림 - 이음">
+  <meta property="og:description" content="내 글에 달린 댓글, 제보 처리 결과 같은 이음 알림이에요.">
+  <meta property="og:image" content="__SITE_URL__/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="이음 - 우리 동네 백년가게·시장·축제">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/notifications.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
+</head>
+<body class="noti-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>홈
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <div id="account" class="account"></div>
+  </header>
+  <main id="main" class="noti-main" tabindex="-1">
+    <div class="noti-head">
+      <h1>알림</h1>
+      <button type="button" id="readAll" class="button-secondary" hidden>모두 읽음</button>
+    </div>
+    <p id="listStatus" class="list-status" role="status">불러오는 중...</p>
+    <ul id="notiList" class="noti-list"></ul>
+    <button type="button" id="more" class="button-secondary wide" hidden>더 보기</button>
+    <p class="noti-note">내 글에 달린 댓글, 영업 정보 제보 처리 결과, 내 글·댓글 가림, 추천 확인 결과를 알려 드려요. 알림은 90일 동안 보관해요.</p>
+  </main>
+  <script type="module" src="/js/notifications.js"></script>
+</body>
+</html>

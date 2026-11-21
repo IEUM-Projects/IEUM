@@ -1,0 +1,31 @@
+# 이음 서버 (DEPLOY-01) → /etc/systemd/system/ieum.service
+# 켜기·끄기: sudo systemctl start|stop|restart ieum   상태: systemctl status ieum   로그: journalctl -u ieum -f
+[Unit]
+Description=IEUM web app
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ieum
+Group=ieum
+WorkingDirectory=/opt/ieum
+Environment=TZ=Asia/Seoul
+# 운영 설정: jar 안의 application-prod.yml + 서버의 /etc/ieum/application-prod.yml (비밀 값)
+ExecStart=/usr/bin/java -Xms256m -Xmx1024m -XX:+ExitOnOutOfMemoryError -Duser.timezone=Asia/Seoul \
+  -jar /opt/ieum/current.jar \
+  --spring.profiles.active=prod \
+  --spring.config.additional-location=optional:file:/etc/ieum/
+# 끄라는 신호(SIGTERM)로 끝나면 정상 종료로 본다
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=40
+# 이음 서버가 서버의 다른 곳을 건드리지 못하게
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/log/ieum /opt/ieum
+
+[Install]
+WantedBy=multi-user.target

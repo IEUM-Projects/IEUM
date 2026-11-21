@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <title>걷기 코스 - 이음</title>
+  <meta name="description" content="전통시장 주변을 걸어서 둘러보는 코스예요.">
+  <meta name="theme-color" content="#11473d">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 링크 미리보기 (SEO-01): __SITE_URL__ 은 서버가 사이트 주소로 바꿔서 보낸다 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="이음">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="걷기 코스 - 이음">
+  <meta property="og:description" content="전통시장 주변을 걸어서 둘러보는 코스예요.">
+  <meta property="og:image" content="__SITE_URL__/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="이음 - 우리 동네 백년가게·시장·축제">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/course.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
+</head>
+<body class="course-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/map.html" class="back-link" id="backLink">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span id="backText">지도</span>
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <div id="account" class="account"></div>
+  </header>
+  <main id="main" class="course-main" tabindex="-1">
+    <p class="eyebrow">걷기 코스</p>
+    <h1 id="courseTitle">코스를 만드는 중...</h1>
+    <p id="summary" class="summary" role="status"></p>
+    <div id="courseMap" class="course-map" role="img" aria-label="코스 지도"></div>
+    <section aria-labelledby="stopsTitle">
+      <h2 id="stopsTitle">들르는 곳</h2>
+      <ol id="stops" class="stops"></ol>
+    </section>
+    <section aria-labelledby="addTitle" class="add-box">
+      <h2 id="addTitle">더 넣을 곳</h2>
+      <div class="tabs" role="tablist" aria-label="더 넣을 곳 종류">
+        <button type="button" role="tab" id="tab-store" aria-selected="true" aria-controls="candPanel" data-kind="store">백년가게</button>
+        <button type="button" role="tab" id="tab-creator" aria-selected="false" tabindex="-1" aria-controls="candPanel" data-kind="creator">로컬크리에이터</button>
+        <button type="button" role="tab" id="tab-12" aria-selected="false" tabindex="-1" aria-controls="candPanel" data-kind="12">관광지</button>
+        <button type="button" role="tab" id="tab-14" aria-selected="false" tabindex="-1" aria-controls="candPanel" data-kind="14">문화시설</button>
+        <button type="button" role="tab" id="tab-28" aria-selected="false" tabindex="-1" aria-controls="candPanel" data-kind="28">레포츠</button>
+        <button type="button" role="tab" id="tab-25" aria-selected="false" tabindex="-1" aria-controls="candPanel" data-kind="25">여행코스</button>
+      </div>
+      <div id="candPanel" role="tabpanel" aria-labelledby="tab-store" tabindex="-1">
+        <ul id="candidates" class="candidates"></ul>
+      </div>
+    </section>
+    <p class="note" id="note"></p>
+  </main>
+  <p id="toast" class="toast" role="status" hidden></p>
+  <script type="module" src="/js/course.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <title>로컬크리에이터 모아 보기 - 이음</title>
+  <meta name="description" content="지역을 바탕으로 활동하는 로컬크리에이터를 지역별로 찾아보세요.">
+  <meta name="theme-color" content="#11473d">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 링크 미리보기 (SEO-01): __SITE_URL__ 은 서버가 사이트 주소로 바꿔서 보낸다 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="이음">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="로컬크리에이터 모아 보기 - 이음">
+  <meta property="og:description" content="지역을 바탕으로 활동하는 로컬크리에이터를 지역별로 찾아보세요.">
+  <meta property="og:image" content="__SITE_URL__/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="이음 - 우리 동네 백년가게·시장·축제">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:url" content="__SITE_URL__/creators.html">
+  <link rel="canonical" href="__SITE_URL__/creators.html">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/course.css">
+  <link rel="stylesheet" href="/css/creators.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
+</head>
+<body class="course-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span>홈</span>
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <div id="account" class="account"></div>
+  </header>
+  <main id="main" class="course-main creators-main" tabindex="-1">
+    <p class="eyebrow">동네 찾기</p>
+    <h1>로컬크리에이터 모아 보기</h1>
+    <p class="creators-lead">지역을 고르면 그 지역의 로컬크리에이터를 모두 보여 드려요. 지원사업 선정 목록이라 지금 운영 중인지는 확인하지 못했어요.</p>
+
+    <section class="filter-box" aria-labelledby="filterTitle">
+      <h2 id="filterTitle" class="sr-only">지역과 분야 고르기</h2>
+      <div class="filter-row">
+        <label>시·도
+          <select id="sidoSelect"><option value="">전국</option></select>
+        </label>
+        <label>시·군·구
+          <select id="sigunguSelect" disabled><option value="">전체</option></select>
+        </label>
+      </div>
+      <div class="field-chips" role="group" aria-label="분야" id="fieldChips"></div>
+    </section>
+
+    <p id="creatorStatus" class="creator-status" role="status"></p>
+    <ul id="creatorList" class="creator-cards"></ul>
+    <button type="button" id="moreButton" class="button-secondary wide" hidden>더 보기</button>
+    <p class="note" id="creatorNote"></p>
+  </main>
+  <script type="module" src="/js/creators.js"></script>
+</body>
+</html>

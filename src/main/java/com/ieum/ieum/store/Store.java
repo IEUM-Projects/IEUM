@@ -113,4 +113,40 @@ public class Store {
 
     @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime updatedAt;
+
+    // ---------------------------------------------------------------- 관리자 수정 (ADM-01)
+    // 바꾸는 곳을 찾기 쉽게 setter 대신 이름 붙은 메서드로만 고친다. 기록(store_edit_logs)은 AdminReportService가 남긴다.
+
+    /** 영업 상태 변경. 폐업이면 지도·목록에서 숨기고, 폐업을 되돌리면 좌표가 있을 때 다시 보이게 한다 */
+    public void changeInfoStatus(InfoStatus status) {
+        this.infoStatus = status;
+        this.visible = status != InfoStatus.CLOSED && latitude != null && longitude != null;
+    }
+
+    public void changeHours(String hours) {
+        this.hours = hours;
+    }
+
+    public void changePhone(String phone) {
+        this.phone = phone;
+    }
+
+    /**
+     * 주소 변경 (가게 이전). 좌표와 지역도 새 주소 기준으로 바꾼다.
+     * 지번 주소와 카카오 장소 번호는 옛 주소 기준이라 지운다 (틀린 정보를 보여 주지 않도록).
+     * 카카오맵 연결은 다시 찾도록 '확인 필요'로 둔다 (관리자 장소 정보 화면, DATA-05).
+     */
+    public void moveTo(String roadAddress, double lat, double lng, String sidoCode, String sigunguCode) {
+        this.roadAddress = roadAddress;
+        this.jibunAddress = null;
+        this.kakaoPlaceId = null;
+        this.latitude = BigDecimal.valueOf(lat).setScale(7, java.math.RoundingMode.HALF_UP);
+        this.longitude = BigDecimal.valueOf(lng).setScale(7, java.math.RoundingMode.HALF_UP);
+        this.sidoCode = sidoCode;
+        this.sigunguCode = sigunguCode;
+        this.bCode = null;
+        this.geocodeStatus = "OK";
+        this.enrichStatus = "REVIEW";
+        this.visible = infoStatus != InfoStatus.CLOSED;
+    }
 }

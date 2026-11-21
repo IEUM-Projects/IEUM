@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="robots" content="noindex">
+  <title>공지 관리 - 관리자 - 이음</title>
+  <meta name="description" content="내 주변 백년가게와 오늘 장 서는 전통시장, 이번 주 근처 축제를 한곳에서 찾아보세요.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#11473d">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 링크 미리보기 (SEO-01): __SITE_URL__ 은 서버가 사이트 주소로 바꿔서 보낸다 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="이음">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="공지 관리 - 관리자 - 이음">
+  <meta property="og:description" content="내 주변 백년가게와 오늘 장 서는 전통시장, 이번 주 근처 축제를 한곳에서 찾아보세요.">
+  <meta property="og:image" content="__SITE_URL__/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="이음 - 우리 동네 백년가게·시장·축제">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
+</head>
+<body class="admin-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header admin-header">
+    <a class="logo" href="/">이음</a>
+    <span class="admin-tag">관리자</span>
+    <div id="account" class="account"></div>
+  </header>
+
+  <div class="admin-shell">
+    <nav class="admin-nav" aria-label="관리 메뉴">
+      <p class="admin-nav-group" id="navg-ops">운영</p>
+      <ul aria-labelledby="navg-ops">
+        <li><a href="/admin-home.html">요약</a></li>
+        <li><a href="/admin.html">제보 처리</a></li>
+        <li><a href="/admin-community.html">동네 이야기</a></li>
+        <li><a href="/admin-users.html">회원 관리</a></li>
+        <li><a href="/admin-notices.html" aria-current="page">공지사항</a></li>
+        <li><a href="/admin-logs.html">작업 기록</a></li>
+      </ul>
+      <p class="admin-nav-group" id="navg-data">데이터 확인</p>
+      <ul aria-labelledby="navg-data">
+        <li><a href="/admin-places.html">장소 정보</a></li>
+        <li><a href="/admin-closures.html">폐업 의심</a></li>
+        <li><a href="/admin-markets.html">시장 연결 확인</a></li>
+        <li><a href="/admin-stories.html">시장 이야기</a></li>
+      </ul>
+    </nav>
+  <main id="main" class="admin-main" tabindex="-1">
+    <h1>공지사항 관리</h1>
+
+    <p id="gate" class="gate" role="status">확인하는 중...</p>
+
+    <div id="workspace" hidden>
+      <div class="notice-tools">
+        <p id="listStatus" class="list-status" role="status"></p>
+        <button type="button" id="newButton" class="button-primary">새 공지 쓰기</button>
+      </div>
+      <ul id="list" class="admin-list"></ul>
+      <button type="button" id="moreButton" class="button-secondary more-button" hidden>더 보기</button>
+    </div>
+  </main>
+  </div>
+
+  <p id="toast" class="toast" role="status" hidden></p>
+
+  <dialog id="noticeDialog" class="review-dialog" aria-labelledby="dialogTitle">
+    <form id="noticeForm" class="review-form" novalidate>
+      <div class="dialog-head">
+        <h2 id="dialogTitle">새 공지 쓰기</h2>
+        <button type="button" class="icon-button" id="closeDialog" aria-label="닫기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p id="dialogAlert" class="dialog-alert" role="alert" tabindex="-1" hidden></p>
+        <div class="field">
+          <label for="title">제목</label>
+          <input id="title" type="text" maxlength="100" autocomplete="off" required aria-describedby="titleCount">
+          <p class="help"><span id="titleCount">0/100</span></p>
+        </div>
+        <div class="field">
+          <label for="content">내용</label>
+          <textarea id="content" rows="10" maxlength="5000" required aria-describedby="contentHelp contentCount"></textarea>
+          <p class="help"><span id="contentHelp">글자만 써 주세요. 줄바꿈은 그대로 보여요. (HTML·링크 꾸밈은 적용되지 않아요)</span> <span id="contentCount">0/5000</span></p>
+        </div>
+        <fieldset class="set">
+          <legend>보이기</legend>
+          <div class="check-row">
+            <label class="check"><input type="checkbox" id="visible" checked> 공개</label>
+            <label class="check"><input type="checkbox" id="pinned"> 목록 맨 위에 고정 <span class="hint">(3개까지)</span></label>
+          </div>
+          <p class="help">공개를 끄면 숨겨져서 관리자만 볼 수 있어요. 공지는 지우지 않고 숨겨서 내려요.</p>
+        </fieldset>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="button-secondary" id="cancelButton">닫기</button>
+        <button type="submit" class="button-primary" id="submitButton">올리기</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/admin-nav.js"></script>
+  <script type="module" src="/js/admin-notices.js"></script>
+</body>
+</html>

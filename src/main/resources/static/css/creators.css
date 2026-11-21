@@ -1,0 +1,22 @@
+/* 로컬크리에이터 모아 보기 (LOC-01) (값은 tokens.css) */
+.creators-lead { margin: 0; color: var(--text-subtle); }
+.filter-box { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); }
+.filter-row { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.filter-row label { display: flex; flex-direction: column; gap: var(--space-1); flex: 1 1 140px; min-width: 0; font-weight: var(--font-weight-bold); }
+.filter-row select { min-height: var(--touch-min); padding: 0 var(--space-3); border: 1px solid var(--border-input); border-radius: var(--radius-medium); background: var(--surface); color: var(--text-body); font: inherit; font-weight: normal; }
+.filter-row select:disabled { background: var(--surface-subtle); color: var(--text-subtle); }
+.field-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.field-chips .chip { min-height: var(--touch-min); padding: 0 var(--space-3); border: 1px solid var(--border-control); border-radius: var(--radius-small); background: var(--surface); color: var(--text-body); font: inherit; }
+.field-chips .chip[aria-pressed="true"] { background: var(--color-primary-70); border-color: var(--color-primary-70); color: #fff; font-weight: var(--font-weight-bold); }
+.creator-status { margin: 0; font-weight: var(--font-weight-bold); }
+.creator-cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.creator-card { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-4); background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); }
+.creator-name { margin: 0; font-size: var(--font-body-large); overflow-wrap: anywhere; }
+.creator-name a { color: var(--text-body); }
+.creator-name a:hover { color: var(--text-link); }
+.creator-fields { display: flex; flex-wrap: wrap; gap: var(--space-1); margin: 0; }
+.creator-card .creator-item { margin: 0; }
+.creator-card .creator-meta { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); overflow-wrap: anywhere; }
+.creator-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0; }
+.creator-nomap { font-size: var(--font-body-small); color: var(--text-subtle); }
+#moreButton[hidden] { display: none; }   /* .button-secondary 의 display 가 hidden 을 덮지 않게 */

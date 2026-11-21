@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <meta name="robots" content="noindex">
+  <title>장소 정보 - 관리자 - 이음</title>
+  <meta name="description" content="내 주변 백년가게와 오늘 장 서는 전통시장, 이번 주 근처 축제를 한곳에서 찾아보세요.">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#11473d">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 링크 미리보기 (SEO-01): __SITE_URL__ 은 서버가 사이트 주소로 바꿔서 보낸다 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="이음">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="장소 정보 - 관리자 - 이음">
+  <meta property="og:description" content="내 주변 백년가게와 오늘 장 서는 전통시장, 이번 주 근처 축제를 한곳에서 찾아보세요.">
+  <meta property="og:image" content="__SITE_URL__/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="이음 - 우리 동네 백년가게·시장·축제">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
+</head>
+<body class="admin-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header admin-header">
+    <a class="logo" href="/">이음</a>
+    <span class="admin-tag">관리자</span>
+    <div id="account" class="account"></div>
+  </header>
+
+  <div class="admin-shell">
+    <nav class="admin-nav" aria-label="관리 메뉴">
+      <p class="admin-nav-group" id="navg-ops">운영</p>
+      <ul aria-labelledby="navg-ops">
+        <li><a href="/admin-home.html">요약</a></li>
+        <li><a href="/admin.html">제보 처리</a></li>
+        <li><a href="/admin-community.html">동네 이야기</a></li>
+        <li><a href="/admin-users.html">회원 관리</a></li>
+        <li><a href="/admin-notices.html">공지사항</a></li>
+        <li><a href="/admin-logs.html">작업 기록</a></li>
+      </ul>
+      <p class="admin-nav-group" id="navg-data">데이터 확인</p>
+      <ul aria-labelledby="navg-data">
+        <li><a href="/admin-places.html" aria-current="page">장소 정보</a></li>
+        <li><a href="/admin-closures.html">폐업 의심</a></li>
+        <li><a href="/admin-markets.html">시장 연결 확인</a></li>
+        <li><a href="/admin-stories.html">시장 이야기</a></li>
+      </ul>
+    </nav>
+  <main id="main" class="admin-main" tabindex="-1">
+    <h1>장소 정보</h1>
+    <p class="lead">가게 좌표는 브이월드(국토교통부) 주소 검색으로 찾고, 카카오맵과는 <strong>장소 ID만</strong> 이어 둬요. 카카오 로컬 API의 이름·주소·좌표·전화번호는 저장할 수 없어서, 아래 카카오맵 후보도 볼 때마다 새로 불러오고 저장하지 않아요.</p>
+
+    <p id="gate" class="gate" role="status">확인하는 중...</p>
+
+    <div id="workspace" hidden>
+      <section class="check-summary" aria-labelledby="jobTitle">
+        <h2 id="jobTitle">자동으로 채우기</h2>
+        <p id="jobGeocode" class="run-status"></p>
+        <p id="jobLink" class="run-status"></p>
+        <div class="run-row">
+          <button type="button" id="geocodeButton" class="button-secondary">못 찾은 좌표 다시 찾기</button>
+          <button type="button" id="linkButton" class="button-secondary">카카오맵 자동 연결</button>
+        </div>
+        <p class="help">서버를 켤 때도 새 가게의 좌표 찾기와 카카오맵 연결을 해요. 자동 연결은 이름이 같고 우리 좌표에서 300m 안인 곳만 잇고, 나머지는 '확인 필요'에 넣어요. 버튼을 누르면 '확인 필요' 중 관리자가 아직 손대지 않은 곳도 다시 찾아봐요 ('주식회사', 괄호 안 이름 등을 나눠서).</p>
+      </section>
+
+      <form id="filterForm" class="place-filter" role="search">
+        <label for="typeSelect">가게 종류</label>
+        <select id="typeSelect">
+          <option value="">전체</option>
+          <option value="CENTURY">백년가게</option>
+          <option value="CREATOR">로컬크리에이터</option>
+        </select>
+        <label for="q" class="sr-only">가게 이름이나 주소</label>
+        <input id="q" type="search" maxlength="50" autocomplete="off" placeholder="가게 이름이나 주소">
+        <button type="submit" class="button-secondary">찾기</button>
+      </form>
+
+      <div class="tabs link-tabs" role="tablist" aria-label="장소 정보 상태">
+        <button type="button" role="tab" id="tab-REVIEW" aria-controls="panel" aria-selected="true" data-tab="REVIEW">확인 필요 <span class="count" id="count-REVIEW"></span></button>
+        <button type="button" role="tab" id="tab-NO_COORD" aria-controls="panel" aria-selected="false" tabindex="-1" data-tab="NO_COORD">좌표 없음 <span class="count" id="count-NO_COORD"></span></button>
+        <button type="button" role="tab" id="tab-NO_CATEGORY" aria-controls="panel" aria-selected="false" tabindex="-1" data-tab="NO_CATEGORY">분류 없음 <span class="count" id="count-NO_CATEGORY"></span></button>
+        <button type="button" role="tab" id="tab-LINKED" aria-controls="panel" aria-selected="false" tabindex="-1" data-tab="LINKED">카카오맵 연결됨 <span class="count" id="count-LINKED"></span></button>
+        <button type="button" role="tab" id="tab-NO_PLACE" aria-controls="panel" aria-selected="false" tabindex="-1" data-tab="NO_PLACE">카카오맵에 없음 <span class="count" id="count-NO_PLACE"></span></button>
+      </div>
+      <section id="panel" role="tabpanel" aria-labelledby="tab-REVIEW" tabindex="-1">
+        <p id="tabHelp" class="help"></p>
+        <p id="listStatus" class="list-status" role="status"></p>
+        <ul id="list" class="admin-list"></ul>
+        <button type="button" id="moreButton" class="button-secondary more-button" hidden>더 보기</button>
+      </section>
+    </div>
+  </main>
+  </div>
+
+  <p id="toast" class="toast" role="status" hidden></p>
+
+  <dialog id="placeDialog" class="review-dialog" aria-labelledby="dialogTitle">
+    <div class="review-form">
+      <div class="dialog-head">
+        <h2 id="dialogTitle">장소 정보</h2>
+        <button type="button" class="icon-button" id="closeDialog" aria-label="닫기">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <p id="dialogAlert" class="dialog-alert" role="alert" tabindex="-1" hidden></p>
+        <dl class="compare" id="placeFacts"></dl>
+
+        <section class="place-part" aria-labelledby="kakaoTitle">
+          <h3 id="kakaoTitle">카카오맵 장소</h3>
+          <p id="kakaoNow" class="help"></p>
+          <form id="candForm" class="find-row" role="search">
+            <label for="candQ" class="sr-only">카카오맵에서 찾을 이름</label>
+            <input id="candQ" type="search" maxlength="40" autocomplete="off" placeholder="가게 이름 (지역을 붙여도 돼요)">
+            <button type="submit" class="button-secondary">카카오맵에서 찾기</button>
+          </form>
+          <p id="candStatus" class="list-status" role="status"></p>
+          <ul id="candList" class="find-list"></ul>
+          <div class="run-row">
+            <button type="button" id="noPlaceButton" class="button-secondary">카카오맵에 없음</button>
+            <button type="button" id="unlinkButton" class="button-secondary">연결 풀기</button>
+          </div>
+        </section>
+
+        <section class="place-part" aria-labelledby="addressTitle">
+          <h3 id="addressTitle">주소</h3>
+          <form id="addressForm" class="field">
+            <label for="roadAddress">도로명 주소</label>
+            <input id="roadAddress" type="text" maxlength="200" autocomplete="off" aria-describedby="addressHelp">
+            <p id="addressHelp" class="help">오타를 고치면 브이월드로 좌표와 지역을 다시 찾아요. '2층', '(○○동)' 같은 상세 주소는 빼는 게 잘 찾아져요.</p>
+            <button type="submit" class="button-secondary" id="addressButton">주소로 좌표 다시 찾기</button>
+          </form>
+        </section>
+
+        <section class="place-part" aria-labelledby="categoryTitle">
+          <h3 id="categoryTitle">분류</h3>
+          <form id="categoryForm" class="field">
+            <label for="category">분류</label>
+            <select id="category"></select>
+            <button type="submit" class="button-secondary" id="categoryButton">분류 저장</button>
+          </form>
+        </section>
+      </div>
+      <div class="dialog-actions">
+        <a id="storeLink" class="button-secondary" target="_blank" rel="noopener" href="/">가게 화면</a>
+        <button type="button" class="button-primary" id="doneButton">닫기</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script type="module" src="/js/admin-nav.js"></script>
+  <script type="module" src="/js/admin-places.js"></script>
+</body>
+</html>

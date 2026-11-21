@@ -1,0 +1,148 @@
+/*
+ * 이음 디자인 토큰 (UI-01)
+ * 디지털 정부서비스 UI/UX 가이드라인(KRDS)의 '확장형 스타일' 규칙을 따르고, 색은 이음 고유의 A안(골목 청록)을 쓴다.
+ *
+ * 구조 (가이드라인의 토큰 단계와 같음)
+ *  1) 기본 토큰  --color-primary-50 처럼 색 단계, 글자 크기, 간격 등 값 자체
+ *  2) 역할 토큰  --text-body, --surface, --border-input 처럼 "어디에 쓰는지"
+ *  화면 CSS에서는 되도록 2) 역할 토큰만 쓴다. 색을 바꿀 때는 이 파일만 고치면 된다.
+ *
+ * 색 단계 숫자 = 흰 배경과의 명도 대비 (가이드라인 '매직넘버')
+ *  40 → 3:1 이상 (테두리, 아이콘, 큰 글자)
+ *  50 → 4.5:1 이상 (본문 글자 최소)
+ *  70 → 7:1 이상
+ *  90 → 15:1 이상
+ */
+:root {
+  /* ---------- 1) 기본 토큰: 색 ---------- */
+  /* 주색: 단청의 뇌록(청록) */
+  --color-primary-5: #f0f7f6;
+  --color-primary-10: #d7f1ec;
+  --color-primary-20: #92e5d5;
+  --color-primary-30: #30cdae;
+  --color-primary-40: #27a78d;
+  --color-primary-50: #1f836f;
+  --color-primary-60: #1b7160;
+  --color-primary-70: #176253;
+  --color-primary-80: #11473d;
+  --color-primary-90: #0e2a25;
+
+  /* 강조색: 황토 주황 (로컬크리에이터 표시 등 화면의 5% 이하로만) */
+  --color-accent-5: #faf5f0;
+  --color-accent-10: #f8eada;
+  --color-accent-30: #f4a750;
+  --color-accent-40: #dd7c0e;
+  --color-accent-50: #ae620b;
+  --color-accent-60: #97550a;
+  --color-accent-70: #824908;
+
+  /* 회색: 청록 기운이 살짝 도는 회색 */
+  --color-gray-0: #ffffff;
+  --color-gray-5: #f6f6f6;
+  --color-gray-10: #eaecec;
+  --color-gray-20: #d1d7d5;
+  --color-gray-30: #aebab6;
+  --color-gray-40: #879893;
+  --color-gray-50: #677973;
+  --color-gray-60: #596863;
+  --color-gray-70: #4d5a56;
+  --color-gray-80: #38413e;
+  --color-gray-90: #222625;
+
+  /* 상태색: 색만으로 알리지 않고 항상 아이콘·문구와 함께 쓴다 */
+  --color-danger-5: #fdecec;
+  --color-danger-10: #f3b4b4;
+  --color-danger-50: #c62828;
+  --color-danger-70: #a31f1f;
+  --color-warning-5: #fff6dc;
+  --color-warning-10: #f2d58a;
+  --color-warning-60: #8a5a00;
+  --color-warning-80: #5e4300;
+  --color-success-5: #edf7ef;
+  --color-success-10: #a9d8b4;
+  --color-success-60: #1d6b34;
+  --color-info-50: #2d6cdf;
+
+  /* ---------- 2) 역할 토큰: 색 ---------- */
+  --surface: var(--color-gray-0);            /* 카드, 화면 바탕 */
+  --surface-subtle: var(--color-gray-5);     /* 한 단계 낮은 바탕 */
+  --surface-sunken: var(--color-gray-10);    /* 지도 바탕처럼 더 낮은 바탕 */
+  --text-body: var(--color-gray-90);         /* 본문 15.3:1 */
+  --text-subtle: var(--color-gray-70);       /* 보조 글자 7.2:1 */
+  --text-on-primary: var(--color-gray-0);    /* 주색 버튼 위 글자 5.9:1 */
+  --text-link: var(--color-primary-70);      /* 링크 7.2:1 */
+  --text-link-hover: var(--color-primary-80);
+  --border-divider: var(--color-gray-10);    /* 구분선 (장식용) */
+  --border-light: var(--color-gray-20);
+  --border-control: var(--color-gray-30);    /* 칩처럼 글자로 구분되는 작은 컨트롤 */
+  --border-input: var(--color-gray-50);      /* 입력칸·선택 상자 테두리 4.6:1 (가이드라인: 3:1 이상) */
+  --action-primary: var(--color-primary-60);
+  --action-primary-hover: var(--color-primary-70);
+  --action-primary-pressed: var(--color-primary-80);
+  --action-secondary-bg: var(--color-gray-0);
+  --action-secondary-hover: var(--color-primary-5);
+  --action-disabled-bg: var(--color-gray-10);
+  --action-disabled-text: var(--color-gray-60);
+  --focus-ring: var(--color-primary-70);
+
+  /* 지도 핀 (지도 바탕과 3:1 이상) */
+  --pin-store: var(--color-primary-60);
+  --pin-creator: var(--color-accent-50);
+  --pin-unverified: var(--color-gray-50);
+  --pin-market: var(--color-primary-80);     /* 전통시장: 네모 모양 핀 */
+
+  /* ---------- 글자 ---------- */
+  /* 확장형 스타일 권장: 가독성 높은 고딕 계열. Pretendard (SIL OFL, 무료) */
+  --font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto,
+    "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  --line-height: 1.5;                          /* 가이드라인: 150% 이상 */
+
+  /* 글자 크기 (rem = 브라우저 기본 16px 기준. 사용자가 글자 크기를 키우면 같이 커진다) */
+  --font-heading-xlarge: 1.75rem;   /* 28px h1 (모바일) */
+  --font-heading-large: 1.5rem;     /* 24px */
+  --font-heading-medium: 1.375rem;  /* 22px h2 */
+  --font-heading-small: 1.1875rem;  /* 19px h3 */
+  --font-body-large: 1.1875rem;     /* 19px */
+  --font-body-medium: 1.0625rem;    /* 17px 본문 기본 (가이드라인 최소 16px) */
+  --font-body-small: 0.9375rem;     /* 15px 보조 설명 */
+  --font-body-xsmall: 0.8125rem;    /* 13px 배지 등 아주 짧은 글자만 */
+
+  /* ---------- 간격 (8px 단위) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --screen-margin: 16px;            /* 가이드라인: 작은 화면 최소 16px, 768px 이상 24px */
+
+  /* ---------- 모서리 (가이드라인: 2~12px, 컴포넌트 높이 × 1/8) ---------- */
+  --radius-xsmall: 2px;   /* 배지 */
+  --radius-small: 4px;    /* 칩, 태그 */
+  --radius-medium: 6px;   /* 버튼, 입력칸 */
+  --radius-large: 8px;    /* 카드, 창 (UI-04: 10→8, 과하게 둥글지 않게) */
+  --radius-xlarge: 12px;  /* 아래에서 올라오는 시트 */
+  --radius-max: 999px;    /* 완전한 원 */
+
+  /* ---------- 크기 ---------- */
+  --control-height: 48px;           /* 버튼·입력칸 (터치 영역 44px 이상) */
+  --control-height-small: 40px;     /* 칩 등 */
+  --touch-min: 44px;
+
+  /* ---------- 그림자 (엘리베이션 1~4단계) ---------- */
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.14);    /* 드롭다운, 상단 바 */
+  --shadow-3: 0 -4px 16px rgba(0, 0, 0, 0.14);  /* 아래 시트 */
+  --shadow-4: 0 8px 28px rgba(0, 0, 0, 0.22);   /* 모달 */
+  --dim: rgba(0, 0, 0, 0.45);                    /* 모달 뒤 어둡게 */
+}
+
+@media (min-width: 768px) {
+  :root { --screen-margin: 24px; }
+}

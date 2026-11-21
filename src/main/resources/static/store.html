@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <title>가게 상세 - 이음</title>
+  <meta name="description" content="우리 동네 백년가게의 위치와 영업 정보, 이야기를 확인해 보세요.">
+  <meta name="theme-color" content="#11473d">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 링크 미리보기 (SEO-01): __SITE_URL__ 은 서버가 사이트 주소로 바꿔서 보낸다 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="이음">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="가게 상세 - 이음">
+  <meta property="og:description" content="우리 동네 백년가게의 위치와 영업 정보, 이야기를 확인해 보세요.">
+  <meta property="og:image" content="__SITE_URL__/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="이음 - 우리 동네 백년가게·시장·축제">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/store.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#detail">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/map.html" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>지도
+    </a>
+    <a class="logo store-logo" href="/">이음</a>
+    <!-- 로그인 전: 로그인 링크 / 로그인 후: 닉네임 버튼 + 메뉴 (header.js가 채움) -->
+    <div id="account" class="account"></div>
+  </header>
+  <main id="detail" class="detail" tabindex="-1">
+    <p class="loading">불러오는 중...</p>
+  </main>
+
+  <!-- 영업 정보 제보 창 (store.js가 엶) -->
+  <dialog id="reportDialog" class="report-dialog" aria-labelledby="reportTitle">
+    <form id="reportForm" class="report-form" novalidate>
+      <div class="report-head">
+        <h2 id="reportTitle">영업 정보 제보</h2>
+        <p id="reportStore" class="report-store"></p>
+      </div>
+      <p class="report-help">가게 정보가 실제와 다르면 알려 주세요. 확인한 뒤 반영할게요.</p>
+
+      <p id="reportAlert" class="report-alert" role="alert" hidden></p>
+
+      <fieldset class="report-types" aria-describedby="typeError">
+        <legend>어떤 정보가 다른가요?</legend>
+        <label class="report-option"><input type="radio" name="type" value="CLOSED"> 폐업했어요</label>
+        <label class="report-option"><input type="radio" name="type" value="HOURS"> 영업시간이 달라요</label>
+        <label class="report-option"><input type="radio" name="type" value="PHONE"> 전화번호가 달라요</label>
+        <label class="report-option"><input type="radio" name="type" value="LOCATION"> 주소·위치가 달라요</label>
+        <label class="report-option"><input type="radio" name="type" value="OTHER"> 기타</label>
+        <p id="typeError" class="report-error"></p>
+      </fieldset>
+
+      <div class="report-field">
+        <label for="reportContent">자세한 내용 <span class="optional">(선택)</span></label>
+        <textarea id="reportContent" name="content" rows="4" maxlength="500" aria-describedby="contentHelp contentError"
+                  placeholder="예: 지난달부터 문이 닫혀 있어요."></textarea>
+        <p id="contentHelp" class="report-hint"><span id="contentCount">0</span>/500자</p>
+        <p id="contentError" class="report-error"></p>
+      </div>
+
+      <div class="report-actions">
+        <button type="button" id="reportCancel" class="button-secondary">취소</button>
+        <button type="submit" id="reportSubmit" class="button-primary">제보 보내기</button>
+      </div>
+    </form>
+  </dialog>
+  <script type="module" src="/js/store.js"></script>
+</body>
+</html>

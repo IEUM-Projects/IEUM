@@ -4,6 +4,10 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/ieum?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-file-size: 1GB         # 인허가 CSV (일반음식점 서울·경기는 150MB 넘음)
+      max-request-size: 3GB      # 여러 파일을 한 번에
   jpa:
     hibernate:
       ddl-auto: validate   # 테이블을 절대 지우거나 바꾸지 않음
@@ -12,3 +16,95 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  # 카카오 로그인 (공개 정보만. client-id, client-secret은 application-local.yml에)
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-name: Kakao
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post   # 카카오는 시크릿을 요청 본문으로 받음
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - profile_nickname
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+# 공공데이터포털 API (인증키 public-data.service-key는 application-local.yml에)
+public-data:
+  standard-festival-url: https://api.data.go.kr/openapi/tn_pubr_public_cltur_fstvl_api   # 전국문화축제표준데이터
+  tour-url: https://apis.data.go.kr/B551011/KorService2                                   # 한국관광공사 국문 관광정보
+
+# 이용약관·개인정보 처리방침 (POL-01)
+# version: 약관·방침 내용을 바꾸면 1 올린다 (회원은 다음 로그인 때 다시 동의). effective-date: 시행일 (배포하는 날로 바꾸기)
+# operator-name, contact-email, hosting 은 application-local.yml 에 (화면에 공개되는 운영자 정보)
+ieum:
+  policy:
+    version: 2   # 2판: 동네 이야기 게시판(COM-01) - 게시물 조항, 글·댓글 수집 항목
+    effective-date: 2026-12-01
+  # 가입 이메일 인증 (AUTH-02): 가입 화면에서 6자리 번호를 메일로 받아야 가입된다. 운영에서는 꼭 true
+  auth:
+    email-verification: true
+  # 메일 보내기 (AUTH-02). log = 보내지 않고 서버 로그에만 남김 (개발용). 운영은 smtp 로 바꾸고
+  # host·port·security·username·password·from 을 application-local.yml 에 (비밀번호 커밋 금지)
+  mail:
+    mode: log
+    from-name: 이음
+  # 사이트 주소 (SEO-01): 카카오톡 미리보기 이미지·sitemap.xml 에 들어가는 전체 주소. 끝에 / 없이
+  # 비워 두면 요청 주소를 쓴다 (개발: http://localhost:8080). 운영 서버에서는 application-local.yml 에 https://도메인 으로
+  site:
+    base-url:
+  # 동네 이야기 사진 (COM-02): 사진 파일을 둘 서버 폴더. 프로젝트 폴더 밖이라 Git에 올라가지 않는다.
+  # 운영 서버에서는 백업되는 곳으로 정해 application-local.yml 에 (예: /var/lib/ieum/photos)
+  upload:
+    storage: local     # local = 서버 폴더(dir), s3 = AWS S3 (DEPLOY-01, 운영은 application-prod.yml 에서 s3)
+    dir: ${user.home}/ieum-uploads/photos
+  # 보안 머리말 CSP (DEPLOY-01): report-only = 막지 않고 위반만 로그로, enforce = 실제로 막음, off = 안 붙임
+  security:
+    csp: report-only
+
+# 홈 화면 추가용 앱 정보 파일(manifest.webmanifest)의 형식 (SEO-01)
+server:
+  # 앞단 Nginx 가 붙여 주는 X-Forwarded-Proto/For 를 믿는다 (DEPLOY-01).
+  # 그래야 https 로 들어온 것을 알아서 Secure 쿠키·카카오 로그인 돌아올 주소·HSTS 가 https 로 맞춰진다.
+  # 믿는 곳은 같은 서버(127.0.0.1)와 사설망 주소뿐이라, 밖에서 이 머리말을 꾸며 보내도 소용없다.
+  forward-headers-strategy: native
+  mime-mappings:
+    webmanifest: application/manifest+json
+
+# 브이월드 주소 검색 (DATA-05) - 가게·시장·축제의 좌표와 지역을 찾는다 (카카오 결과는 저장할 수 없어서)
+# 인증키 vworld.api-key 는 application-local.yml 에 (커밋 금지). 키가 없으면 좌표 채우기를 건너뛴다.
+vworld:
+  url: https://api.vworld.kr/req/address
+
+# 축제 데이터 동기화
+festival:
+  sync:
+    enabled: true
+    cron: "0 30 4 * * *"      # 매일 새벽 4시 30분 (서울 시간)
+    on-startup: empty          # 서버를 켤 때 표가 비어 있으면 바로 받기 (always: 매번, never: 안 함)
+    tour-detail-limit: 200     # 한 번에 받아 올 관광공사 소개글 수 (하루 호출 한도 1000회 안에서)
+
+# 백년가게 인허가 영업상태 확인 (DATA-02)
+# 관리자 '폐업 의심' 화면에서 공공데이터포털의 인허가 CSV(행정안전부_식품_일반음식점·휴게음식점·제과점영업)를 올려서 확인한다.
+# 가게 분류(categories)마다 위에서부터 차례로 찾다가 같은 가게를 찾으면 멈춘다. code = 관리번호 가운데 업종 번호
+license-check:
+  kinds:
+    - id: general_restaurants
+      label: 일반음식점
+      code: "101"
+      categories: [음식점, 기타, ""]          # "" = 분류 없음
+    - id: rest_restaurants
+      label: 휴게음식점
+      code: "104"
+      categories: [음식점, 카페·간식, 기타, ""]
+    - id: bakeries
+      label: 제과점
+      code: "121"
+      categories: [카페·간식, 기타, ""]

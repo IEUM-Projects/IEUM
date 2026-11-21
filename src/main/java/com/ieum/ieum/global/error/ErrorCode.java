@@ -1,0 +1,108 @@
+package com.ieum.ieum.global.error;
+
+import org.springframework.http.HttpStatus;
+
+/**
+ * 서비스 전체에서 쓰는 오류 종류.
+ * 화면(JavaScript)은 code 값을 보고 어떤 오류인지 구분하고, message는 사용자에게 그대로 보여 준다.
+ */
+public enum ErrorCode {
+
+    // 공통
+    INVALID_INPUT(HttpStatus.BAD_REQUEST, "입력값을 확인해 주세요."),
+    NOT_FOUND(HttpStatus.NOT_FOUND, "찾을 수 없어요."),
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "잠시 후 다시 시도해 주세요."),
+
+    // 인증
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "로그인이 필요해요."),
+    TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "로그인이 만료되었어요."),
+    TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "로그인 정보가 올바르지 않아요."),
+    REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "다시 로그인해 주세요."),
+    FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없어요."),
+    LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 맞지 않아요."),
+    ACCOUNT_LOCKED(HttpStatus.LOCKED, "로그인을 5번 실패해서 10분 동안 잠겼어요."),
+    ACCOUNT_WITHDRAWN(HttpStatus.FORBIDDEN, "탈퇴한 계정이에요."),
+    ACCOUNT_BANNED(HttpStatus.FORBIDDEN, "이용약관 위반으로 탈퇴 처리된 계정이라 다시 가입할 수 없어요. 문의는 개인정보 처리방침의 운영자 연락처로 해 주세요."),
+
+    // 회원
+    DUPLICATE_EMAIL(HttpStatus.CONFLICT, "이미 가입된 이메일이에요."),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "이미 사용 중인 닉네임이에요."),
+    NICKNAME_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "쓸 수 없는 닉네임이에요."),
+    // 가입 이메일 인증 (AUTH-02)
+    EMAIL_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "이메일 인증을 먼저 해 주세요."),
+    VERIFICATION_TOO_SOON(HttpStatus.TOO_MANY_REQUESTS, "인증번호는 1분에 한 번 보낼 수 있어요. 잠시 뒤에 다시 눌러 주세요."),
+    VERIFICATION_DAILY_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "인증번호를 너무 많이 받았어요. 내일 다시 시도해 주세요."),
+    VERIFICATION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "인증번호가 맞지 않아요."),
+    VERIFICATION_EXPIRED(HttpStatus.BAD_REQUEST, "인증번호를 쓸 수 없어요. 새 번호를 받아 주세요."),
+    MAIL_SEND_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "메일을 보내지 못했어요. 이메일 주소를 확인하고 잠시 뒤에 다시 시도해 주세요."),   // 문구는 NicknamePolicy 가 채움 (AUTH-01)
+    CURRENT_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "지금 비밀번호가 맞지 않아요."),
+    PASSWORD_NOT_SET(HttpStatus.BAD_REQUEST, "카카오로 가입한 계정은 비밀번호가 없어요."),
+    RESET_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "인증 시간이 지났어요. 인증번호를 다시 받아 주세요."),
+    WEAK_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호 규칙을 확인해 주세요."),
+    AGREEMENT_REQUIRED(HttpStatus.FORBIDDEN, "이용약관과 개인정보 처리방침에 동의한 뒤 이용할 수 있어요."),
+    WITHDRAW_PASSWORD_MISMATCH(HttpStatus.BAD_REQUEST, "비밀번호가 맞지 않아요."),
+    WITHDRAW_CONFIRM_REQUIRED(HttpStatus.BAD_REQUEST, "확인을 위해 '탈퇴'를 입력해 주세요."),
+    ADMIN_CANNOT_WITHDRAW(HttpStatus.BAD_REQUEST, "관리자는 탈퇴할 수 없어요. 먼저 관리자 권한을 다른 회원에게 넘겨 주세요."),
+
+    // 가게·제보
+    FAVORITE_LIMIT(HttpStatus.BAD_REQUEST, "찜은 300곳까지 할 수 있어요. 내 정보에서 안 쓰는 찜을 풀어 주세요."),
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "가게를 찾을 수 없어요."),
+    MARKET_NOT_FOUND(HttpStatus.NOT_FOUND, "시장을 찾을 수 없어요."),
+    DUPLICATE_REPORT(HttpStatus.CONFLICT, "오늘 이미 같은 내용으로 제보했어요. 내일 다시 보낼 수 있어요."),
+    TOO_MANY_REPORTS(HttpStatus.TOO_MANY_REQUESTS, "오늘은 제보를 더 보낼 수 없어요. 내일 다시 시도해 주세요."),
+
+    // 관리자 (ADM-01)
+    REPORT_ALREADY_REVIEWED(HttpStatus.CONFLICT, "이미 처리된 제보가 있어요. 목록을 새로 불러와 주세요."),
+    ADDRESS_NOT_FOUND(HttpStatus.BAD_REQUEST, "주소로 위치를 찾지 못했어요. 도로명 주소를 확인해 주세요."),
+    MAP_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "지금은 주소로 위치를 찾을 수 없어요. 잠시 후 다시 시도해 주세요."),
+
+    // 공지사항 (NOT-01)
+    NOTICE_NOT_FOUND(HttpStatus.NOT_FOUND, "공지를 찾을 수 없어요."),
+    TOO_MANY_PINNED(HttpStatus.CONFLICT, "상단 고정은 3개까지 할 수 있어요. 다른 공지의 고정을 먼저 풀어 주세요."),
+
+    // 전통시장 시설 연결 (DATA-01)
+    MARKET_LINK_NOT_FOUND(HttpStatus.NOT_FOUND, "시설 정보를 찾을 수 없어요."),
+    MARKET_ALREADY_LINKED(HttpStatus.CONFLICT, "이 시장은 이미 다른 시설 정보와 이어져 있어요. 그쪽 연결을 먼저 풀어 주세요."),
+
+    // 폐업 의심 가게 (DATA-02)
+    CLOSURE_NOT_FOUND(HttpStatus.NOT_FOUND, "확인 결과를 찾을 수 없어요."),
+    CLOSURE_ALREADY_REVIEWED(HttpStatus.CONFLICT, "이미 처리된 가게예요. 목록을 새로 불러와 주세요."),
+    LICENSE_CHECK_RUNNING(HttpStatus.CONFLICT, "지금 파일을 확인하고 있어요. 끝난 뒤에 다시 올려 주세요."),
+    PLACE_JOB_RUNNING(HttpStatus.CONFLICT, "좌표 찾기나 카카오맵 연결을 하고 있어요. 끝난 뒤에 다시 눌러 주세요."),
+
+    // 시장 이야기 (MKT-02)
+    STORY_NOT_FOUND(HttpStatus.NOT_FOUND, "아직 저장한 이야기가 없어요. 먼저 저장해 주세요."),
+
+    // 동네 이야기 게시판 (COM-01)
+    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "글을 찾을 수 없어요. 지워졌거나 가려진 글일 수 있어요."),
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "댓글을 찾을 수 없어요."),
+    NOT_AUTHOR(HttpStatus.FORBIDDEN, "내가 쓴 글·댓글만 고치거나 지울 수 있어요."),
+    WRITE_SUSPENDED(HttpStatus.FORBIDDEN, "작성이 정지된 계정이에요. 궁금한 점은 이용약관의 문의 메일로 보내 주세요."),
+    COMMUNITY_DAILY_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "오늘은 더 쓸 수 없어요. 내일 다시 써 주세요."),
+    DUPLICATE_COMMUNITY_REPORT(HttpStatus.CONFLICT, "이미 신고했어요. 관리자가 확인할 거예요."),
+    CANNOT_REPORT_OWN(HttpStatus.BAD_REQUEST, "내가 쓴 글·댓글은 신고할 수 없어요."),
+    CANNOT_LIKE_OWN(HttpStatus.BAD_REQUEST, "내가 쓴 글에는 공감할 수 없어요."),
+    PLACE_NOT_FOUND(HttpStatus.BAD_REQUEST, "이야기를 붙일 장소를 찾을 수 없어요. 다시 골라 주세요."),
+    // 동네 이야기 사진 (COM-02)
+    PHOTO_INVALID(HttpStatus.BAD_REQUEST, "사진 파일(JPG·PNG)만 올릴 수 있어요. 다른 사진으로 해 주세요."),
+    PHOTO_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "사진 한 장은 10MB까지 올릴 수 있어요."),
+    PHOTO_TOO_MANY(HttpStatus.BAD_REQUEST, "사진은 글 하나에 4장까지 붙일 수 있어요."),
+    PHOTO_NOT_FOUND(HttpStatus.BAD_REQUEST, "붙일 수 없는 사진이 있어요. 그 사진을 빼고 다시 올려 주세요."),
+    PHOTO_PENDING_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "글에 붙이지 않은 사진이 많아요. 쓰던 글을 먼저 올리거나, 내일 다시 올려 주세요."),
+    PHOTO_DAILY_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "오늘은 사진을 더 올릴 수 없어요. 내일 다시 올려 주세요."),
+    // 동네 이야기 욕설·비속어 (COM-03). 어느 칸의 어떤 말인지는 details 에
+    PROFANITY(HttpStatus.BAD_REQUEST, "욕설이나 비속어가 들어 있어 올릴 수 없어요. 고쳐서 다시 올려 주세요."),
+    // 댓글 고치기 (COM-04): 신고를 확인하는 동안 내용이 바뀌면 관리자가 판단할 수 없어서
+    COMMENT_UNDER_REVIEW(HttpStatus.CONFLICT, "신고가 들어와 관리자가 확인하는 중인 댓글이라 지금은 고칠 수 없어요.");
+
+    private final HttpStatus status;
+    private final String message;
+
+    ErrorCode(HttpStatus status, String message) {
+        this.status = status;
+        this.message = message;
+    }
+
+    public HttpStatus status() { return status; }
+    public String message() { return message; }
+}

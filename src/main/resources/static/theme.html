@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <title>테마로 걷기 - 이음</title>
+  <meta name="description" content="걸어서 둘러보기 좋은 곳들을 테마별로 소개해요.">
+  <meta name="theme-color" content="#11473d">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <!-- 링크 미리보기 (SEO-01): __SITE_URL__ 은 서버가 사이트 주소로 바꿔서 보낸다 -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="이음">
+  <meta property="og:locale" content="ko_KR">
+  <meta property="og:title" content="테마로 걷기 - 이음">
+  <meta property="og:description" content="걸어서 둘러보기 좋은 곳들을 테마별로 소개해요.">
+  <meta property="og:image" content="__SITE_URL__/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="이음 - 우리 동네 백년가게·시장·축제">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/common.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <!-- 홈 화면 앱처럼 쓰기 (PWA-01) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="이음">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script type="module" src="/js/pwa.js"></script>
+</head>
+<body class="theme-page">
+  <a class="skip-link" href="#main">본문 바로가기</a>
+  <header class="site-header">
+    <a href="/themes.html" class="back-link">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>테마 목록
+    </a>
+    <a class="logo center-logo" href="/">이음</a>
+    <div id="account" class="account"></div>
+  </header>
+  <main id="main" class="theme-main" tabindex="-1">
+    <p class="eyebrow">테마로 걷기</p>
+    <h1 id="themeTitle">불러오는 중...</h1>
+    <p id="themeDesc" class="lead"></p>
+    <div class="theme-tools">
+      <p id="summary" class="summary" role="status"></p>
+      <button type="button" id="todayFilter" class="filter-chip" aria-pressed="false" hidden>오늘 장 서는 곳만</button>
+    </div>
+    <ul id="list" class="theme-list"></ul>
+    <button type="button" id="moreButton" class="button-secondary more-button" hidden>더 보기</button>
+    <p class="note" id="themeNote"></p>
+  </main>
+  <script type="module" src="/js/theme.js"></script>
+</body>
+</html>

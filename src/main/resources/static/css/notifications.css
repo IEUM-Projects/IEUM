@@ -1,0 +1,27 @@
+/* 알림 화면 (NOTI-01) */
+.noti-main { max-width: 800px; margin: 0 auto; padding: var(--space-6) var(--screen-margin) var(--space-12); display: flex; flex-direction: column; gap: var(--space-4); }
+.noti-main:focus { outline: none; }
+.noti-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.noti-head h1 { margin: 0; font-size: var(--font-heading-xlarge); }
+.noti-head .button-secondary { min-height: var(--touch-min); padding: 0 var(--space-4); white-space: nowrap; }
+.noti-head .button-secondary[hidden] { display: none; }
+.list-status { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.list-status:empty { display: none; }
+
+.noti-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border-top: 2px solid var(--color-gray-80); }
+.noti-list:empty { display: none; }
+.noti-item { border-bottom: 1px solid var(--border-divider); }
+.noti-row { display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-4); color: var(--text-body); text-decoration: none; word-break: keep-all; overflow-wrap: anywhere; }
+.noti-row:hover { background: var(--surface-subtle); }
+.noti-row:hover .noti-title { text-decoration: underline; }
+.noti-dot { flex: none; width: 8px; height: 8px; margin-top: 8px; border-radius: 50%; background: transparent; }
+.unread .noti-dot { background: var(--color-primary-60); }
+.unread { background: var(--color-primary-5, #f1f8f6); }
+.noti-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.noti-top { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-body-small); color: var(--text-subtle); }
+.noti-kind { font-weight: var(--font-weight-bold); color: var(--text-body); }
+.noti-title { font-weight: var(--font-weight-medium); }
+.unread .noti-title { font-weight: 700; }
+.noti-body { font-size: var(--font-body-small); color: var(--text-body); line-height: 1.5; }
+#more[hidden] { display: none; }
+.noti-note { margin: 0; font-size: var(--font-body-small); color: var(--text-subtle); line-height: 1.6; }
