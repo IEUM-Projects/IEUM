@@ -1,0 +1,54 @@
+# 운영 서버 비밀 설정 견본 (DEPLOY-01)
+# → 서버의 /etc/ieum/application-prod.yml 로 복사해 <...> 를 채운다. 이 파일(견본)에는 진짜 값을 넣지 않는다.
+# → 권한: 소유 root, 그룹 ieum, 640 (setup-ubuntu.sh 가 맞춰 줌). Git 에 올리지 않는다.
+# 지금 내 컴퓨터의 application-local.yml 에 있는 값을 옮기되, 운영용으로 따로 받은 키가 있으면 그것을 쓴다.
+
+spring:
+  datasource:
+    # RDS 엔드포인트 (RDS 화면의 '연결 및 보안' → 엔드포인트). sslMode=REQUIRED 로 암호화해서 붙는다
+    url: jdbc:mysql://<RDS-엔드포인트>:3306/ieum?serverTimezone=Asia/Seoul&characterEncoding=UTF-8&sslMode=REQUIRED
+    username: <DB-사용자>
+    password: <DB-비밀번호>
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: <카카오 REST API 키>
+            client-secret: <카카오 Client Secret>
+
+jwt:
+  secret: <운영용으로 새로 만든 긴 무작위 값 (openssl rand -base64 48)>
+
+kakao:
+  rest-api-key: <카카오 REST API 키>
+  javascript-key: <카카오 JavaScript 키>
+  admin-key: <카카오 어드민 키 (KAKAO-UNLINK)>
+
+public-data:
+  service-key: <공공데이터포털 인증키>
+tmap:
+  app-key: <TMAP 앱 키>
+naver:
+  client-id: <네이버 Client ID>
+  client-secret: <네이버 Client Secret>
+vworld:
+  api-key: <브이월드 인증키>
+  domain: ieum.me.kr          # 브이월드에 등록한 서비스 도메인
+
+ieum:
+  policy:
+    operator-name: <운영자 이름>
+    contact-email: <문의 메일>
+    hosting: Amazon Web Services (서울 리전, 서버·DB·사진 보관)
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    security: ssl
+    username: <보내는 메일 주소>
+    password: <메일 앱 비밀번호>
+    from: <보내는 메일 주소>
+  upload:
+    s3:
+      bucket: <S3 버킷 이름>
+  # ban.hash-key: 비워 두면 jwt.secret 을 쓴다. jwt.secret 을 나중에 바꿀 일이 있으면 그 전에 지금 값을 여기 적어 둔다 (ADM-02)
