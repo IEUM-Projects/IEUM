@@ -181,7 +181,10 @@ async function init() {
       selectTab(tabs[next].dataset.tab, { focus: true });
     });
   });
-  load();
+  // 요약 화면에서 '#HIDDEN', '#RECOMMEND' 로 넘어오면 그 탭부터 (ADM-03)
+  const fromHash = location.hash.slice(1);
+  if (TABS.includes(fromHash) && fromHash !== tab) selectTab(fromHash);
+  else load();
 }
 
 init();

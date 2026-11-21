@@ -154,6 +154,7 @@ function render(d) {
     rows.push(info('탈퇴 까닭', d.ban.reason ?? ''));
   }
   $('memberInfo').replaceChildren(...rows);
+  $('memberLog').href = `/admin-logs.html?targetType=USER&targetId=${u.id}`;   // ADM-03
 
   $('memberPosts').replaceChildren(...d.recentPosts.map((p) => el('li', {},
     el('a', { href: `/post.html?id=${p.id}`, target: '_blank', rel: 'noopener', text: p.title }),

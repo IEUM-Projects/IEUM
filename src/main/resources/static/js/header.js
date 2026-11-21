@@ -73,7 +73,7 @@ export function mountAccount(box, { onLogout, next } = {}) {
       el('div', { class: 'menu-name', text: `${user.nickname}님` }),
       el('a', { href: '/mypage.html', role: 'menuitem', text: '내 정보' }),
       el('a', { href: '/notifications.html', role: 'menuitem', class: 'menu-noti', text: '알림' }),
-      user.role === 'ADMIN' ? el('a', { href: '/admin.html', role: 'menuitem', text: '관리자' }) : null,
+      user.role === 'ADMIN' ? el('a', { href: '/admin-home.html', role: 'menuitem', text: '관리자' }) : null,
       logout,
     );
     const setOpen = (open) => {
