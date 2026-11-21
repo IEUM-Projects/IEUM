@@ -68,6 +68,13 @@ export const posts = {
   removeComment: (id) => request(`/api/comments/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   report: (body) => request('/api/community/reports', { method: 'POST', body: JSON.stringify(body) }),
   mine: () => request('/api/users/me/posts'),
+  /** 사진 한 장 올리기 (COM-02). 본문이 사진 파일 그대로 → {id, width, height} */
+  uploadPhoto: async (blob) => {
+    const res = await auth.authFetch('/api/posts/photos', { method: 'POST', headers: { 'Content-Type': blob.type || 'image/jpeg' }, body: blob });
+    const body = await res.json().catch(() => null);
+    if (!res.ok) throw new ApiError(res.status, body);
+    return body;
+  },
 };
 
 /** '방금', '3분 전', '오늘 14:05', '2026.11.20' */
@@ -102,16 +109,22 @@ export function placeLink(place) {
 
 /** 글 목록의 한 줄 */
 export function postCard(p, { showStatus = false } = {}) {
-  const meta = [authorText(p.author), when(p.createdAt), `공감 ${p.likeCount}`, `댓글 ${p.commentCount}`].join(' · ');
+  const meta = [authorText(p.author), when(p.createdAt), `공감 ${p.likeCount}`, `댓글 ${p.commentCount}`,
+    p.photoCount ? `사진 ${p.photoCount}` : null].filter(Boolean).join(' · ');
   const status = showStatus && p.status !== 'VISIBLE'
     ? el('span', { class: 'state-badge', text: p.status === 'DELETED' ? '지움' : '가려짐' }) : null;
   const rec = p.recommendStatusLabel ? el('span', { class: `rec-badge rec-${(p.recommendStatus ?? '').toLowerCase()}`, text: p.recommendStatusLabel }) : null;
-  return el('li', { class: 'post-card' },
+  const parts = [
     el('div', { class: 'post-card-head' }, categoryBadge(p.category, p.categoryLabel), status, rec,
       el('a', { class: 'post-card-title', href: `/post.html?id=${p.id}`, text: p.title })),
     p.excerpt ? el('p', { class: 'post-card-excerpt', text: p.excerpt }) : null,
     el('p', { class: 'post-card-meta' }, meta, p.edited ? ' · 고침' : null),
-    p.place ? el('p', { class: 'post-card-place' }, placeLink(p.place)) : null);
+    p.place ? el('p', { class: 'post-card-place' }, placeLink(p.place)) : null];
+  if (!p.thumbnail) return el('li', { class: 'post-card' }, parts);
+  // 첫 사진을 오른쪽에 작게 (COM-02). 제목 링크가 같은 곳으로 가므로 그림은 꾸밈(alt="")
+  return el('li', { class: 'post-card has-photo' },
+    el('div', { class: 'post-card-main' }, parts),
+    el('img', { class: 'post-card-thumb', src: p.thumbnail, alt: '', loading: 'lazy', decoding: 'async', width: '88', height: '88' }));
 }
 
 export function toast(message, ms = 4000) {

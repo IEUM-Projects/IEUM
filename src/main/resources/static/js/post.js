@@ -20,6 +20,11 @@ function render(p) {
     p.editedAt ? ` · 고침 ${when(p.editedAt)}` : '');
   $('postPlace').replaceChildren(...(p.place ? [placeLink(p.place)] : []));
   $('postBody').textContent = p.content;
+  // 사진 (COM-02): 설명이 없으면 '글 제목 사진 1/3'
+  const ph = p.photos ?? [];
+  $('postPhotos').replaceChildren(...ph.map((x, i) => el('figure', { class: 'post-photo' },
+    el('img', { src: x.url, alt: x.alt || `${p.title} 사진 ${i + 1}/${ph.length}`, width: String(x.width), height: String(x.height), loading: i ? 'lazy' : 'eager', decoding: 'async' }))));
+  $('postPhotos').hidden = ph.length === 0;
   $('hiddenNote').hidden = p.status === 'VISIBLE';
   if (p.status !== 'VISIBLE') {
     $('hiddenNote').textContent = `${p.status === 'TEMP_HIDDEN' ? '임시로 가려진 글이에요' : '가려진 글이에요'} (나와 관리자만 볼 수 있어요). ${p.hiddenReason ?? ''}`;

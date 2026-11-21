@@ -27,6 +27,7 @@ public class TokenCleanupService {
     private final TransactionTemplate transaction;
     private final EmailVerificationService emailVerificationService;
     private final com.ieum.ieum.notification.NotificationService notificationService;
+    private final com.ieum.ieum.community.photo.PostPhotoService photoService;
 
     @Scheduled(cron = "${auth.token-cleanup.cron:0 20 4 * * *}", zone = "Asia/Seoul")
     public void scheduled() {
@@ -35,6 +36,8 @@ public class TokenCleanupService {
         // 가입 이메일 인증번호 기록도 하루가 지나면 지운다 (AUTH-02, 개인정보 처리방침 2번)
         int codes = emailVerificationService.cleanup(LocalDateTime.now());
         notificationService.cleanup(LocalDateTime.now());   // 90일 지난 알림 (NOTI-01)
+        int photos = photoService.cleanupPending(LocalDateTime.now());   // 하루 지나도록 글에 안 붙인 사진 (COM-02)
+        if (photos > 0) log.info("글에 붙이지 않은 사진 {}장을 지웠어요", photos);
         if (codes > 0) log.info("하루 지난 이메일 인증번호 기록 {}개를 지웠어요", codes);
     }
 

@@ -60,6 +60,10 @@ ieum:
   # 비워 두면 요청 주소를 쓴다 (개발: http://localhost:8080). 운영 서버에서는 application-local.yml 에 https://도메인 으로
   site:
     base-url:
+  # 동네 이야기 사진 (COM-02): 사진 파일을 둘 서버 폴더. 프로젝트 폴더 밖이라 Git에 올라가지 않는다.
+  # 운영 서버에서는 백업되는 곳으로 정해 application-local.yml 에 (예: /var/lib/ieum/photos)
+  upload:
+    dir: ${user.home}/ieum-uploads/photos
 
 # 홈 화면 추가용 앱 정보 파일(manifest.webmanifest)의 형식 (SEO-01)
 server:

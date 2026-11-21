@@ -82,7 +82,14 @@ public enum ErrorCode {
     DUPLICATE_COMMUNITY_REPORT(HttpStatus.CONFLICT, "이미 신고했어요. 관리자가 확인할 거예요."),
     CANNOT_REPORT_OWN(HttpStatus.BAD_REQUEST, "내가 쓴 글·댓글은 신고할 수 없어요."),
     CANNOT_LIKE_OWN(HttpStatus.BAD_REQUEST, "내가 쓴 글에는 공감할 수 없어요."),
-    PLACE_NOT_FOUND(HttpStatus.BAD_REQUEST, "이야기를 붙일 장소를 찾을 수 없어요. 다시 골라 주세요.");
+    PLACE_NOT_FOUND(HttpStatus.BAD_REQUEST, "이야기를 붙일 장소를 찾을 수 없어요. 다시 골라 주세요."),
+    // 동네 이야기 사진 (COM-02)
+    PHOTO_INVALID(HttpStatus.BAD_REQUEST, "사진 파일(JPG·PNG)만 올릴 수 있어요. 다른 사진으로 해 주세요."),
+    PHOTO_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "사진 한 장은 10MB까지 올릴 수 있어요."),
+    PHOTO_TOO_MANY(HttpStatus.BAD_REQUEST, "사진은 글 하나에 4장까지 붙일 수 있어요."),
+    PHOTO_NOT_FOUND(HttpStatus.BAD_REQUEST, "붙일 수 없는 사진이 있어요. 그 사진을 빼고 다시 올려 주세요."),
+    PHOTO_PENDING_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "글에 붙이지 않은 사진이 많아요. 쓰던 글을 먼저 올리거나, 내일 다시 올려 주세요."),
+    PHOTO_DAILY_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "오늘은 사진을 더 올릴 수 없어요. 내일 다시 올려 주세요.");
 
     private final HttpStatus status;
     private final String message;

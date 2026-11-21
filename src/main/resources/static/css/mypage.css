@@ -155,3 +155,8 @@ body.settings-page { height: auto; min-height: 100%; background: var(--surface-s
 .app-guide { color: var(--text-body); font-size: var(--font-body-small); line-height: 1.6; }
 .app-guide[hidden], #installButton[hidden] { display: none; }
 .app-row #installButton { flex: none; white-space: nowrap; }
+
+/* 닉네임 줄: 입력칸 + '중복 확인' + '변경' (COM-02 때 버튼 추가). 좁은 화면에서 입력칸이 너무 좁아지지 않게 */
+@media (max-width: 420px) {
+  .row-field .inline-form .button-secondary { padding: 0 var(--space-3); }
+}

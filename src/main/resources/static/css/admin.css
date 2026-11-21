@@ -502,3 +502,8 @@ ul.card-reports { list-style: none; }
 .member-action .error:empty { display: none; }
 .field textarea[aria-invalid="true"] { border-color: var(--color-danger-70); }
 .dialog-actions.single { grid-template-columns: 1fr; }
+
+/* ---------- 동네 이야기 관리: 글 사진 (COM-02) ---------- */
+.card-photos { list-style: none; margin: var(--space-1) 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.card-photos a { display: block; border-radius: var(--radius-small); }
+.card-photos img { display: block; width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius-small); border: 1px solid var(--admin-line); background: var(--surface-subtle); }

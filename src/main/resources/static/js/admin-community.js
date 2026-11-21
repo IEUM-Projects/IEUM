@@ -128,6 +128,10 @@ function row(t) {
       t.hiddenUntil ? ` · 임시 숨김 ${t.hiddenUntil.replaceAll('-', '.')}까지` : '',
       ' · ', el('a', { href: `/post.html?id=${t.postId ?? t.id}`, target: '_blank', rel: 'noopener', text: isPost ? '글 보기' : '댓글 달린 글 보기' })),
     reasons, notes,
+    // 글의 사진 (COM-02): 작게 보이고, 누르면 새 탭에 크게
+    t.photos?.length ? el('ul', { class: 'card-photos', 'aria-label': `사진 ${t.photos.length}장` },
+      t.photos.map((ph, i) => el('li', {}, el('a', { href: ph.url, target: '_blank', rel: 'noopener' },
+        el('img', { src: ph.thumbUrl, alt: `사진 ${i + 1} 크게 보기${ph.alt ? ` (${ph.alt})` : ''}`, width: '72', height: '72', loading: 'lazy' }))))) : null,
     tab === 'RECOMMEND' ? recommendBox(t) : null,
     actions, extra);
 }

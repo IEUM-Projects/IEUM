@@ -161,3 +161,41 @@ a.place-chip:hover { text-decoration: underline; }
 #postList:empty { display: none; }
 #postList > .post-card { border: 0; border-radius: 0; }
 #postList > .post-card + .post-card { border-top: 1px solid var(--border-divider); }
+
+/* ---------- 사진 (COM-02) ---------- */
+.post-card.has-photo { display: grid; grid-template-columns: minmax(0, 1fr) 88px; column-gap: var(--space-3); align-items: start; }
+.post-card-main { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.post-card-thumb { width: 88px; height: 88px; object-fit: cover; border-radius: var(--radius-medium); background: var(--surface-subtle); border: 1px solid var(--border-light); }
+@media (max-width: 400px) {
+  .post-card.has-photo { grid-template-columns: minmax(0, 1fr) 72px; }
+  .post-card-thumb { width: 72px; height: 72px; }
+}
+
+.post-photos { display: flex; flex-direction: column; gap: var(--space-3); }
+.post-photos[hidden] { display: none; }
+.post-photo { margin: 0; }
+.post-photo img { display: block; width: 100%; height: auto; max-height: 80vh; object-fit: contain; border-radius: var(--radius-medium); background: var(--surface-subtle); }
+
+.photo-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.photo-list:empty { display: none; }
+.photo-item { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--space-3); align-items: start; padding: var(--space-3); border: 1px solid var(--border-light); border-radius: var(--radius-medium); background: var(--surface); }
+.photo-item.has-error { border-color: var(--color-danger-50); background: var(--color-danger-5); }
+.photo-thumb { width: 96px; height: 96px; object-fit: cover; border-radius: var(--radius-small); background: var(--surface-subtle); }
+.photo-item-body { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.photo-item-head { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-1); }
+.photo-item-head .text-button { margin-left: auto; }
+.photo-state { color: var(--text-subtle); font-size: var(--font-body-small); }
+.has-error .photo-state { color: var(--color-danger-70); font-weight: var(--font-weight-medium); }
+.photo-alt { display: flex; flex-direction: column; gap: var(--space-1); }
+.photo-alt label { font-size: var(--font-body-small); color: var(--text-subtle); }
+.photo-alt input { min-height: var(--control-height); padding: 0 var(--space-3); border: 1px solid var(--border-input); border-radius: var(--radius-medium); font: inherit; min-width: 0; }
+.photo-add { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--space-2); cursor: pointer; }
+.photo-add[hidden] { display: none; }
+.photo-add .icon { width: 20px; height: 20px; }
+.photo-add:focus-within { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.photo-field .help:empty, .photo-field .error:empty { display: none; }
+@media (max-width: 400px) {
+  .photo-item { grid-template-columns: 72px minmax(0, 1fr); }
+  .photo-thumb { width: 72px; height: 72px; }
+}
+.field > label.photo-add { font-size: var(--font-body-medium); }
