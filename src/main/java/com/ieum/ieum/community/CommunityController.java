@@ -35,6 +35,7 @@ import java.util.List;
  *   DELETE /api/posts/{id}                    지우기 (글쓴이, 관리자)
  *   POST   /api/posts/{id}/like · DELETE      공감 / 공감 취소
  *   POST   /api/posts/{id}/comments           {"content"}
+ *   PUT    /api/comments/{id}                 댓글 고치기 (글쓴이, COM-04) {"content": "…"}
  *   DELETE /api/comments/{id}                 댓글 지우기 (글쓴이, 관리자)
  *   POST   /api/community/reports             {"targetType":"POST|COMMENT","targetId","reason","content"}
  *   GET    /api/users/me/posts                내 글
@@ -87,6 +88,13 @@ public class CommunityController {
     public ResponseEntity<PostDetail> comment(@AuthenticationPrincipal AuthUser viewer, @PathVariable long id,
                                               @RequestBody(required = false) CommentRequest req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.comment(viewer, id, req == null ? null : req.content()));
+    }
+
+    /** 댓글 고치기 (COM-04): 글쓴이만 */
+    @PutMapping("/api/comments/{id}")
+    public PostDetail editComment(@AuthenticationPrincipal AuthUser viewer, @PathVariable long id,
+                                  @RequestBody(required = false) CommentRequest req) {
+        return service.editComment(viewer, id, req == null ? null : req.content());
     }
 
     @DeleteMapping("/api/comments/{id}")

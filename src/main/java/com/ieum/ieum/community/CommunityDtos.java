@@ -35,8 +35,8 @@ public final class CommunityDtos {
     public record PostPage(List<PostSummary> items, int page, boolean hasNext, long total) {
     }
 
-    /** content 가 null 이면 가려지거나 지워진 댓글 (state 로 구분) */
-    public record CommentView(long id, String content, String state, Author author, LocalDateTime createdAt) {
+    /** content 가 null 이면 가려지거나 지워진 댓글 (state 로 구분). editedAt: 글쓴이가 고친 때 (COM-04, 없으면 null) */
+    public record CommentView(long id, String content, String state, Author author, LocalDateTime createdAt, LocalDateTime editedAt) {
     }
 
     public record PostDetail(long id, String category, String categoryLabel, String title, String content,

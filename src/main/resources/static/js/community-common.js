@@ -66,6 +66,7 @@ export const posts = {
   like: (id, on) => request(`/api/posts/${encodeURIComponent(id)}/like`, { method: on ? 'POST' : 'DELETE' }),
   comment: (id, content) => request(`/api/posts/${encodeURIComponent(id)}/comments`, { method: 'POST', body: JSON.stringify({ content }) }),
   removeComment: (id) => request(`/api/comments/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  editComment: (id, content) => request(`/api/comments/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify({ content }) }),
   report: (body) => request('/api/community/reports', { method: 'POST', body: JSON.stringify(body) }),
   mine: () => request('/api/users/me/posts'),
   /** 사진 한 장 올리기 (COM-02). 본문이 사진 파일 그대로 → {id, width, height} */

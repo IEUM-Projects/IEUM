@@ -91,7 +91,9 @@ public enum ErrorCode {
     PHOTO_PENDING_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "글에 붙이지 않은 사진이 많아요. 쓰던 글을 먼저 올리거나, 내일 다시 올려 주세요."),
     PHOTO_DAILY_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "오늘은 사진을 더 올릴 수 없어요. 내일 다시 올려 주세요."),
     // 동네 이야기 욕설·비속어 (COM-03). 어느 칸의 어떤 말인지는 details 에
-    PROFANITY(HttpStatus.BAD_REQUEST, "욕설이나 비속어가 들어 있어 올릴 수 없어요. 고쳐서 다시 올려 주세요.");
+    PROFANITY(HttpStatus.BAD_REQUEST, "욕설이나 비속어가 들어 있어 올릴 수 없어요. 고쳐서 다시 올려 주세요."),
+    // 댓글 고치기 (COM-04): 신고를 확인하는 동안 내용이 바뀌면 관리자가 판단할 수 없어서
+    COMMENT_UNDER_REVIEW(HttpStatus.CONFLICT, "신고가 들어와 관리자가 확인하는 중인 댓글이라 지금은 고칠 수 없어요.");
 
     private final HttpStatus status;
     private final String message;

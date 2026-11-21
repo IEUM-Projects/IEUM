@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
  * 카카오톡·검색 엔진은 자바스크립트를 실행하지 않고 HTML 의 og 태그만 읽으므로,
  * 미리보기 이미지 주소(og:image)는 처음 받는 HTML 에 전체 주소로 들어 있어야 한다.
  * 도메인을 코드에 박지 않으려고 HTML 에는 자리 표시만 두고 여기서 채운다.
+ * 상세 화면(가게·시장·축제·글·공지)은 주소의 id 로 제목·설명·og 태그도 채운다 (SEO-02, DetailMeta).
  */
 @Component
 @RequiredArgsConstructor
@@ -25,6 +26,7 @@ public class SiteUrlFilter extends OncePerRequestFilter {
     static final String TOKEN = "__SITE_URL__";
 
     private final SiteUrl siteUrl;
+    private final DetailMeta detailMeta;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -49,7 +51,17 @@ public class SiteUrlFilter extends OncePerRequestFilter {
             wrapper.copyBodyToResponse();
             return;
         }
-        byte[] out = html.replace(TOKEN, siteUrl.of(request)).getBytes(StandardCharsets.UTF_8);
+        String site = siteUrl.of(request);
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        String page = html.replace(TOKEN, site);
+        try {
+            String id = request.getParameter("id");
+            var meta = detailMeta.find(path, id);
+            if (meta.isPresent()) page = DetailMeta.apply(page, meta.get(), site, site + path + "?id=" + id);
+        } catch (RuntimeException e) {
+            // 미리보기를 못 채워도 화면은 그대로 보낸다 (DB가 잠깐 안 될 때 등)
+        }
+        byte[] out = page.getBytes(StandardCharsets.UTF_8);
         response.setContentLength(out.length);
         response.getOutputStream().write(out);
     }

@@ -48,6 +48,12 @@ function renderComments(p) {
   $('commentList').replaceChildren(...p.comments.map((c) => {
     const placeholder = c.state === 'DELETED' ? '지운 댓글이에요.' : '관리자가 가린 댓글이에요.';
     const actions = [];
+    // 댓글 고치기 (COM-04): 내 댓글이고 글이 보일 때만
+    if (c.state === 'VISIBLE' && c.author.mine && p.status === 'VISIBLE') {
+      const b = el('button', { type: 'button', class: 'text-button comment-edit', text: '고치기', 'aria-label': '내 댓글 고치기', 'aria-expanded': 'false' });
+      b.addEventListener('click', () => openEdit(c, b));
+      actions.push(b);
+    }
     if (c.state === 'VISIBLE' && (c.author.mine || user?.role === 'ADMIN')) {
       const b = el('button', { type: 'button', class: 'text-button', text: '지우기', 'aria-label': '이 댓글 지우기' });
       b.addEventListener('click', () => confirmDelete('댓글을 지울까요?', async () => {
@@ -62,8 +68,9 @@ function renderComments(p) {
       b.addEventListener('click', () => openReport({ targetType: 'COMMENT', targetId: c.id, label: `${c.author.nickname}님의 댓글` }, b));
       actions.push(b);
     }
-    return el('li', { class: `comment${c.content === null ? ' comment-gone' : ''}` },
-      el('p', { class: 'comment-meta' }, el('strong', { text: authorText(c.author) }), ' · ', el('time', { datetime: c.createdAt, text: when(c.createdAt) })),
+    return el('li', { class: `comment${c.content === null ? ' comment-gone' : ''}`, 'data-id': String(c.id) },
+      el('p', { class: 'comment-meta' }, el('strong', { text: authorText(c.author) }), ' · ', el('time', { datetime: c.createdAt, text: when(c.createdAt) }),
+        c.editedAt && c.content !== null ? [' · ', el('span', { class: 'comment-edited', title: `${when(c.editedAt)} 고침`, text: '수정됨' })] : null),
       el('p', { class: 'comment-body', text: c.content ?? placeholder }),
       actions.length ? el('p', { class: 'comment-actions' }, actions) : null);
   }));
@@ -72,6 +79,59 @@ function renderComments(p) {
   $('commentLogin').hidden = !!user || p.status !== 'VISIBLE';
   $('commentLoginLink').href = auth.loginUrl();
   $('comments').hidden = false;
+}
+
+// ---------------------------------------------------------------- 댓글 고치기 (COM-04)
+// 댓글 자리에서 바로 고친다. 한 번에 하나만 연다.
+function openEdit(c, opener) {
+  document.querySelector('.comment-edit-form')?.querySelector('.edit-cancel')?.click();
+  const li = opener.closest('li');
+  const body = li.querySelector('.comment-body');
+  const actions = li.querySelector('.comment-actions');
+  const textId = `editText-${c.id}`;
+  const text = el('textarea', { id: textId, maxlength: '1000', rows: '3', 'aria-describedby': `editHelp-${c.id} editError-${c.id}` });
+  text.value = c.content;
+  const count = el('span', { text: String(c.content.length) });
+  const error = el('p', { id: `editError-${c.id}`, class: 'error', role: 'alert' });
+  const save = el('button', { type: 'submit', class: 'button-primary', text: '고친 댓글 저장' });
+  const cancel = el('button', { type: 'button', class: 'button-secondary edit-cancel', text: '그만두기' });
+  const form = el('form', { class: 'comment-edit-form', novalidate: true },
+    el('label', { for: textId, text: '댓글 고치기' }), text,
+    el('p', { id: `editHelp-${c.id}`, class: 'help' }, count, '/1000자 · 고치면 ‘수정됨’이 붙어요.'),
+    error, el('div', { class: 'edit-actions' }, cancel, save));
+  text.addEventListener('input', () => { count.textContent = String(text.value.length); });
+  const close = () => {
+    form.remove();
+    body.hidden = false;
+    actions.hidden = false;
+    opener.setAttribute('aria-expanded', 'false');
+    opener.focus();
+  };
+  cancel.addEventListener('click', close);
+  form.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const value = text.value.trim();
+    if (!value) { error.textContent = '댓글을 써 주세요.'; text.focus(); return; }
+    if (value === c.content) { close(); return; }
+    save.disabled = true;
+    try {
+      render(await posts.editComment(c.id, value));
+      toast('댓글을 고쳤어요.');
+      $('commentList').querySelector(`li[data-id="${c.id}"] .comment-edit`)?.focus();
+    } catch (err) {
+      save.disabled = false;
+      if (err.status === 401) { location.href = auth.loginUrl(); return; }
+      error.textContent = err.details?.length ? err.details.join(' ') : err.message;
+      text.focus();
+    }
+  });
+  body.hidden = true;
+  actions.hidden = true;
+  opener.setAttribute('aria-expanded', 'true');
+  li.append(form);
+  text.focus();
+  text.setSelectionRange(text.value.length, text.value.length);
 }
 
 // ---------------------------------------------------------------- 지우기 확인 (브라우저 confirm 대신)
