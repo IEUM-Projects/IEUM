@@ -2,6 +2,7 @@
 // 주요 소식(슬라이드), 내 주변 백년가게(분류 탭), 이번 주 근처 축제, 오늘 장 서는 시장 + 5일장 달력, 주변 관광지와 걷기 코스, 제보 안내
 // 모든 내용은 서버의 실제 데이터로만 채운다 (지어낸 숫자·문구 없음).
 import { api, formatDistance } from './api.js';
+import { categoryOf, categoriesIn, OTHER } from './store-categories.js';
 import { nearestRegion, queryAround, nearHere } from './near-region.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
@@ -10,7 +11,7 @@ import { changeTextSize, textSize, TEXT_SIZES } from './text-size.js';
 import { WEEKDAYS, ymd, weekday, daysIn, todayString, periodText, status, photoCredit } from './festival-format.js';
 import { digitsOf, cycleLabel, isMarketDay, marketDaySummary } from './market-days.js';
 import { cleanQuery, clearRecent, recentSearches, removeRecent, SEARCH_EXAMPLES } from './search-common.js';
-import { THEME_ICONS, placeLinkQuery } from './theme-common.js';
+import { THEME_ICONS, placeLinkQuery, nearText } from './theme-common.js';
 import { NEWS_NOTE, NEWS_TOPICS, newsItem } from './news-common.js';
 
 const DEFAULT_PLACE = { lat: 37.5665, lng: 126.9780, label: '서울 중구', isDefault: true };   // 서울시청
@@ -46,12 +47,13 @@ function icon(paths, cls = '') {
   return svg;
 }
 
+// 분류 그림 (ICON-01): 음식점=국그릇·젓가락, 카페=김 나는 컵, 도소매=장바구니, 생활서비스=가위(미용·수선), 공방·공예=도자기
 const ICONS = {
-  food: ['M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M16 3v18M16 3c4.5 2 4.5 9 0 10'],
-  cafe: ['M4 8h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Z', 'M17 9h1.5a2.5 2.5 0 0 1 0 5H17M8 2v3M12 2v3'],
-  retail: ['M5 8h14l1 13H4Z', 'M9 9V6a3 3 0 0 1 6 0v3'],
-  service: ['M14.5 6.5a4 4 0 0 0-5 5L3 18l3 3 6.5-6.5a4 4 0 0 0 5-5l-2.8 2.8-3-3Z'],
-  craft: ['M12 3c3 3 5 6 5 9a5 5 0 0 1-10 0c0-3 2-6 5-9Z', 'M12 12v9'],
+  food: ['M3 12h18c0 4.4-4 8-9 8s-9-3.6-9-8Z', 'M8 21h8', 'M8 4c-.8 1.2.8 2 0 3.5', 'M12 4c-.8 1.2.8 2 0 3.5', 'M15 9.5 21 3', 'M17.5 9.5 22 5'],
+  cafe: ['M4 10h12v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Z', 'M16 11h1.5a2.5 2.5 0 0 1 0 5H16', 'M3 21h15', 'M8 3c-.8 1.2.8 2 0 3.5', 'M12 3c-.8 1.2.8 2 0 3.5'],
+  retail: ['M3 10h18l-2 10H5Z', 'M7.5 10l3.5-6', 'M16.5 10 13 4', 'M9 13.5v3.5M12 13.5v3.5M15 13.5v3.5'],
+  service: ['M8.5 6a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z', 'M8.5 18a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z', 'M8 7.5 20 17', 'M8 16.5 20 7'],
+  craft: ['M8.5 3.5h7', 'M9.5 3.5v2.8C6.4 7.8 4.5 10.4 4.5 13.5c0 4.1 3.4 7.5 7.5 7.5s7.5-3.4 7.5-7.5c0-3.1-1.9-5.7-5-7.2V3.5', 'M5.6 11.5c4.3 1.8 8.5 1.8 12.8 0', 'M5.3 15.5c4.4 1.8 9 1.8 13.4 0'],
   store: ['M4 10v10h16V10M3 10l2-6h14l2 6', 'M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 20v-5h6v5'],
   market: ['M3 10l2-6h14l2 6', 'M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0', 'M5 13v7h14v-7'],
   festival: ['M4 21V4M4 4l9 3-9 4', 'M10 21h10M15 21V11l-3-3', 'M15 11l3-3'],
@@ -183,6 +185,23 @@ function setupNav() {
   document.querySelectorAll('#mainNav a[href^="#"]').forEach((a) => a.addEventListener('click', () => close()));
 }
 
+/** 전체 메뉴 창의 링크 모양·동작 (화살표, 누르면 창 닫기) */
+function dressMenuLinks(list) {
+  list.querySelectorAll('a').forEach((a) => {
+    a.append(icon(ICONS.chevron));
+    a.addEventListener('click', () => $('menuDialog').close());   // 같은 화면 안(#markets)으로 갈 때도 창을 닫는다
+  });
+}
+
+/** 위쪽 메뉴의 한 묶음(.sub)이 바뀌면 전체 메뉴 창의 같은 묶음도 다시 (CAT-01: 백년가게 분류) */
+function syncMenuGroup(sub) {
+  const i = [...document.querySelectorAll('#mainNav .nav-item')].findIndex((item) => item.contains(sub));
+  const list = $(`menu-sub-${i}`);
+  if (i < 0 || !list) return;
+  list.replaceChildren(...[...sub.children].map((li) => li.cloneNode(true)));
+  dressMenuLinks(list);
+}
+
 /** 전체 메뉴 창: 위쪽 메뉴와 같은 내용을 펼침 목록으로 */
 function setupMenuDialog() {
   const dialog = $('menuDialog');
@@ -200,10 +219,7 @@ function setupMenuDialog() {
       toggle.setAttribute('aria-expanded', String(open));
       list.hidden = !open;
     });
-    list.querySelectorAll('a').forEach((a) => {
-      a.append(icon(ICONS.chevron));
-      a.addEventListener('click', () => dialog.close());   // 같은 화면 안(#markets)으로 갈 때도 창을 닫는다
-    });
+    dressMenuLinks(list);
     return el('div', { class: 'menu-group' }, toggle, list);
   }));
 
@@ -429,20 +445,60 @@ function storeCard(s) {
   const verified = s.infoStatus !== 'UNVERIFIED';
   return el('li', {},
     el('a', { href: `/store.html?id=${s.id}`, class: 'store-card' },
-      el('span', { class: `store-art art-${CATEGORY_ICON[s.category] ?? 'store'}`, 'aria-hidden': 'true' }, icon(ICONS[CATEGORY_ICON[s.category] ?? 'store'])),
+      // ICON-01: 그림만으로 뜻을 전하지 않게 분류 이름을 그림 칸에 함께 쓰고, 분류마다 색을 다르게
+      el('span', { class: `store-art art-${CATEGORY_ICON[s.category] ?? 'store'}` },
+        icon(ICONS[CATEGORY_ICON[s.category] ?? 'store']),
+        el('span', { class: 'art-label', text: s.category ?? '백년가게' })),
       el('span', { class: 'card-body' },
-        el('span', { class: 'card-meta' }, el('span', { text: s.category ?? '백년가게' }), el('b', { text: formatDistance(s.distanceM) })),
+        el('span', { class: 'card-meta' }, el('b', { text: formatDistance(s.distanceM) })),
         el('strong', { class: 'card-title', text: s.name }),
         el('span', { class: 'card-sub', text: s.roadAddress ?? '' }),
         el('span', { class: `info-badge ${verified ? 'info-ok' : 'info-unknown'}` },
           icon(verified ? ICONS.check : ICONS.info), verified ? '영업 확인됨' : '영업 정보 미확인'))));
 }
 
+// 분류 탭 (CAT-01): '전체'로 한 번 받아 온 백년가게에 실제로 있는 분류만 탭으로 만든다.
+// 탭을 누르면 다시 묻지 않고 받아 둔 목록에서 거른다 (그래서 탭이 비는 일이 없음)
+const TAB_ID = { '음식점': 'tab-food', '카페·간식': 'tab-cafe', '도소매': 'tab-retail', '생활서비스': 'tab-service', '공방·공예': 'tab-craft', [OTHER]: 'tab-other' };
+let allStores = [];
+let allRadius = 1000;
+
+function showStores() {
+  const stores = storeCategory ? allStores.filter((s) => categoryOf(s) === storeCategory) : allStores;
+  $('storeList').replaceChildren(...stores.slice(0, 4).map(storeCard));
+  $('storeList').hidden = !stores.length;
+  const what = storeCategory ? `${storeCategory} 백년가게` : '백년가게';
+  $('storesStatus').textContent = stores.length
+    ? (allRadius > 1000 ? `1km 안에는 없어서 3km 안의 ${what}를 보여 드려요.` : '')
+    : `3km 안에 ${what}가 없어요. 위치를 바꿔 보세요.`;
+}
+
+function renderStoreTabs() {
+  const present = categoriesIn(allStores);
+  if (storeCategory && !present.includes(storeCategory)) storeCategory = '';
+  const tabs = [['', 'tab-all', '전체'], ...present.map((c) => [c, TAB_ID[c], c])].map(([category, id, label]) => {
+    const on = category === storeCategory;
+    return el('button', { type: 'button', role: 'tab', id, 'aria-selected': String(on), tabindex: on ? '0' : '-1', 'aria-controls': 'storePanel', 'data-category': category, text: label });
+  });
+  $('storeTabs').replaceChildren(...tabs);
+  $('storeTabs').hidden = present.length < 2;   // 분류가 하나뿐이면 '전체'와 같으므로 탭을 숨긴다
+  $('storePanel').setAttribute('aria-labelledby', (tabs.find((t) => t.getAttribute('aria-selected') === 'true') ?? tabs[0]).id);
+  renderStoreMenu(present);
+}
+
+/** 위쪽 메뉴 '백년가게' 아래 분류도 같은 목록으로 (지도 링크는 updateMapLinks 가 채움) */
+function renderStoreMenu(present) {
+  const items = [['', '전체 보기'], ...present.map((c) => [c, c])].map(([category, label]) => el('li', {},
+    el('a', { href: '/map.html?show=store', 'data-map': 'store', ...(category ? { 'data-category': category } : {}), text: label })));
+  $('sub-store').replaceChildren(...items);
+  syncMenuGroup($('sub-store'));
+}
+
 async function loadStores(place) {
   const mine = ++storeRequest;
   $('storesStatus').textContent = '불러오는 중...';
   $('storeList').replaceChildren();
-  const where = { categories: storeCategory ? [storeCategory] : [], type: 'CENTURY' };
+  const where = { categories: [], type: 'CENTURY' };
   // 내 위치를 쓰면: 서버에는 구 중심과 넓힌 반경만 보내고, 기기에서 실제 위치로 다시 고른다 (LOC-02)
   const find = async (radius) => nearHere(await api.nearbyStores({ ...where, ...queryAround(place, radius) }), place, radius);
   try {
@@ -452,14 +508,13 @@ async function loadStores(place) {
       radius = 3000;
       stores = await find(radius);
     }
-    if (mine !== storeRequest) return;   // 기다리는 사이 다른 탭을 눌렀으면 버린다
-    if (!storeCategory) { latest.stores = stores; latest.storeRadius = radius; }
-    $('storeList').replaceChildren(...stores.slice(0, 4).map(storeCard));
-    $('storeList').hidden = !stores.length;
-    const what = storeCategory ? `${storeCategory} 백년가게` : '백년가게';
-    $('storesStatus').textContent = stores.length
-      ? (radius > 1000 ? `1km 안에는 없어서 3km 안의 ${what}를 보여 드려요.` : '')
-      : `3km 안에 ${what}가 없어요. 위치를 바꾸거나 다른 분류를 골라 보세요.`;
+    if (mine !== storeRequest) return;   // 기다리는 사이 위치가 바뀌었으면 버린다
+    allStores = stores;
+    allRadius = radius;
+    latest.stores = stores;
+    latest.storeRadius = radius;
+    renderStoreTabs();
+    showStores();
   } catch (_) {
     if (mine === storeRequest) $('storesStatus').textContent = '가게를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
   }
@@ -467,9 +522,10 @@ async function loadStores(place) {
 }
 
 function setupStoreTabs() {
-  const tabs = [...document.querySelectorAll('#storeTabs [role="tab"]')];
+  // 탭은 가게를 받아 온 뒤 다시 그려지므로, 바깥 목록에서 한 번만 받는다
+  const tabs = () => [...$('storeTabs').querySelectorAll('[role="tab"]')];
   const select = (tab, focus) => {
-    tabs.forEach((t) => {
+    tabs().forEach((t) => {
       const on = t === tab;
       t.setAttribute('aria-selected', String(on));
       t.tabIndex = on ? 0 : -1;
@@ -477,16 +533,20 @@ function setupStoreTabs() {
     if (focus) tab.focus();
     $('storePanel').setAttribute('aria-labelledby', tab.id);
     storeCategory = tab.dataset.category;
-    if (latest.place) loadStores(latest.place);
+    showStores();
   };
-  tabs.forEach((tab, i) => {
-    tab.addEventListener('click', () => select(tab, false));
-    tab.addEventListener('keydown', (event) => {
-      const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[event.key];
-      if (next === undefined) return;
-      event.preventDefault();
-      select(tabs[(next + tabs.length) % tabs.length], true);
-    });
+  $('storeTabs').addEventListener('click', (event) => {
+    const tab = event.target.closest('[role="tab"]');
+    if (tab) select(tab, false);
+  });
+  $('storeTabs').addEventListener('keydown', (event) => {
+    const list = tabs();
+    const i = list.indexOf(event.target);
+    if (i < 0) return;
+    const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: list.length - 1 }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    select(list[(next + list.length) % list.length], true);
   });
 }
 
@@ -547,15 +607,25 @@ async function loadFestivals(place) {
     const q = queryAround(place, FESTIVAL_RADIUS);   // LOC-02
     const festivals = nearHere(await api.festivalsNearby({ lat: q.lat, lng: q.lng, from: days[0], to: days[6], radius: q.radius }),
       place, FESTIVAL_RADIUS, (a, b) => a.startDate.localeCompare(b.startDate) || a.distanceM - b.distanceM);   // 서버와 같이: 시작일, 그다음 가까운 순
-    // 짧은 축제 먼저, 몇 달씩 이어지는 행사는 뒤로
-    const sorted = [...festivals.filter((f) => !f.longTerm), ...festivals.filter((f) => f.longTerm)];
+    // FEST-04: 홈에는 이미 끝난 축제를 빼고 '진행 중 → 이번 주 예정' 순으로 (끝난 축제는 달력·상세에서는 그대로 보임)
+    // 그 안에서 짧은 축제 먼저, 몇 달씩 이어지는 행사는 뒤로
+    const today = todayString();
+    const active = festivals.filter((f) => f.endDate >= today);
+    const ongoing = active.filter((f) => f.startDate <= today);
+    const upcoming = active.filter((f) => f.startDate > today);
+    const short = (list) => list.filter((f) => !f.longTerm);
+    const long = (list) => list.filter((f) => f.longTerm);
+    const sorted = [...short(ongoing), ...short(upcoming), ...long(ongoing), ...long(upcoming)];
     latest.festivals = sorted;
-    renderWeek(days, festivals);
+    renderWeek(days, festivals);   // 주간 날짜 줄은 그날 열린(열렸던) 축제 수를 보여 주는 달력이라 그대로
     $('festivalList').replaceChildren(...sorted.slice(0, 3).map(festivalCard));
-    $('festivalList').hidden = !festivals.length;
-    $('festivalsStatus').textContent = festivals.length
-      ? (festivals.length > 3 ? `${FESTIVAL_RADIUS / 1000}km 안 ${festivals.length}개 중 3개 · 나머지는 축제 달력에서 볼 수 있어요.` : '')
-      : `이번 주 ${FESTIVAL_RADIUS / 1000}km 안에는 등록된 축제가 없어요. 축제 달력에서 다른 지역도 볼 수 있어요.`;
+    $('festivalList').hidden = !sorted.length;
+    const ended = festivals.length - active.length;
+    $('festivalsStatus').textContent = sorted.length
+      ? (sorted.length > 3 ? `${FESTIVAL_RADIUS / 1000}km 안 진행 중·예정 ${sorted.length}개 중 3개 · 나머지는 축제 달력에서 볼 수 있어요.` : '')
+      : ended
+        ? `이번 주 ${FESTIVAL_RADIUS / 1000}km 안 축제는 모두 끝났어요. 축제 달력에서 다음 축제를 볼 수 있어요.`
+        : `이번 주 ${FESTIVAL_RADIUS / 1000}km 안에는 등록된 축제가 없어요. 축제 달력에서 다른 지역도 볼 수 있어요.`;
   } catch (_) {
     latest.festivals = [];
     renderWeek(days, []);
@@ -660,11 +730,10 @@ async function loadMarkets(place) {
 // ================================================================ ⑤-1 테마로 걷기
 
 function themeCount(t) {
-  if (t.id === 'fair-markets') {
-    const near = `30km 안 ${t.near.toLocaleString()}${t.unit}`;
-    return t.today ? `${near} · 오늘 장 서는 곳 전국 ${t.today.toLocaleString()}${t.unit}` : near;
-  }
-  return `30km 안 ${t.near.toLocaleString()}${t.unit} · 전국 ${t.total.toLocaleString()}${t.unit}`;
+  // THM-02: 2km → 10km → 30km 중 처음 있는 반경의 수
+  const near = nearText(t) ?? '';
+  if (t.id === 'fair-markets') return t.today ? `${near} · 오늘 장 서는 곳 전국 ${t.today.toLocaleString()}${t.unit}` : near;
+  return `${near} · 전국 ${t.total.toLocaleString()}${t.unit}`;
 }
 
 async function loadThemes(place) {
@@ -679,7 +748,7 @@ async function loadThemes(place) {
         el('span', { class: 'theme-tile-title', text: t.title }),
         el('span', { class: 'theme-tile-desc', text: t.description }),
         el('span', { class: 'theme-tile-count', text: themeCount(t) })))));
-    $('themesStatus').textContent = `${centerText(place)} 30km 안의 수예요.`;
+    $('themesStatus').textContent = `${centerText(place)}에서 가까운 곳부터 (걸어서 2km → 10km → 30km 순으로 넓혀) 센 수예요.`;
   } catch (_) {
     $('themeCards').replaceChildren();
     $('themesStatus').textContent = '테마를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';

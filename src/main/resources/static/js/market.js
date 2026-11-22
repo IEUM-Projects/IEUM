@@ -1,5 +1,5 @@
 // 전통시장 상세 (MKT-01): /market.html?id=1203
-import { api, formatDistance, directionsUrl } from './api.js';
+import { api, formatDistance, routeAttrs, routeNote } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { appendPlaceStories } from './place-stories.js';
@@ -146,7 +146,8 @@ function render(m) {
       el('ul', { id: 'newsList', class: 'news-list' }),
       el('p', { class: 'news-note', text: `${NEWS_NOTE} 이름이 같은 다른 곳의 기사가 섞일 수 있어요.` })),
     el('div', { class: 'actions' },
-      hasCoords ? el('a', { class: 'button-primary wide', href: directionsUrl(m), target: '_blank', rel: 'noopener' }, icon('directions'), '길찾기') : null,
+      hasCoords ? el('a', { class: 'button-primary wide', ...routeAttrs(m) }, icon('directions'), '길찾기') : null,
+      hasCoords ? el('p', { class: 'route-note', text: routeNote() }) : null,
       m.homepageUrl ? el('a', { class: 'button-secondary wide', href: m.homepageUrl, target: '_blank', rel: 'noopener noreferrer' }, icon('link'), '홈페이지') : null,
     ),
     el('p', { class: 'source', text: `시장 정보: 전국전통시장표준데이터 (소상공인시장진흥공단)${m.dataDate ? ` · 기준일 ${m.dataDate}` : ''}` }),

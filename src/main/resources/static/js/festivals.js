@@ -1,5 +1,6 @@
 // 지역 축제 달력 (FES-01): /festivals.html?month=2026-11&sido=11&date=2026-11-13
-import { api } from './api.js';
+import { api, formatDistance } from './api.js';
+import { nearestRegion, meters } from './near-region.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { WEEKDAYS, pad, ymd, daysIn, weekday, todayString, periodText, status } from './festival-format.js';
@@ -7,6 +8,11 @@ import { WEEKDAYS, pad, ymd, daysIn, weekday, todayString, periodText, status } 
 const $ = (id) => document.getElementById(id);
 
 const state = { year: 0, month: 0, sido: '', date: null, festivals: [], loading: false };
+
+// FEST-03: 내 위치 기준 정렬. 실제 위치(here)는 이 기기 안에서만 쓰고 서버·주소창·저장소에 넣지 않는다 (LOC-02)
+// mine = { sidoCode, sidoName, here }. 켜 두었는지만 이 브라우저에 기억한다 (위치 값은 저장하지 않음)
+const near = { on: false, busy: false, mine: null };
+const NEAR_KEY = 'ieum_festival_near';
 
 function el(tag, props = {}, ...children) {
   const node = document.createElement(tag);
@@ -57,24 +63,28 @@ function renderCalendar() {
   for (let d = 1; d <= daysIn(year, month); d++) {
     const day = ymd(year, month, d);
     const count = short.filter((f) => covers(f, day)).length;
+    const mineCount = near.mine ? short.filter((f) => covers(f, day) && isMine(f)).length : 0;
     const wd = weekday(day);
     const button = el('button', {
       type: 'button',
       class: `day${wd === 0 ? ' sun' : ''}${wd === 6 ? ' sat' : ''}${count ? ' has' : ''}`,
       'aria-pressed': String(state.date === day),
-      'aria-label': `${month}월 ${d}일 ${WEEKDAYS[wd]}요일, ${count ? `축제 ${count}개` : '축제 없음'}${day === today ? ', 오늘' : ''}`,
+      'aria-label': `${month}월 ${d}일 ${WEEKDAYS[wd]}요일, ${count ? `축제 ${count}개` : '축제 없음'}${mineCount ? `, 우리 지역 ${mineCount}개` : ''}${day === today ? ', 오늘' : ''}`,
       'data-date': day,
-    }, el('span', { class: 'num', text: String(d) }), count ? el('span', { class: 'count', text: String(count) }) : null);
+    }, el('span', { class: 'num', text: String(d) }), count ? el('span', { class: 'count', text: String(count) }) : null,
+    mineCount ? el('span', { class: 'mine-dot', 'aria-hidden': 'true' }) : null);
     if (day === today) button.setAttribute('aria-current', 'date');
     button.addEventListener('click', () => selectDate(state.date === day ? null : day));
     cells.push(button);
   }
   $('calendar').replaceChildren(...cells);
+  $('mineLegend').hidden = !near.mine;
+  if (near.mine) $('mineLegendText').textContent = `점: ${near.mine.sidoName} 축제가 있는 날`;
 }
 
 function festivalItem(f) {
   const s = status(f);
-  const where = [f.regionName, f.place].filter(Boolean).join(' · ');
+  const where = [f.regionName, f.place, f.distanceM != null ? `여기서 ${formatDistance(f.distanceM)}` : null].filter(Boolean).join(' · ');
   return el('li', {},
     el('a', { href: `/festival.html?id=${f.id}`, class: 'festival-item' },
       el('span', { class: 'item-top' },
@@ -86,14 +96,85 @@ function festivalItem(f) {
     ));
 }
 
+// ---------------------------------------------------------------- 내 위치 기준 (FEST-03)
+
+const isMine = (f) => near.mine != null && f.sidoCode === near.mine.sidoCode;
+
+/** 내 시·도 축제는 앞에 가까운 순(좌표 없는 것은 그 묶음 끝), 나머지는 서버가 준 날짜순 그대로 */
+function arrange(list) {
+  if (!near.mine) return { mine: [], others: list };
+  const mine = list.filter(isMine).map((f, i) => {
+    const ok = f.latitude != null && f.longitude != null;
+    return { ...f, i, distanceM: ok ? Math.round(meters(near.mine.here, { lat: Number(f.latitude), lng: Number(f.longitude) })) : null };
+  }).sort((a, b) => (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity) || a.i - b.i);
+  return { mine, others: list.filter((f) => !isMine(f)) };
+}
+
+function groupHead(text) {
+  return el('li', { class: 'group-head' }, el('h3', { text }));
+}
+
+function renderNear() {
+  const button = $('nearButton');
+  button.setAttribute('aria-pressed', String(near.on && !!near.mine));
+  button.disabled = near.busy;
+  $('nearButtonText').textContent = near.busy ? '위치 확인 중...' : near.on && near.mine ? '날짜 순으로 보기' : '내 위치 기준으로 보기';
+}
+
+async function turnNearOn({ quiet = false } = {}) {
+  near.busy = true;
+  renderNear();
+  try {
+    const r = await nearestRegion();
+    near.mine = { sidoCode: r.sidoCode, sidoName: r.sidoName, here: r.here };
+    near.on = true;
+    try { localStorage.setItem(NEAR_KEY, '1'); } catch (_) { /* 기억 못 해도 이번 화면에는 적용 */ }
+    $('nearStatus').textContent = `${r.sidoName} 축제를 맨 위에 가까운 순으로 보여 줘요. 위치는 이 기기 안에서만 써요.`;
+  } catch (e) {
+    near.on = false;
+    near.mine = null;
+    if (!quiet) $('nearStatus').textContent = `${e.message} 지금은 날짜 순으로 보여 줘요.`;
+  }
+  near.busy = false;
+  renderNear();
+  renderCalendar();
+  renderList();
+}
+
+function turnNearOff() {
+  near.on = false;
+  near.mine = null;
+  try { localStorage.removeItem(NEAR_KEY); } catch (_) { /* 무시 */ }
+  $('nearStatus').textContent = '날짜 순으로 보여 줘요.';
+  renderNear();
+  renderCalendar();
+  renderList();
+}
+
+/** 이미 위치를 허락한 기기이거나 지난번에 켜 두었으면 들어오자마자 켠다. 아니면 버튼을 눌렀을 때만 묻는다 */
+async function autoNear() {
+  let remembered = false;
+  try { remembered = localStorage.getItem(NEAR_KEY) === '1'; } catch (_) { /* 무시 */ }
+  let perm = null;   // 'granted' | 'prompt' | 'denied' | null(이 브라우저가 알려 주지 않음)
+  try { perm = (await navigator.permissions?.query({ name: 'geolocation' }))?.state ?? null; } catch (_) { /* 무시 */ }
+  // 권한 창이 새로 뜨는 경우('prompt')에는 켜지 않는다. 알 수 없는 브라우저는 지난번에 켜 둔 경우에만
+  if (perm === 'granted' || (perm === null && remembered)) await turnNearOn({ quiet: true });
+}
+
 function renderList() {
   const inScope = state.date ? state.festivals.filter((f) => covers(f, state.date)) : state.festivals;
-  const short = inScope.filter((f) => !f.longTerm);
-  const long = inScope.filter((f) => f.longTerm);
+  const shortAll = inScope.filter((f) => !f.longTerm);
+  const { mine, others } = arrange(shortAll);
+  const short = [...mine, ...others];
+  const longAll = arrange(inScope.filter((f) => f.longTerm));
+  const long = [...longAll.mine, ...longAll.others];
   const label = state.date ? `${Number(state.date.slice(5, 7))}월 ${Number(state.date.slice(8))}일(${WEEKDAYS[weekday(state.date)]})` : `${state.month}월`;
   $('listTitle').textContent = `${label} 축제 ${short.length}개`;
   $('clearDate').hidden = !state.date;
-  $('festivalList').replaceChildren(...short.map(festivalItem));
+  // 두 묶음이 다 있을 때만 제목을 붙인다 (한쪽뿐이면 순서만 바뀜)
+  $('festivalList').replaceChildren(...(mine.length && others.length
+    ? [groupHead(`내 주변 · ${near.mine.sidoName} (${mine.length})`), ...mine.map(festivalItem), groupHead(`다른 지역 (${others.length})`), ...others.map(festivalItem)]
+    : short.map(festivalItem)));
   $('listStatus').textContent = state.loading ? '불러오는 중...'
     : short.length ? ''
       : '이 기간에 등록된 축제가 없어요. 지자체가 일정을 확정한 뒤 올리기 때문에, 몇 달 뒤 축제는 아직 없을 수 있어요.';
@@ -164,9 +245,12 @@ async function init() {
     writeUrl();
     load();
   });
+  $('nearButton').addEventListener('click', () => (near.on && near.mine ? turnNearOff() : turnNearOn()));
+  renderNear();
   await fillRegions();
   writeUrl();
   await load();
+  await autoNear();
 }
 
 init();

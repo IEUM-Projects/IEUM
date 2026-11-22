@@ -19,6 +19,8 @@ import java.util.List;
  * GET /api/themes/alleys?lat&lng&page             백년가게 골목 (20개씩, 위치가 있으면 가까운 순)
  * GET /api/themes/market-stores?lat&lng&page      시장 안 백년가게
  * GET /api/themes/fair-markets?lat&lng&page&today=true   5일장 (today=true: 오늘 장 서는 곳만)
+ * 목록은 &radius=auto|2000|10000|30000|all 로 반경을 고른다 (THM-02, 위치가 있을 때만. 없으면 전국)
+ *   auto(기본): 2km → 10km → 30km 순으로 넓혀 처음 있는 반경. 30km 안에도 없으면 전국
  */
 @RestController
 @RequestMapping("/api/themes")
@@ -36,14 +38,23 @@ public class ThemeController {
     public ThemePage<?> theme(@PathVariable String id,
                               @RequestParam(required = false) Double lat, @RequestParam(required = false) Double lng,
                               @RequestParam(defaultValue = "0") int page,
-                              @RequestParam(defaultValue = "false") boolean today) {
+                              @RequestParam(defaultValue = "false") boolean today,
+                              @RequestParam(defaultValue = "auto") String radius) {
         ThemeService.Where where = where(lat, lng);
+        ThemeService.Radius r = radius(radius);
         return switch (id) {
-            case "alleys" -> service.alleys(where, page);
-            case "market-stores" -> service.marketStores(where, page);
-            case "fair-markets" -> service.fairMarkets(where, page, today);
+            case "alleys" -> service.alleys(where, page, r);
+            case "market-stores" -> service.marketStores(where, page, r);
+            case "fair-markets" -> service.fairMarkets(where, page, today, r);
             default -> throw new BusinessException(ErrorCode.NOT_FOUND);
         };
+    }
+
+    /** 정해진 반경만 받는다 (그 밖의 값은 auto) */
+    private static ThemeService.Radius radius(String value) {
+        if ("all".equals(value)) return ThemeService.Radius.ALL;
+        for (int r : ThemeService.RADII) if (String.valueOf(r).equals(value)) return ThemeService.Radius.of(r);
+        return ThemeService.Radius.AUTO;
     }
 
     /** 대한민국 범위 안의 좌표만 쓴다 (아니면 위치 없이) */

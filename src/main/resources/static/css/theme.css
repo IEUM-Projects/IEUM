@@ -40,6 +40,11 @@ body.theme-page { height: auto; min-height: 100%; background: var(--surface-subt
 .filter-chip[hidden] { display: none; }
 .filter-chip[aria-pressed="true"] { border-color: var(--color-primary-70); background: var(--color-primary-70); color: var(--text-on-primary); font-weight: var(--font-weight-bold); }
 .filter-chip[aria-pressed="true"]::before { content: '✓ '; }
+/* THM-02: 거리 고르기 */
+.radius-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.radius-chips[hidden] { display: none; }
+.radius-note { margin: var(--space-2) 0 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.radius-note:empty { display: none; }
 
 .theme-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
 .theme-item { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-4); border: 1px solid var(--border-light); border-radius: var(--radius-large); background: var(--surface); }
