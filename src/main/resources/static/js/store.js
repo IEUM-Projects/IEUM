@@ -1,5 +1,5 @@
 // 가게 상세 화면 (MAP-02): /store.html?id=381
-import { api, directionsUrl, formatDistance, loadKakaoMapSdk } from './api.js';
+import { api, routeAttrs, routeNote, formatDistance, loadKakaoMapSdk } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { appendPlaceStories } from './place-stories.js';
@@ -95,7 +95,8 @@ function render(store) {
     store.history ? el('section', {}, el('h2', { text: '가게 이야기' }), el('p', { text: store.history })) : null,
     isCreator && store.creatorSelections?.length ? creatorSection(store.creatorSelections) : null,
     el('div', { class: 'actions' },
-      el('a', { class: 'button-primary wide', href: directionsUrl(store), target: '_blank', rel: 'noopener' }, icon('directions', 'icon-small'), '길찾기'),
+      el('a', { class: 'button-primary wide', ...routeAttrs(store) }, icon('directions', 'icon-small'), '길찾기'),
+      el('p', { class: 'route-note', text: routeNote() }),
       phoneButton(store.phone),
       store.kakaoMapUrl
         ? el('a', { class: 'button-secondary', href: store.kakaoMapUrl, target: '_blank', rel: 'noopener', 'aria-label': '카카오맵에서 보기 (사진·리뷰)', text: '카카오맵' })

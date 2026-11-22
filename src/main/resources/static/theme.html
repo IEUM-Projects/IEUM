@@ -49,6 +49,14 @@
       <p id="summary" class="summary" role="status"></p>
       <button type="button" id="todayFilter" class="filter-chip" aria-pressed="false" hidden>오늘 장 서는 곳만</button>
     </div>
+    <!-- THM-02: 거리 고르기 (기준 위치가 있을 때만). 처음엔 2km → 10km → 30km 순으로 넓혀 처음 있는 반경 -->
+    <div id="radiusChips" class="radius-chips" role="group" aria-label="거리" hidden>
+      <button type="button" class="filter-chip" data-radius="2000" aria-pressed="false">걸어서 2km</button>
+      <button type="button" class="filter-chip" data-radius="10000" aria-pressed="false">가까이 10km</button>
+      <button type="button" class="filter-chip" data-radius="30000" aria-pressed="false">30km</button>
+      <button type="button" class="filter-chip" data-radius="all" aria-pressed="false">전국</button>
+    </div>
+    <p id="radiusNote" class="radius-note" role="status"></p>
     <ul id="list" class="theme-list"></ul>
     <button type="button" id="moreButton" class="button-secondary more-button" hidden>더 보기</button>
     <p class="note" id="themeNote"></p>

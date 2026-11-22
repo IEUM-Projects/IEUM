@@ -48,10 +48,28 @@ export function svgIcon(paths, cls = '') {
   return svg;
 }
 
-/** 테마 요약 한 줄: '서울 중구 기준 30km 안 8곳 · 전국 46곳' */
+/** 가까운 반경 글: 2km 안 3곳 / 30km 안에는 없음 (THM-02: 2km → 10km → 30km 중 처음 있는 반경) */
+export function nearText(t) {
+  if (t.near === null || t.near === undefined) return null;
+  const r = distText(t.nearRadius ?? 30000);
+  return t.near > 0 ? `${r} 안 ${t.near.toLocaleString()}${t.unit}` : `${r} 안에는 없음`;
+}
+
+/** 걸어서 걸리는 시간(분): 골목을 돌아가는 만큼 직선의 1.3배, 분당 약 67m (course-plan.js 와 같음) */
+export function walkMinutes(m) {
+  return Math.max(1, Math.round((m * 1.3) / 67));
+}
+
+/** 목록 오른쪽 거리 글: 2km 안이면 걷는 시간까지 '1.2km · 걸어서 약 23분' */
+export function moveText(m) {
+  if (m === null || m === undefined) return '';
+  return m <= 2000 ? `${distText(m)} · 걸어서 약 ${walkMinutes(m)}분` : `여기서 ${distText(m)}`;
+}
+
+/** 테마 요약 한 줄: '서울 중구 기준 2km 안 3곳 · 전국 46곳' */
 export function countText(t, place) {
   const parts = [];
-  if (place && t.near !== null && t.near !== undefined) parts.push(`${placeText(place)} 30km 안 ${t.near.toLocaleString()}${t.unit}`);
+  if (place && nearText(t)) parts.push(`${placeText(place)} ${nearText(t)}`);
   parts.push(`전국 ${t.total.toLocaleString()}${t.unit}`);
   if (t.today !== null && t.today !== undefined) parts.push(`오늘 장 서는 곳 ${t.today.toLocaleString()}${t.unit}`);
   return parts.join(' · ');
@@ -60,5 +78,5 @@ export function countText(t, place) {
 /** 1234 → '1.2km', 300 → '300m' */
 export function distText(m) {
   if (m === null || m === undefined) return '';
-  return m < 1000 ? `${m}m` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0)}km`;
+  return m < 1000 ? `${m}m` : `${(m / 1000).toFixed(m < 10000 ? 1 : 0).replace(/\.0$/, '')}km`;   // 2000 → '2km'
 }

@@ -1,5 +1,5 @@
 // 축제 상세 (FES-01): /festival.html?id=12
-import { api } from './api.js';
+import { api, routeAttrs, routeNote } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { appendPlaceStories } from './place-stories.js';
@@ -35,13 +35,20 @@ function row(label, value, node) {
   return el('div', {}, el('dt', { text: label }), el('dd', {}, node ?? value));
 }
 
-/** 카카오맵 길찾기. 좌표가 없으면 주소 검색으로 */
-function directionsUrl(f) {
-  if (f.latitude != null && f.longitude != null) {
-    return `https://map.kakao.com/link/to/${encodeURIComponent(f.name)},${f.latitude},${f.longitude}`;
+/** 홈페이지 주소를 짧게: https://www.festival.go.kr/a/b → festival.go.kr */
+function siteName(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch (_) {
+    return url;
   }
+}
+
+/** 카카오맵 길찾기 링크 속성. 좌표가 있으면 공통 길찾기(휴대폰은 앱), 없으면 주소 검색 */
+function directionsAttrs(f) {
+  if (f.latitude != null && f.longitude != null) return routeAttrs(f);
   const address = f.roadAddress ?? f.jibunAddress;
-  return address ? `https://map.kakao.com/link/search/${encodeURIComponent(address)}` : null;
+  return address ? { href: `https://map.kakao.com/link/search/${encodeURIComponent(address)}`, target: '_blank', rel: 'noopener' } : null;
 }
 
 function sourceText(f) {
@@ -59,7 +66,7 @@ function render(f) {
   document.getElementById('backLink').href = `/festivals.html?month=${f.startDate.slice(0, 7)}&date=${f.startDate}`;
   const s = status(f);
   const address = f.roadAddress ?? f.jibunAddress;
-  const directions = directionsUrl(f);
+  const directions = directionsAttrs(f);
 
   root.replaceChildren(...[
     el('div', { class: 'title-block' },
@@ -80,15 +87,20 @@ function render(f) {
       row('장소', f.place),
       row('주소', address),
       row('전화', f.phone, f.phone ? el('a', { href: `tel:${f.phone.replace(/[^0-9+]/g, '')}`, text: f.phone }) : null),
+      // 홈페이지는 버튼 대신 정보 줄에 (아래 버튼은 길찾기·전화하기만)
+      row('홈페이지', f.homepageUrl, f.homepageUrl ? el('a', { href: f.homepageUrl, target: '_blank', rel: 'noopener noreferrer', text: siteName(f.homepageUrl) }) : null),
       row('주최', f.host),
       row('주관', f.organizer),
       row('후원', f.sponsor),
     ),
     f.description ? el('section', { class: 'description' }, el('h2', { text: '축제 소개' }), el('p', { text: f.description })) : null,
     el('div', { class: 'actions' },
-      directions ? el('a', { class: 'button-primary wide', href: directions, target: '_blank', rel: 'noopener' }, icon('directions'), '길찾기') : null,
-      f.homepageUrl ? el('a', { class: 'button-secondary', href: f.homepageUrl, target: '_blank', rel: 'noopener noreferrer' }, icon('link'), '홈페이지') : null,
-      f.phone ? el('a', { class: 'button-secondary', href: `tel:${f.phone.replace(/[^0-9+]/g, '')}` }, '전화하기') : null,
+      directions ? el('a', { class: 'button-primary wide', ...directions }, icon('directions'), '길찾기') : null,
+      directions ? el('p', { class: 'route-note', text: directions['data-route-ep'] ? routeNote() : '카카오맵에서 주소로 찾아요. 출발지를 정하면 길을 찾아요.' }) : null,
+      // 전화하기는 늘 한 줄 전체. 번호가 없으면 누를 수 없는 '전화번호 없음' (가게 상세와 같게)
+      f.phone
+        ? el('a', { class: 'button-secondary phone-action', href: `tel:${f.phone.replace(/[^0-9+]/g, '')}` }, '전화하기')
+        : el('button', { type: 'button', class: 'button-secondary phone-action', disabled: '', text: '전화번호 없음' }),
     ),
     el('p', { class: 'notice', role: 'note' }, icon('info'), '일정은 바뀔 수 있어요. 방문 전에 주최 측에 확인해 주세요.'),
     el('p', { class: 'source', text: sourceText(f) }),

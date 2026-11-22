@@ -47,3 +47,6 @@ body.course-page { height: auto; min-height: 100%; background: var(--surface-sub
 .stops { gap: 0; background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-large); overflow: hidden; }
 .stops > .stop { border: 0; border-radius: 0; }
 .stops > .stop + .stop { border-top: 1px solid var(--border-divider); }
+
+/* TOUR-02: 카카오맵으로 나가는 장소 이름 (표시는 글자에 섞이지 않게 ::after, 화면 읽기는 링크의 aria-label) */
+.ext-link::after { content: '카카오맵'; display: inline-block; margin-left: var(--space-1); padding: 0 6px; border: 1px solid var(--border-light); border-radius: var(--radius-small); font-size: var(--font-body-xsmall); font-weight: 400; color: var(--text-subtle); vertical-align: middle; }

@@ -46,6 +46,8 @@ public class ThemeService {
     public static final int ALLEY_MIN_STORES = 3;
     public static final int MARKET_STORE_M = 300;
     public static final int NEAR_M = 30_000;
+    /** 테마 목록 반경 (THM-02): 걸어서 2km → 가까이 10km → 30km. 'auto' 는 이 순서로 넓혀 처음 있는 반경 */
+    public static final List<Integer> RADII = List.of(2_000, 10_000, NEAR_M);
     public static final int PAGE_SIZE = 20;
     private static final Duration TTL = Duration.ofMinutes(10);
     private static final ZoneId SEOUL = ZoneId.of("Asia/Seoul");
@@ -57,6 +59,16 @@ public class ThemeService {
     public record Where(Double lat, Double lng) {
         boolean has() {
             return lat != null && lng != null;
+        }
+    }
+
+    /** 고른 반경: AUTO(넓혀 가며), 숫자(m), ALL(전국) */
+    public record Radius(boolean auto, Integer meters) {
+        public static final Radius AUTO = new Radius(true, null);
+        public static final Radius ALL = new Radius(false, null);
+
+        public static Radius of(int meters) {
+            return new Radius(false, meters);
         }
     }
 
@@ -254,57 +266,94 @@ public class ThemeService {
     private ThemeSummary summary(String id, Snapshot s, Where where) {
         LocalDate today = LocalDate.now(SEOUL);
         return switch (id) {
-            case "alleys" -> new ThemeSummary(id, "백년가게 골목",
-                    "걸어서 몇 분 거리에 오래된 가게가 모여 있는 골목", "곳", s.alleys().size(),
-                    nearCount(s.alleys(), Alley::lat, Alley::lng, where), null);
-            case "market-stores" -> new ThemeSummary(id, "시장 안 백년가게",
-                    "장도 보고 오래된 가게도 만나는 전통시장", "곳", s.marketStores().size(),
-                    nearCount(s.marketStores(), ms -> ms.market().lat(), ms -> ms.market().lng(), where), null);
-            case "fair-markets" -> new ThemeSummary(id, "장날 따라 걷는 5일장",
-                    "날짜 끝자리로 장이 서는 전국의 정기장", "곳", s.fairs().size(),
-                    nearCount(s.fairs(), Market::lat, Market::lng, where),
-                    s.fairs().stream().filter(m -> isFairDay(m.days(), today)).count());
+            case "alleys" -> withNear(new ThemeSummary(id, "백년가게 골목",
+                    "걸어서 몇 분 거리에 오래된 가게가 모여 있는 골목", "곳", s.alleys().size(), null, null, null),
+                    s.alleys(), Alley::lat, Alley::lng, where);
+            case "market-stores" -> withNear(new ThemeSummary(id, "시장 안 백년가게",
+                    "장도 보고 오래된 가게도 만나는 전통시장", "곳", s.marketStores().size(), null, null, null),
+                    s.marketStores(), ms -> ms.market().lat(), ms -> ms.market().lng(), where);
+            case "fair-markets" -> withNear(new ThemeSummary(id, "장날 따라 걷는 5일장",
+                    "날짜 끝자리로 장이 서는 전국의 정기장", "곳", s.fairs().size(), null, null,
+                    s.fairs().stream().filter(m -> isFairDay(m.days(), today)).count()),
+                    s.fairs(), Market::lat, Market::lng, where);
             default -> throw new IllegalArgumentException(id);
         };
     }
 
-    private static <T> Long nearCount(List<T> items, ToDoubleFunction<T> lat, ToDoubleFunction<T> lng, Where where) {
-        if (!where.has()) return null;
-        return items.stream().filter(i -> distance(where.lat(), where.lng(), lat.applyAsDouble(i), lng.applyAsDouble(i)) <= NEAR_M).count();
+    /** 요약에 '2km → 10km → 30km 중 처음 있는 반경과 그 안의 수'를 넣는다 */
+    private static <T> ThemeSummary withNear(ThemeSummary t, List<T> items, ToDoubleFunction<T> lat, ToDoubleFunction<T> lng, Where where) {
+        if (!where.has()) return t;
+        for (int r : RADII) {
+            long n = items.stream().filter(i -> distance(where.lat(), where.lng(), lat.applyAsDouble(i), lng.applyAsDouble(i)) <= r).count();
+            if (n > 0) return new ThemeSummary(t.id(), t.title(), t.description(), t.unit(), t.total(), n, r, t.today());
+        }
+        return new ThemeSummary(t.id(), t.title(), t.description(), t.unit(), t.total(), 0L, NEAR_M, t.today());
+    }
+
+    /** 반경으로 거른 목록과 실제로 쓴 반경. 위치가 없으면 거르지 않는다 */
+    private record Scoped<T>(List<T> list, Integer radius, boolean expanded) {
+    }
+
+    private static <T> Scoped<T> scope(List<T> list, ToDoubleFunction<T> lat, ToDoubleFunction<T> lng, Where where, Radius radius) {
+        if (!where.has() || (!radius.auto() && radius.meters() == null)) return new Scoped<>(list, null, false);
+        java.util.function.IntFunction<List<T>> within = r -> list.stream()
+                .filter(i -> distance(where.lat(), where.lng(), lat.applyAsDouble(i), lng.applyAsDouble(i)) <= r).toList();
+        if (!radius.auto()) return new Scoped<>(within.apply(radius.meters()), radius.meters(), false);
+        for (int r : RADII) {
+            List<T> in = within.apply(r);
+            if (!in.isEmpty()) return new Scoped<>(in, r, r != RADII.get(0));
+        }
+        return new Scoped<>(list, null, true);   // 30km 안에도 없으면 전국 (가까운 순)
     }
 
     public ThemePage<AlleyItem> alleys(Where where, int page) {
+        return alleys(where, page, Radius.ALL);
+    }
+
+    public ThemePage<AlleyItem> alleys(Where where, int page, Radius radius) {
         Snapshot s = data();
-        List<Alley> list = new ArrayList<>(s.alleys());
+        Scoped<Alley> sc = scope(s.alleys(), Alley::lat, Alley::lng, where, radius);
+        List<Alley> list = new ArrayList<>(sc.list());
         if (where.has()) list.sort(Comparator.comparingDouble(a -> distance(where.lat(), where.lng(), a.lat(), a.lng())));
-        return page(summary("alleys", s, where), list, page, a -> new AlleyItem(a.key(), a.label(), a.region(), a.lat(), a.lng(),
+        return page(summary("alleys", s, where), list, page, sc, a -> new AlleyItem(a.key(), a.label(), a.region(), a.lat(), a.lng(),
                 a.spanM(), dist(where, a.lat(), a.lng()),
                 a.stores().stream().map(st -> store(st, a.lat(), a.lng())).toList()));
     }
 
     public ThemePage<MarketStoresItem> marketStores(Where where, int page) {
+        return marketStores(where, page, Radius.ALL);
+    }
+
+    public ThemePage<MarketStoresItem> marketStores(Where where, int page, Radius radius) {
         Snapshot s = data();
         LocalDate today = LocalDate.now(SEOUL);
-        List<MarketStores> list = new ArrayList<>(s.marketStores());
+        Scoped<MarketStores> sc = scope(s.marketStores(), ms -> ms.market().lat(), ms -> ms.market().lng(), where, radius);
+        List<MarketStores> list = new ArrayList<>(sc.list());
         if (where.has()) {
             list.sort(Comparator.comparingDouble(ms -> distance(where.lat(), where.lng(), ms.market().lat(), ms.market().lng())));
         } else {
             list.sort(Comparator.comparingInt((MarketStores ms) -> -ms.stores().size()).thenComparing(ms -> ms.market().name()));
         }
-        return page(summary("market-stores", s, where), list, page, ms -> new MarketStoresItem(market(ms.market(), where, today),
+        return page(summary("market-stores", s, where), list, page, sc, ms -> new MarketStoresItem(market(ms.market(), where, today),
                 ms.stores().stream().map(st -> store(st, ms.market().lat(), ms.market().lng())).toList()));
     }
 
     public ThemePage<MarketLite> fairMarkets(Where where, int page, boolean todayOnly) {
+        return fairMarkets(where, page, todayOnly, Radius.ALL);
+    }
+
+    public ThemePage<MarketLite> fairMarkets(Where where, int page, boolean todayOnly, Radius radius) {
         Snapshot s = data();
         LocalDate today = LocalDate.now(SEOUL);
-        List<Market> list = new ArrayList<>(todayOnly ? s.fairs().stream().filter(m -> isFairDay(m.days(), today)).toList() : s.fairs());
+        Scoped<Market> sc = scope(todayOnly ? s.fairs().stream().filter(m -> isFairDay(m.days(), today)).toList() : s.fairs(),
+                Market::lat, Market::lng, where, radius);
+        List<Market> list = new ArrayList<>(sc.list());
         if (where.has()) {
             list.sort(Comparator.comparingDouble(m -> distance(where.lat(), where.lng(), m.lat(), m.lng())));
         } else {
             list.sort(Comparator.comparing((Market m) -> m.region() == null ? "" : m.region()).thenComparing(Market::name));
         }
-        return page(summary("fair-markets", s, where), list, page, m -> market(m, where, today));
+        return page(summary("fair-markets", s, where), list, page, sc, m -> market(m, where, today));
     }
 
     private static StoreLite store(Store s, double fromLat, double fromLng) {
@@ -320,10 +369,11 @@ public class ThemeService {
         return where.has() ? Math.round(distance(where.lat(), where.lng(), lat, lng)) : null;
     }
 
-    private static <S, T> ThemePage<T> page(ThemeSummary theme, List<S> list, int page, Function<S, T> map) {
+    private static <S, T> ThemePage<T> page(ThemeSummary theme, List<S> list, int page, Scoped<?> sc, Function<S, T> map) {
         int p = Math.max(page, 0);
         int from = Math.min(p * PAGE_SIZE, list.size());
         int to = Math.min(from + PAGE_SIZE, list.size());
-        return new ThemePage<>(theme, list.subList(from, to).stream().map(map).toList(), p, to < list.size(), list.size());
+        return new ThemePage<>(theme, list.subList(from, to).stream().map(map).toList(), p, to < list.size(), list.size(),
+                sc.radius(), sc.expanded());
     }
 }

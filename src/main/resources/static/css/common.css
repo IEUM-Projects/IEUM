@@ -335,3 +335,7 @@ a:hover { color: var(--text-link-hover); }
   .topbar .noti-link { display: none; }
   .topbar .account-button.has-unread::after { display: block; }
 }
+
+/* ROUTE-01: 길찾기 버튼 아래 안내 */
+.actions .route-note { grid-column: 1 / -1; }
+.route-note { margin: calc(-1 * var(--space-1)) 0 var(--space-1); font-size: var(--font-body-xsmall); color: var(--text-subtle); }

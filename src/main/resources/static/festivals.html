@@ -54,7 +54,13 @@
           <option value="">전국</option>
         </select>
       </label>
+      <!-- FEST-03: 내 위치(기기 안에서만)와 같은 시·도의 축제를 맨 위에 가까운 순으로 -->
+      <button type="button" id="nearButton" class="near-button" aria-pressed="false">
+        <svg class="icon-small" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <span id="nearButtonText">내 위치 기준으로 보기</span>
+      </button>
     </div>
+    <p id="nearStatus" class="near-status" role="status"></p>
 
     <section class="calendar-card" aria-labelledby="monthTitle">
       <div class="month-nav">
@@ -71,6 +77,7 @@
       </div>
       <div id="calendar" class="calendar" role="group" aria-labelledby="monthTitle"></div>
       <p class="calendar-legend"><span class="legend-dot" aria-hidden="true"></span>숫자: 그날 열리는 축제 수 · 날짜를 누르면 그날 축제만 보여요</p>
+      <p id="mineLegend" class="calendar-legend" hidden><span class="mine-dot" aria-hidden="true"></span><span id="mineLegendText">점: 우리 지역 축제가 있는 날</span></p>
     </section>
 
     <section class="list-section" aria-labelledby="listTitle">
