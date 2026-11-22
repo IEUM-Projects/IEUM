@@ -8,6 +8,10 @@ import org.springframework.web.client.RestClient;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
+import org.springframework.web.client.RestClientResponseException;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -17,6 +21,7 @@ import java.util.Map;
 /**
  * TMAP 보행자 경로 API (SK open API, 서버 전용 appKey)
  * POST {pedestrian-url}?version=1  본문: startX(경도), startY(위도), endX, endY, startName, endName
+ *   startName·endName 은 TMAP 문서대로 UTF-8 URL 인코딩해서 보낸다 (안 하면 400)
  * 응답: GeoJSON FeatureCollection. 첫 Feature(Point)에 totalDistance(m), totalTime(초), LineString들이 실제 걷는 길.
  */
 @Component
@@ -51,23 +56,29 @@ public class TmapClient {
         body.put("startY", String.valueOf(fromLat));
         body.put("endX", String.valueOf(toLng));
         body.put("endY", String.valueOf(toLat));
-        body.put("startName", "출발");
-        body.put("endName", "도착");
+        body.put("startName", URLEncoder.encode("출발", StandardCharsets.UTF_8));
+        body.put("endName", URLEncoder.encode("도착", StandardCharsets.UTF_8));
         JsonNode root;
         try {
             String text = http.post().uri(url + "?version=1").header("appKey", appKey)
-                    .contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
+                    .contentType(new MediaType("application", "json", StandardCharsets.UTF_8)).accept(MediaType.APPLICATION_JSON)
                     .body(json.writeValueAsString(body)).retrieve().body(String.class);
             root = json.readTree(text == null ? "{}" : text);
-        } catch (RuntimeException e) {   // 연결·시간 초과·4xx/5xx(한도 초과 포함)·잘못된 JSON
-            throw new TmapException("TMAP 보행자 경로 실패: " + e.getClass().getSimpleName());
+        } catch (RestClientResponseException e) {   // TMAP 이 4xx/5xx 로 답함: 상태와 TMAP 오류 코드를 남긴다
+            int status = e.getStatusCode().value();
+            String why = errorOf(e.getResponseBodyAsString());
+            // 400·404 는 이 구간만의 문제(길이 없는 곳 등). 키 오류(401·403)·한도(429)·서버 오류(5xx)는 전체 문제
+            boolean onlyThisLeg = status == 400 || status == 404;
+            throw new TmapException("TMAP 보행자 경로 실패: HTTP " + status + (why.isEmpty() ? "" : " " + why), onlyThisLeg);
+        } catch (RuntimeException e) {   // 연결·시간 초과·잘못된 JSON
+            throw new TmapException("TMAP 보행자 경로 실패: " + e.getClass().getSimpleName(), false);
         }
         JsonNode features = root.path("features");
-        if (!features.isArray() || features.isEmpty()) throw new TmapException("TMAP 보행자 경로: 결과 없음");
+        if (!features.isArray() || features.isEmpty()) throw new TmapException("TMAP 보행자 경로: 결과 없음", true);
         JsonNode first = features.path(0).path("properties");
         int distance = first.path("totalDistance").asInt(-1);
         int seconds = first.path("totalTime").asInt(-1);
-        if (distance < 0 || seconds < 0) throw new TmapException("TMAP 보행자 경로: 거리·시간 없음");
+        if (distance < 0 || seconds < 0) throw new TmapException("TMAP 보행자 경로: 거리·시간 없음", true);
         List<double[]> path = new ArrayList<>();
         for (JsonNode f : features.values()) {
             if (!"LineString".equals(f.path("geometry").path("type").asString(""))) continue;
@@ -80,13 +91,34 @@ public class TmapClient {
                 if (last == null || last[0] != p[0] || last[1] != p[1]) path.add(p);   // 이어지는 점 겹침 제거
             }
         }
-        if (path.size() < 2) throw new TmapException("TMAP 보행자 경로: 길 좌표 없음");
+        if (path.size() < 2) throw new TmapException("TMAP 보행자 경로: 길 좌표 없음", true);
         return new Route(distance, seconds, path);
     }
 
+    /** TMAP 오류 본문 {"error":{"code":"3002","message":"..."}} 에서 코드·메시지만 (키 같은 비밀은 들어 있지 않다) */
+    private String errorOf(String text) {
+        try {
+            JsonNode err = json.readTree(text == null || text.isBlank() ? "{}" : text).path("error");
+            String code = err.path("code").asString("");
+            String message = err.path("message").asString("");
+            String out = (code + " " + message).trim();
+            return out.length() > 120 ? out.substring(0, 120) : out;
+        } catch (RuntimeException e) {
+            return "";
+        }
+    }
+
     public static class TmapException extends RuntimeException {
-        public TmapException(String message) {
+        /** true 면 이 구간만의 문제라 다른 구간은 계속 부른다. false 면 잠시 TMAP 을 쉬어야 하는 문제 */
+        private final boolean onlyThisLeg;
+
+        public TmapException(String message, boolean onlyThisLeg) {
             super(message);
+            this.onlyThisLeg = onlyThisLeg;
+        }
+
+        public boolean onlyThisLeg() {
+            return onlyThisLeg;
         }
     }
 }
