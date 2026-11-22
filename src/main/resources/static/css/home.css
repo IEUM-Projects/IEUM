@@ -102,7 +102,12 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
   background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 14px);
   pointer-events: none;
 }
-.slide[hidden] { display: none; }
+/* 배너 높이 고정 (HOME-03): 소식마다 글 길이·사진이 달라 넘길 때마다 배너가 커졌다 작아졌다 하지 않게,
+   모든 소식을 한 칸에 겹쳐 두고 가장 큰 소식 높이에 맞춘다. 안 보이는 소식은 자리만 차지 (화면 읽기·탭 이동에서 빠짐) */
+.hero-slides { display: grid; }
+.hero-slides > .slide { grid-area: 1 / 1; display: flex; flex-direction: column; min-width: 0; }
+.slide[hidden] { display: flex; visibility: hidden; }
+.hero-slides > .slide > .slide-inner { flex: 1 1 auto; align-content: center; }
 .slide-inner { position: relative; display: grid; gap: var(--space-5); padding-top: var(--space-8); padding-bottom: var(--space-6); }
 .slide-text { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); min-width: 0; }
 .eyebrow {
@@ -132,9 +137,9 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
 .slide-link svg { width: 18px; height: 18px; }
 .hero :focus-visible { outline-color: var(--surface); }
 
-/* 축제 사진: 자르지 않고 비율 그대로 (공공누리 '변경금지' 조건) */
+/* 축제 사진: 자르지 않고 비율 그대로 (공공누리 '변경금지' 조건). 휴대폰에서는 180px까지 (배너 높이 고정 HOME-03) */
 .slide-photo { margin: 0; display: flex; flex-direction: column; gap: var(--space-1); }
-.slide-photo img { width: 100%; max-height: 260px; object-fit: contain; background: var(--color-primary-90); border-radius: var(--radius-medium); }
+.slide-photo img { width: 100%; max-height: 180px; object-fit: contain; background: var(--color-primary-90); border-radius: var(--radius-medium); }
 .slide-photo figcaption { font-size: var(--font-body-xsmall); color: var(--color-gray-10); }
 /* 사진이 없는 소식: 큰 선 아이콘과 숫자 */
 .slide-art { display: none; }
@@ -209,7 +214,7 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
 }
 .quick a:hover { color: var(--text-link); background: var(--color-primary-5); }
 .quick-icon { width: 48px; height: 48px; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-medium); background: none; color: var(--color-primary-70); }
-.quick-icon svg { width: 26px; height: 26px; stroke-width: 1.6; }
+.quick-icon svg { width: 32px; height: 32px; stroke-width: 1.5; }   /* ICON-01: 작은 표시(배지·별·바구니)가 보이게 조금 크게 */
 
 /* ================================================================ 섹션 공통 */
 .section { padding: var(--space-10) 0; }
@@ -288,10 +293,15 @@ body.home-page { height: auto; min-height: 100%; background: var(--surface); }
 }
 .store-card:hover, .festival-card:hover { border-color: var(--action-primary); }
 .store-card:hover .card-title, .festival-card:hover .card-title { color: var(--text-link); text-decoration: underline; }
-.store-art { height: 112px; display: flex; align-items: center; justify-content: center; background: var(--surface-subtle); color: var(--color-primary-70); border-bottom: 1px solid var(--border-divider); }
-.store-art svg { width: 44px; height: 44px; stroke-width: 1.4; }
-.store-art.art-cafe, .store-art.art-craft { background: var(--surface-subtle); color: var(--color-gray-70, #4d5a56); }
-.store-art.art-retail, .store-art.art-service { background: var(--surface-subtle); color: var(--color-gray-70, #4d5a56); }
+/* 분류 그림 칸 (ICON-01): 그림 + 분류 이름, 분류마다 바탕·글자색 (글자 대비 4.5:1 이상) */
+.store-art { height: 112px; display: flex; flex-direction: column; gap: var(--space-1); align-items: center; justify-content: center; background: var(--surface-subtle); color: var(--color-primary-70); border-bottom: 1px solid var(--border-divider); }
+.store-art svg { width: 40px; height: 40px; stroke-width: 1.5; }
+.store-art .art-label { font-size: var(--font-body-small); font-weight: var(--font-weight-bold); line-height: 1.2; }
+.store-art.art-food { background: #fdf1e6; color: #8a4a07; }
+.store-art.art-cafe { background: #f5ede6; color: #6f4428; }
+.store-art.art-retail { background: #e8f1fb; color: #1d58b0; }
+.store-art.art-service { background: #e9f5ee; color: #1f6644; }
+.store-art.art-craft { background: #f2edfa; color: #5d4194; }
 .info-badge, .status-badge {
   align-self: flex-start;
   display: inline-flex;

@@ -1,5 +1,5 @@
 // 걷기 코스 (TOUR-01): 시장(또는 고른 위치)에서 시작해 백년가게·관광지·문화시설·레포츠·여행코스를 가까운 순으로 잇는다
-import { formatDistance, directionsUrl, loadKakaoMapSdk } from './api.js';
+import { formatDistance, routeAttrs, loadKakaoMapSdk } from './api.js';
 import * as auth from './auth.js';
 import { mountAccount } from './header.js';
 import { photoCredit } from './festival-format.js';
@@ -134,6 +134,18 @@ async function requestWalk(stops) {
   }
 }
 
+/**
+ * 장소 이름 링크 (TOUR-02): 백년가게·로컬크리에이터는 이음 가게 화면, 관광지·문화시설 등은 이음에 화면이 없어
+ * 카카오맵 장소 검색(사진·리뷰·영업시간)으로 새 창. 어느 이름이든 눌리게 하고, 밖으로 나가는 링크는 '카카오맵' 표시
+ */
+function placeName(s) {
+  if (s.kind === 'store' || s.kind === 'creator') return el('a', { href: `/store.html?id=${s.id}`, text: s.name });
+  const area = (s.address ?? '').split(/\s+/)[1] ?? '';   // '서울 종로구 …' → '종로구' (같은 이름이 여러 곳일 때 가려 줌)
+  const q = [area, s.name].filter(Boolean).join(' ');
+  return el('a', { class: 'ext-link', href: `https://map.kakao.com/link/search/${encodeURIComponent(q)}`, target: '_blank', rel: 'noopener', 'aria-label': `${s.name} (카카오맵에서 정보 보기, 새 창)` },
+    s.name);   // '카카오맵' 표시는 CSS(::after)로 붙인다 (이름 글자에 섞이지 않게)
+}
+
 function stopItem(s, i, prev, leg) {
   const remove = el('button', { type: 'button', class: 'button-text', 'aria-label': `${s.name} 빼기`, text: '빼기' });
   remove.addEventListener('click', () => {
@@ -142,9 +154,7 @@ function stopItem(s, i, prev, leg) {
     toast(`${s.name}을(를) 뺐어요.`);
     ($('stops').querySelector('button') ?? $('candidates').querySelector('button'))?.focus();
   });
-  const title = s.kind === 'store' || s.kind === 'creator'
-    ? el('a', { href: `/store.html?id=${s.id}`, text: s.name })
-    : el('span', { text: s.name });
+  const title = placeName(s);
   return el('li', { class: 'stop', 'data-key': s.key },
     el('span', { class: 'stop-no', 'aria-hidden': 'true', text: String(i + 1) }),
     el('div', { class: 'stop-body' },
@@ -155,7 +165,7 @@ function stopItem(s, i, prev, leg) {
         el('img', { src: s.imageUrl, alt: '', loading: 'lazy' }),
         el('figcaption', { text: photoCredit(s.imageLicense) })) : null,
       el('div', { class: 'stop-actions' },
-        el('a', { class: 'button-text', href: directionsUrl(s), target: '_blank', rel: 'noopener', 'aria-label': `${s.name} 길찾기 (카카오맵, 새 창)`, text: '길찾기' }),
+        el('a', { class: 'button-text', ...routeAttrs(s), 'aria-label': `${s.name} 길찾기 (카카오맵)`, text: '길찾기' }),
         remove)));
 }
 
@@ -171,7 +181,7 @@ function candidateItem(c) {
     $('candidates').querySelector('button:not([disabled])')?.focus();
   });
   return el('li', { class: 'cand' },
-    el('div', {}, el('strong', { text: c.name }), el('span', { class: 'cand-meta', text: ` ${c.sub} · 출발점에서 ${formatDistance(c.distanceM)}${c.onnuri ? ' · 온누리' : ''}` })),
+    el('div', {}, el('strong', {}, placeName(c)), el('span', { class: 'cand-meta', text: ` ${c.sub} · 출발점에서 ${formatDistance(c.distanceM)}${c.onnuri ? ' · 온누리' : ''}` })),
     add);
 }
 

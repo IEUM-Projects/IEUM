@@ -17,7 +17,20 @@ body.festival-page { background: var(--surface-subtle); }
 .page-title { font-size: var(--font-heading-xlarge); margin: 0; }
 
 /* ---------- 지역 선택 ---------- */
-.toolbar { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+/* FEST-03: 내 위치 기준 */
+.near-button {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  min-height: var(--touch-min); padding: 0 var(--space-4);
+  border: 1px solid var(--border-input); border-radius: var(--radius-small);
+  background: var(--surface); color: var(--text-body);
+  font: inherit; font-size: var(--font-body-small); font-weight: var(--font-weight-bold); cursor: pointer;
+}
+.near-button:hover { border-color: var(--action-primary); }
+.near-button[aria-pressed="true"] { background: var(--color-primary-5); border-color: var(--action-primary); color: var(--color-primary-80); }
+.near-button:disabled { cursor: progress; opacity: 0.7; }
+.near-status { margin: var(--space-2) 0 0; font-size: var(--font-body-small); color: var(--text-subtle); }
+.near-status:empty { display: none; }
 .region-filter { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-body-small); font-weight: var(--font-weight-bold); }
 .region-filter select {
   min-height: var(--touch-min);
@@ -96,6 +109,10 @@ button.day:hover { background: var(--surface-subtle); }
 
 .calendar-legend { margin: var(--space-3) 0 0; font-size: var(--font-body-small); color: var(--text-subtle); display: flex; align-items: center; gap: var(--space-2); }
 .legend-dot { width: 12px; height: 12px; border-radius: var(--radius-xsmall); background: var(--color-primary-5); border: 1px solid var(--color-primary-20); flex: none; }
+/* FEST-03: 우리 지역 축제가 있는 날 (주황 점) */
+.calendar-legend[hidden] { display: none; }
+.mine-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent-40); flex: none; }
+.day[aria-pressed="true"] .mine-dot { background: var(--surface); }
 
 /* ---------- 축제 목록 ---------- */
 .list-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
@@ -113,6 +130,8 @@ button.day:hover { background: var(--surface-subtle); }
 .list-status { margin: var(--space-2) 0 0; color: var(--text-subtle); font-size: var(--font-body-small); }
 .list-status:empty { display: none; }
 .festival-list { list-style: none; margin: var(--space-3) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.festival-list .group-head h3 { margin: var(--space-3) 0 0; font-size: var(--font-body-medium); color: var(--text-subtle); }
+.festival-list .group-head:first-child h3 { margin-top: 0; }
 .festival-item {
   display: flex;
   flex-direction: column;
@@ -209,4 +228,6 @@ button.day:hover { background: var(--surface-subtle); }
 
 .festival-detail .actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
 .festival-detail .actions .wide { grid-column: 1 / -1; min-height: 52px; }
+.festival-detail .actions .phone-action { grid-column: 1 / -1; }   /* 아래 버튼은 전화하기 하나라 한 줄 전체 */
+.festival-detail .info dd a { word-break: break-all; }
 .festival-detail .loading, .festival-detail .error { color: var(--text-subtle); margin: 0; }

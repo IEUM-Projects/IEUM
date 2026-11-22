@@ -39,7 +39,7 @@ export function meters(a, b) {
 
 /**
  * 지금 위치에서 가장 가까운 시·군·구.
- * { code, sidoName, name, label, lat, lng, here }
+ * { code, sidoCode, sidoName, name, label, lat, lng, here }
  *  - lat·lng : 그 지역의 중심 (서버로 보내도 되는 값)
  *  - here    : 실제 내 위치 {lat, lng, accuracy}. 기기 안에서만 쓴다. 서버 요청·주소(URL)·저장소에 넣지 않는다
  * 위치를 못 얻거나 지역 목록을 못 받으면 Error (message는 화면에 그대로 보여도 됨)
@@ -57,6 +57,7 @@ export async function nearestRegion(options = {}) {
   if (!best) throw new Error('가까운 지역을 찾지 못했어요.');
   return {
     code: best.g.code,
+    sidoCode: best.sido.sidoCode,
     sidoName: best.sido.sidoName,
     name: best.g.name,
     label: `${best.sido.sidoName} ${best.g.name}`,
